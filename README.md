@@ -32,13 +32,37 @@ Run the unit tests to check that everything works:
 ## Endpoints
 | HTTP | Method URI | Action | Output type |
 | :---: | :---: | :---: | :---: | 
-| GET | http://[hostname]/metadom/api/chromosome/[locus] | Retrieve a list of loci that are aligned via meta-domain relation to this locus | mapping |
+| GET | http://[hostname]/metadom/api/chromosome/[ `locus` ] | Retrieve a list of loci that are aligned via meta-domain relation to this `locus` | `meta-domain mapping` |
 
+### Input
+
+A `locus` is a chromosomal position in the form of 'chr'[number]:position
 
 ### Output
+A `meta-domain mapping` entry consists of:
+* genes : a list of `gene` entries, which are present at this locus
+* proteins : a list of `protein` entries, which are present at this locus
+* domains : a list of protein `domain` entries, which are present at this locus
+* meta-domain_linked_loci : a list of `locus` or loci, which are via a meta-domain relationship linked to this `locus`
+* meta-domain_linked_genes : a list of `gene` entries, which are via a meta-domain relationship linked to this `locus`
+* meta-domain_linked_proteins : a list of `protein` entries, which are via a meta-domain relationship linked to this `locus`
+
+A `gene` entry consists of:
+* position : the position in the gene that matches the locus
+* strand
+* ...
+
+
+id: unique identifier for tasks. Numeric type.
+title: short task description. String type.
+description: long task description. Text type.
+done: task completion state. Boolean type.
+
+
+
 | Output type | Output |
 | :---: | :--- |
-| Mapping | <pre>{ <br>&nbsp; protein: <br>&nbsp;&nbsp;[<br>&nbsp;&nbsp;&nbsp; protein*, ... <br>&nbsp;&nbsp;], domain <br>} <pre/> |
+| meta-domain mapping | <pre>{ <br>&nbsp; protein: <br>&nbsp;&nbsp;[<br>&nbsp;&nbsp;&nbsp; protein*, ... <br>&nbsp;&nbsp;], domain <br>} <pre/> |
 | protein | <pre>{ <br>&nbsp; swiss-prot id:**str** <br>&nbsp;&nbsp;[<br>&nbsp;&nbsp;&nbsp; protein*, ... <br>&nbsp;&nbsp;], domain	} <pre/> |
 
 \*: zero or many and \+: one or many
