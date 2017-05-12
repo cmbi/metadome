@@ -44,6 +44,8 @@ Run the unit tests to check that everything works:
 \*: zero or many and \+: one or many
 
 ### Upcoming endpoints
+| HTTP | Method URI | Action | Output type |
+| :---: | :---: | :---: | :---: | 
 | GET | http://[hostname]/metadom/api/gene/[gene name] | Retrieve a list of loci that are aligned via meta-domain relation to this locus |	<code>{ <br/><indent>	protein: [<protein>], domain	} <code/>|
 | GET | http://[hostname]/metadom/api/gene/[gene name]/[cDNA position] | Retrieve a list of loci that are aligned via meta-domain relation to this locus |	<code>{ <br/><indent>	protein: [<protein>], domain	} <code/>|
 | GET | http://[hostname]/metadom/api/protein/[swiss-prot id] | Retrieve a list of loci that are aligned via meta-domain relation to this locus |	<code>{ <br/><indent>	protein: [<protein>], domain	} <code/>|
