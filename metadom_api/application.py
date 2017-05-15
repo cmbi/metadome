@@ -1,3 +1,3 @@
-from metadom-api.factory import create_app
+from metadom_api.factory import create_app
 
 app = create_app()

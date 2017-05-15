@@ -1,9 +1,10 @@
 #!flask/bin/python
 from flask import Flask, jsonify, abort, make_response
+import metadom_api.application
 
-app = Flask(__name__)
+from flask import current_app as flask_app
 
-tasks = [
+_tasks = [
     {
         'id': 1,
         'title': u'Buy groceries',
@@ -18,21 +19,23 @@ tasks = [
     }
 ]
 
-@app.route('/todo/api/v1.0/tasks', methods=['GET'])
+@flask_app.route('/todo/api/v1.0/tasks', methods=['GET'])
 def get_tasks():
-    return jsonify({'tasks': tasks})
+    return jsonify({'tasks': _tasks})
 
 
-@app.route('/metadom/api/v1.0/chr/<int:chr>/<int:position>', methods=['GET'])
+@flask_app.route('/metadom/api/v1.0/chr/<int:chr>/<int:position>', methods=['GET'])
 def get_chr_pos(chr,position):
-    task = [task for task in tasks if task['id'] == position]
+    task = [task for task in _tasks if task['id'] == position]
     if len(task) == 0:
         abort(404)
     return jsonify({'task': task[0]})
 
-@app.errorhandler(404)
+@flask_app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    
+    flask_app.run(debug=True)
+    
