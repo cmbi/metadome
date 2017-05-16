@@ -32,11 +32,12 @@ Run the unit tests to check that everything works:
 ## Endpoints
 | HTTP | Method URI | Action | Output type |
 | :---: | :---: | :---: | :---: | 
-| GET | http://[hostname]/metadom/api/chr/[ `locus` ] | Retrieve a list of loci that are aligned via meta-domain relation to this `locus` | `meta-domain mapping` |
+| GET | http://[hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | Retrieve the information that is aligned to this position via meta-domain relation | `meta-domain mapping` |
 
 ### Input
 
-A `locus` is a chromosomal position in the form of 'chr'[number]:position
+`<str:chr>` : ['1-23', 'X'], excluding 'Y'. String type.
+`<int:position>` : position on the chromosome. Numeric type.
 
 ### Output
 A `meta-domain mapping` entry consists of:
@@ -48,7 +49,7 @@ A `meta-domain mapping` entry consists of:
 * meta-domain_linked_proteins : a list of `protein` entries, which are via a meta-domain relationship linked to this `locus`
 
 A `gene` entry consists of:
-* position : the position in the gene that matches the locus. Numeric type
+* gene_position : the position in the gene that matches the locus. Numeric type
 * strand : '+' or '-'. String type
 * gene_name : the name of the gene wherein this domain occurs. String type
 * gencode_transcription_id : gencode_transcription_id. String type
@@ -56,11 +57,13 @@ A `gene` entry consists of:
 * gencode_gene_id : gencode_gene_id. String type
 * havana_gene_id : havana_gene_id. String type
 * havana_translation_id : havana_translation_id. String type
+* swissprot_id : uniprot_ac. String type
 
 A `protein` entry consists of:
 * swissprot_position : the position in the gene that matches the locus
 * swissprot_id : uniprot_ac. String type
 * swissprot_name : uniprot_name. String type
+* gencode_transcription_id : gencode_transcription_id. String type
 
 A `domain` entry consists of:
 * pfam_domain_consensus_position : the consensus position of the Pfam domain where this position is aligned to. Numeric type
@@ -75,14 +78,7 @@ A `domain` entry consists of:
 * chromosome : domain_result["chromosome"]. String type
 * chr_region : domain_result["chromosome_positions"]. List of binary tuples of numeric types
 
-| Output type | Output |
-| :---: | :--- |
-| meta-domain mapping | <pre>{ <br>&nbsp; protein: <br>&nbsp;&nbsp;[<br>&nbsp;&nbsp;&nbsp; protein*, ... <br>&nbsp;&nbsp;], domain <br>} <pre/> |
-| protein | <pre>{ <br>&nbsp; swiss-prot id:**str** <br>&nbsp;&nbsp;[<br>&nbsp;&nbsp;&nbsp; protein*, ... <br>&nbsp;&nbsp;], domain	} <pre/> |
-
-\*: zero or many and \+: one or many
-
-### Upcoming endpoints
+### Endpoints that might be available in the future
 | HTTP | Method URI | Action | Output type |
 | :---: | :---: | :---: | :---: | 
 | GET | http://[hostname]/metadom/api/gene/[gene name] | Retrieve a list of loci that are aligned via meta-domain relation to this locus |	<code>{ <br/><indent>	protein: [<protein>], domain	} <code/>|
