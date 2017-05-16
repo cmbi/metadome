@@ -32,7 +32,7 @@ Run the unit tests to check that everything works:
 ## Endpoints
 | HTTP | Method URI | Action | Output type |
 | :---: | :---: | :---: | :---: | 
-| GET | http://[hostname]/metadom/api/chromosome/[ `locus` ] | Retrieve a list of loci that are aligned via meta-domain relation to this `locus` | `meta-domain mapping` |
+| GET | http://[hostname]/metadom/api/chr/[ `locus` ] | Retrieve a list of loci that are aligned via meta-domain relation to this `locus` | `meta-domain mapping` |
 
 ### Input
 
@@ -48,17 +48,32 @@ A `meta-domain mapping` entry consists of:
 * meta-domain_linked_proteins : a list of `protein` entries, which are via a meta-domain relationship linked to this `locus`
 
 A `gene` entry consists of:
-* position : the position in the gene that matches the locus
-* strand
-* ...
+* position : the position in the gene that matches the locus. Numeric type
+* strand : '+' or '-'. String type
+* gene_name : the name of the gene wherein this domain occurs. String type
+* gencode_transcription_id : gencode_transcription_id. String type
+* gencode_translation_name : gencode_translation_name. String type
+* gencode_gene_id : gencode_gene_id. String type
+* havana_gene_id : havana_gene_id. String type
+* havana_translation_id : havana_translation_id. String type
 
+A `protein` entry consists of:
+* swissprot_position : the position in the gene that matches the locus
+* swissprot_id : uniprot_ac. String type
+* swissprot_name : uniprot_name. String type
 
-id: unique identifier for tasks. Numeric type.
-title: short task description. String type.
-description: long task description. Text type.
-done: task completion state. Boolean type.
-
-
+A `domain` entry consists of:
+* pfam_domain_consensus_position : the consensus position of the Pfam domain where this position is aligned to. Numeric type
+* pfam_domain_name : the name of the domain. String type
+* pfam_domain_id : the domain identifier. String type
+* interpro_id : the interpro identifier. String type
+* gene_name : the name of the gene wherein this domain occurs. String type
+* swissprot_id : uniprot_ac. String type
+* swissprot_start_pos : domain_uniprot_start_pos. Numeric type
+* swissprot_end_pos : domain_uniprot_end_pos. Numeric type
+* swissprot_length : domain_result["region_length"]. Numeric type
+* chromosome : domain_result["chromosome"]. String type
+* chr_region : domain_result["chromosome_positions"]. List of binary tuples of numeric types
 
 | Output type | Output |
 | :---: | :--- |
