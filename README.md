@@ -1,4 +1,4 @@
-metadom-api is a REST wrapper around metadom.
+The metadom-api is a REST wrapper around metadom.
 
 # metadom-api
 # Development
@@ -42,10 +42,10 @@ All endpoints retrieve the information that is aligned to the position of intere
 ### Input
 
 * `<str:chr>` : ['1-23', 'X'], excluding 'Y'. String type.
+* `<str:gencode_translation_name>` : the gencode translation name. String type
+* `<str:uniprot_ac>` : the uniprot Accession Code. String type
+* `<str:Pfam_id>` : the Pfam domain identifier. String type
 * `<int:position>` : position on the chromosome, cDNA of the gene, sequence position of the protein, or pfam domain consensus position. Depending on the parent type. Numeric type.
-* `<str:gencode_translation_name>` : ...
-* `<str:uniprot_ac>` : ...
-* `<str:Pfam_id>` : ...
 
 ### Output
 A `meta-domain mapping` entry consists of:
