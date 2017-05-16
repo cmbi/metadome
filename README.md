@@ -63,31 +63,28 @@ A `locus` entry consists of:
 * locus : position on the chromosome. Numeric type.
 
 A `gene` entry consists of:
-* gene_position : the position in the gene that matches the locus. Numeric type
+* gene_position : the position in the cDNA of the gene that matches the locus. Numeric type
 * strand : '+' or '-'. String type
 * gene_name : the name of the gene wherein this domain occurs. String type
-* gencode_transcription_id : gencode_transcription_id. String type
-* gencode_translation_name : gencode_translation_name. String type
-* gencode_gene_id : gencode_gene_id. String type
-* havana_gene_id : havana_gene_id. String type
-* havana_translation_id : havana_translation_id. String type
-* swissprot_id : uniprot_ac. String type
+* gencode_transcription_id : the transcription id from GENCODE. String type
+* gencode_translation_name : the translation name from GENCODE. String type
+* gencode_gene_id : the gene id from GENCODE. String type
+* havana_gene_id : the gene id from HAVANA. String type
+* havana_translation_id : the translation id from HAVANA. String type
+* uniprot_ac : the uniprot Accession Code. String type
 
 A `protein` entry consists of:
-* swissprot_position : the position in the gene that matches the locus
-* swissprot_id : uniprot_ac. String type
-* swissprot_name : uniprot_name. String type
-* gencode_transcription_id : gencode_transcription_id. String type
+* uniprot_position : the sequence position of the protein that matched the locus. Numeric type
+* uniprot_ac : the uniprot Accession Code. String type
+* uniprot_name : the name of the uniprot entry. String type
+* gencode_transcription_id : the transcription id from GENCODE. String type
 
 A `domain` entry consists of:
 * pfam_domain_consensus_position : the consensus position of the Pfam domain where this position is aligned to. Numeric type
-* pfam_domain_name : the name of the domain. String type
-* pfam_domain_id : the domain identifier. String type
+* pfam_domain_name : the name of the Pfam domain. String type
+* pfam_domain_id : the Pfam domain identifier. String type
 * interpro_id : the interpro identifier. String type
-* gene_name : the name of the gene wherein this domain occurs. String type
-* swissprot_id : uniprot_ac. String type
-* swissprot_start_pos : domain_uniprot_start_pos. Numeric type
-* swissprot_end_pos : domain_uniprot_end_pos. Numeric type
-* swissprot_length : domain_result["region_length"]. Numeric type
-* chromosome : domain_result["chromosome"]. String type
-* chr_region : domain_result["chromosome_positions"]. List of binary tuples of numeric types
+* gencode_transcription_id : the transcription id from GENCODE. String type
+* uniprot_ac : the uniprot Accession Code. String type
+* uniprot_start_pos : the position in the uniprot sequence where this domain starts. Numeric type
+* uniprot_end_pos : the position in the uniprot sequence where this domain starts. Numeric type
