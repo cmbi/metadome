@@ -2,4 +2,4 @@
 *.project
 *.pydevproject
 metadom-api/*
-__pycache__/*
+*/__pycache__/*
