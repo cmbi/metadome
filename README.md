@@ -34,7 +34,7 @@ All endpoints retrieve the information that is aligned to the position of intere
 
 | HTTP | Method URI | Output type |
 | :---: | :-- | :-- |
-| GET | [hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
+| GET | [hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | `locus` |
 
  \*: zero or many
 
