@@ -70,6 +70,10 @@ An `information` entry consists of:
 * locus : position on the chromosome. Numeric type.
 * gene_position : the position in the cDNA of the gene that matches the locus. Numeric type
 * strand : '+' or '-'. String type
+* allele : one of the four nucleotide 'A', 'T', 'C', 'G'. String type.
+* codon : 'ATG',
+* codon_allele_position : position of the alle in the codon [0-2]. Numeric type.
+* amino_acid_residue : one of the twenty amino acids in single character respresentation, including '\*' for stop codon. String type
 * gene_name : the name of the gene wherein this domain occurs. String type
 * gencode_transcription_id : the transcription id from GENCODE. String type
 * gencode_translation_name : the translation name from GENCODE. String type
