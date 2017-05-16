@@ -54,10 +54,14 @@ A `locus` entry consists of:
     "locus_information": 
         [
             {
-                "gene_information":gene_information,
-                "meta_information":[gene_information*],
-            }, ...
-        ]*,
+                "information":information,
+                "meta_information":
+                    [
+                        information*,
+                        ...
+                    ],
+            }*, ... 
+        ],
 }
 ```
 
@@ -82,7 +86,7 @@ An `information` entry consists of:
 * uniprot_domain_start_pos : the position in the uniprot sequence where this domain starts. Numeric type or None
 * uniprot_domain_end_pos : the position in the uniprot sequence where this domain starts. Numeric type or None
 
-A `meta_locus_information` entry consists of zero or more `information` entries, which are via a meta-domain relationship linked to this `information`
+A `meta_information` entry consists of zero or more `information` entries, which are via a meta-domain relationship linked to this `information`
 
 ### Future endpoints
 | HTTP | Method URI | Output type |
