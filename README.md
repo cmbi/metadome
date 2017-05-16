@@ -35,34 +35,35 @@ All endpoints retrieve the information that is aligned to the position of intere
 | HTTP | Method URI | Output type |
 | :---: | :-- | :-- |
 | GET | [hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
-| GET | [hostname]/metadom/api/gene/`<str:gencode_translation_name>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
-| GET | [hostname]/metadom/api/protein/`<str:uniprot_ac>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
-| GET | [hostname]/metadom/api/domain/`<str:Pfam_id>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
 
  \*: zero or many
 
 ### Input
 
 * `<str:chr>` : ['1-23', 'X'], excluding 'Y'. String type.
-* `<str:gencode_translation_name>` : the gencode translation name. String type
-* `<str:uniprot_ac>` : the uniprot Accession Code. String type
-* `<str:Pfam_id>` : the Pfam domain identifier. String type
 * `<int:position>` : position on the chromosome, cDNA of the gene, sequence position of the protein, or pfam domain consensus position. Depending on the parent type. Numeric type.
 
 ### Output
-A `locus_information` entry consists of:
-* `locus` : information about the locus
-* genes : a list of `gene` entries, which are present at this locus
-* proteins : a list of `protein` entries, which are present at this locus
-* domains : a list of protein `domain` entries, which are present at this locus
-
-The `meta-domain_mapping` consists of zero or more `locus_information` entries, which are via a meta-domain relationship linked to this `locus`
-
 A `locus` entry consists of:
+```
+{
+    "locus":{
+        "chromosome":<str>,
+        "position":<int>,
+    },
+    "locus_information": 
+        [
+            {
+                "gene_information":gene_information,
+                "meta_information":[gene_information*],
+            }, ...
+        ]*,
+}
+```
+
+An `information` entry consists of:
 * chromosome : ['1-23', 'X'], excluding 'Y'. String type.
 * locus : position on the chromosome. Numeric type.
-
-A `gene` entry consists of:
 * gene_position : the position in the cDNA of the gene that matches the locus. Numeric type
 * strand : '+' or '-'. String type
 * gene_name : the name of the gene wherein this domain occurs. String type
@@ -71,20 +72,27 @@ A `gene` entry consists of:
 * gencode_gene_id : the gene id from GENCODE. String type
 * havana_gene_id : the gene id from HAVANA. String type
 * havana_translation_id : the translation id from HAVANA. String type
-* uniprot_ac : the uniprot Accession Code. String type
-
-A `protein` entry consists of:
 * uniprot_position : the sequence position of the protein that matched the locus. Numeric type
 * uniprot_ac : the uniprot Accession Code. String type
 * uniprot_name : the name of the uniprot entry. String type
-* gencode_transcription_id : the transcription id from GENCODE. String type
+* pfam_domain_consensus_position : the consensus position of the Pfam domain where this position is aligned to. Numeric type  or None
+* pfam_domain_name : the name of the Pfam domain. String type or None
+* pfam_domain_id : the Pfam domain identifier. String type  or None
+* interpro_id : the interpro identifier. String type  or None
+* uniprot_domain_start_pos : the position in the uniprot sequence where this domain starts. Numeric type or None
+* uniprot_domain_end_pos : the position in the uniprot sequence where this domain starts. Numeric type or None
 
-A `domain` entry consists of:
-* pfam_domain_consensus_position : the consensus position of the Pfam domain where this position is aligned to. Numeric type
-* pfam_domain_name : the name of the Pfam domain. String type
-* pfam_domain_id : the Pfam domain identifier. String type
-* interpro_id : the interpro identifier. String type
-* gencode_transcription_id : the transcription id from GENCODE. String type
-* uniprot_ac : the uniprot Accession Code. String type
-* uniprot_start_pos : the position in the uniprot sequence where this domain starts. Numeric type
-* uniprot_end_pos : the position in the uniprot sequence where this domain starts. Numeric type
+A `meta_locus_information` entry consists of zero or more `information` entries, which are via a meta-domain relationship linked to this `information`
+
+### Future endpoints
+| HTTP | Method URI | Output type |
+| :---: | :-- | :-- |
+| GET | [hostname]/metadom/api/gene/`<str:gencode_translation_name>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
+| GET | [hostname]/metadom/api/protein/`<str:uniprot_ac>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
+| GET | [hostname]/metadom/api/domain/`<str:Pfam_id>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
+
+#### Future Input
+
+* `<str:gencode_translation_name>` : the gencode translation name. String type
+* `<str:uniprot_ac>` : the uniprot Accession Code. String type
+* `<str:Pfam_id>` : the Pfam domain identifier. String type
