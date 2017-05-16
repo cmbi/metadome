@@ -87,9 +87,9 @@ A `meta_locus_information` entry consists of zero or more `information` entries,
 ### Future endpoints
 | HTTP | Method URI | Output type |
 | :---: | :-- | :-- |
-| GET | [hostname]/metadom/api/gene/`<str:gencode_translation_name>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
-| GET | [hostname]/metadom/api/protein/`<str:uniprot_ac>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
-| GET | [hostname]/metadom/api/domain/`<str:Pfam_id>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
+| GET | [hostname]/metadom/api/gene/`<str:gencode_translation_name>`/`<int:position>` | `locus` |
+| GET | [hostname]/metadom/api/protein/`<str:uniprot_ac>`/`<int:position>` | `locus` |
+| GET | [hostname]/metadom/api/domain/`<str:Pfam_id>`/`<int:position>` | `locus` |
 
 #### Future Input
 
