@@ -35,10 +35,9 @@ All endpoints retrieve the information that is aligned to the position of intere
 | HTTP | Method URI | Output type |
 | :---: | :---: | :---: |
 | GET | [hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | `meta-domain mapping` |
-| Not | yet | implemented | |
 | GET | [hostname]/metadom/api/gene/`<str:gencode_translation_name>`/`<int:position>` | `meta-domain mapping` |
-| GET | http://[hostname]/metadom/api/protein/`<str:uniprot_ac>`/`<int:position>` | `meta-domain mapping` |
-| GET | http://[hostname]/metadom/api/domain/`<str:Pfam_id>`/`<int:position>` | `meta-domain mapping` |
+| GET | [hostname]/metadom/api/protein/`<str:uniprot_ac>`/`<int:position>` | `meta-domain mapping` |
+| GET | [hostname]/metadom/api/domain/`<str:Pfam_id>`/`<int:position>` | `meta-domain mapping` |
 
 ### Input
 
