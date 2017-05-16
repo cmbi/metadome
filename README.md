@@ -30,23 +30,37 @@ Run the unit tests to check that everything works:
 
 # Implementation 
 ## Endpoints
-| HTTP | Method URI | Action | Output type |
-| :---: | :---: | :---: | :---: | 
-| GET | http://[hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | Retrieve the information that is aligned to this position via meta-domain relation | `meta-domain mapping` |
+All endpoints retrieve the information that is aligned to the position of interest via meta-domain relation, if available.
+
+| HTTP | Method URI | Output type |
+| :---: | :---: | :---: |
+| GET | [hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | `meta-domain mapping` |
+| Not | yet | implemented | |
+| GET | [hostname]/metadom/api/gene/`<str:gencode_translation_name>`/`<int:position>` | `meta-domain mapping` |
+| GET | http://[hostname]/metadom/api/protein/`<str:uniprot_ac>`/`<int:position>` | `meta-domain mapping` |
+| GET | http://[hostname]/metadom/api/domain/`<str:Pfam_id>`/`<int:position>` | `meta-domain mapping` |
 
 ### Input
 
-`<str:chr>` : ['1-23', 'X'], excluding 'Y'. String type.
-`<int:position>` : position on the chromosome. Numeric type.
+* `<str:chr>` : ['1-23', 'X'], excluding 'Y'. String type.
+* `<int:position>` : position on the chromosome, cDNA of the gene, sequence position of the protein, or pfam domain consensus position. Depending on the parent type. Numeric type.
+* `<str:gencode_translation_name>` : ...
+* `<str:uniprot_ac>` : ...
+* `<str:Pfam_id>` : ...
 
 ### Output
 A `meta-domain mapping` entry consists of:
+* `locus` : information about the locus
 * genes : a list of `gene` entries, which are present at this locus
 * proteins : a list of `protein` entries, which are present at this locus
 * domains : a list of protein `domain` entries, which are present at this locus
 * meta-domain_linked_loci : a list of `locus` or loci, which are via a meta-domain relationship linked to this `locus`
 * meta-domain_linked_genes : a list of `gene` entries, which are via a meta-domain relationship linked to this `locus`
 * meta-domain_linked_proteins : a list of `protein` entries, which are via a meta-domain relationship linked to this `locus`
+
+A `locus` entry consists of:
+* chromosome : ['1-23', 'X'], excluding 'Y'. String type.
+* locus : position on the chromosome. Numeric type.
 
 A `gene` entry consists of:
 * gene_position : the position in the gene that matches the locus. Numeric type
@@ -77,13 +91,3 @@ A `domain` entry consists of:
 * swissprot_length : domain_result["region_length"]. Numeric type
 * chromosome : domain_result["chromosome"]. String type
 * chr_region : domain_result["chromosome_positions"]. List of binary tuples of numeric types
-
-### Endpoints that might be available in the future
-| HTTP | Method URI | Action | Output type |
-| :---: | :---: | :---: | :---: | 
-| GET | http://[hostname]/metadom/api/gene/[gene name] | Retrieve a list of loci that are aligned via meta-domain relation to this locus |	<code>{ <br/><indent>	protein: [<protein>], domain	} <code/>|
-| GET | http://[hostname]/metadom/api/gene/[gene name]/[cDNA position] | Retrieve a list of loci that are aligned via meta-domain relation to this locus |	<code>{ <br/><indent>	protein: [<protein>], domain	} <code/>|
-| GET | http://[hostname]/metadom/api/protein/[swiss-prot id] | Retrieve a list of loci that are aligned via meta-domain relation to this locus |	<code>{ <br/><indent>	protein: [<protein>], domain	} <code/>|
-| GET | http://[hostname]/metadom/api/protein/[swiss-prot id]/[protein position] | Retrieve a list of loci that are aligned via meta-domain relation to this locus |	<code>{ <br/><indent>	protein: [<protein>], domain	} <code/>|
-| GET | http://[hostname]/metadom/api/domain/[Pfam id] | Retrieve a list of loci that are aligned via meta-domain relation to this locus |	<code>{ <br/><indent>	protein: [<protein>], domain	} <code/>|
-| GET | http://[hostname]/metadom/api/domain/[Pfam id]/[domain position] | Retrieve a list of loci that are aligned via meta-domain relation to this locus |	<code>{ <br/><indent>	protein: [<protein>], domain	} <code/>|
