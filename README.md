@@ -34,10 +34,7 @@ All endpoints retrieve the information that is aligned to the position of intere
 
 | HTTP | Method URI | Output type |
 | :---: | :-- | :-- |
-| GET | [hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | `{` |
-| | | `	info:locus_information,`|
-| | | `	meta-domain_mapping:[locus_information*],`|
-| | | `}`|
+| GET | [hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
 | GET | [hostname]/metadom/api/gene/`<str:gencode_translation_name>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
 | GET | [hostname]/metadom/api/protein/`<str:uniprot_ac>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
 | GET | [hostname]/metadom/api/domain/`<str:Pfam_id>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
