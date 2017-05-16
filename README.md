@@ -33,11 +33,13 @@ Run the unit tests to check that everything works:
 All endpoints retrieve the information that is aligned to the position of interest via meta-domain relation, if available.
 
 | HTTP | Method URI | Output type |
-| :---: | :-- | :---: |
-| GET | [hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | `meta-domain mapping` |
-| GET | [hostname]/metadom/api/gene/`<str:gencode_translation_name>`/`<int:position>` | `meta-domain mapping` |
-| GET | [hostname]/metadom/api/protein/`<str:uniprot_ac>`/`<int:position>` | `meta-domain mapping` |
-| GET | [hostname]/metadom/api/domain/`<str:Pfam_id>`/`<int:position>` | `meta-domain mapping` |
+| :---: | :-- | :-- |
+| GET | [hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
+| GET | [hostname]/metadom/api/gene/`<str:gencode_translation_name>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
+| GET | [hostname]/metadom/api/protein/`<str:uniprot_ac>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
+| GET | [hostname]/metadom/api/domain/`<str:Pfam_id>`/`<int:position>` | <code> { <br>&nbsp; info:locus_information, <br>&nbsp; meta-domain_mapping:[locus_information*] <br>} <code/> |
+
+ \*: zero or many
 
 ### Input
 
@@ -48,14 +50,13 @@ All endpoints retrieve the information that is aligned to the position of intere
 * `<int:position>` : position on the chromosome, cDNA of the gene, sequence position of the protein, or pfam domain consensus position. Depending on the parent type. Numeric type.
 
 ### Output
-A `meta-domain mapping` entry consists of:
+A `locus_information` entry consists of:
 * `locus` : information about the locus
 * genes : a list of `gene` entries, which are present at this locus
 * proteins : a list of `protein` entries, which are present at this locus
 * domains : a list of protein `domain` entries, which are present at this locus
-* meta-domain_linked_loci : a list of `locus` or loci, which are via a meta-domain relationship linked to this `locus`
-* meta-domain_linked_genes : a list of `gene` entries, which are via a meta-domain relationship linked to this `locus`
-* meta-domain_linked_proteins : a list of `protein` entries, which are via a meta-domain relationship linked to this `locus`
+
+The `meta-domain_mapping` consists of zero or more `locus_information` entries, which are via a meta-domain relationship linked to this `locus`
 
 A `locus` entry consists of:
 * chromosome : ['1-23', 'X'], excluding 'Y'. String type.
