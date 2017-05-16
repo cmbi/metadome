@@ -67,8 +67,9 @@ A `locus` entry consists of:
 
 An `information` entry consists of:
 * chromosome : ['1-23', 'X'], excluding 'Y'. String type.
-* locus : position on the chromosome. Numeric type.
-* gene_position : the position in the cDNA of the gene that matches the locus. Numeric type
+* chromosome_position : position on the chromosome. Numeric type.
+* cDNA_position : the position in the cDNA of the gene that matches the locus. Numeric type
+* uniprot_position : the sequence position of the protein that matched the locus. Numeric type
 * strand : '+' or '-'. String type
 * allele : one of the four nucleotide 'A', 'T', 'C', 'G'. String type.
 * codon : 'ATG',
@@ -80,7 +81,6 @@ An `information` entry consists of:
 * gencode_gene_id : the gene id from GENCODE. String type
 * havana_gene_id : the gene id from HAVANA. String type
 * havana_translation_id : the translation id from HAVANA. String type
-* uniprot_position : the sequence position of the protein that matched the locus. Numeric type
 * uniprot_ac : the uniprot Accession Code. String type
 * uniprot_name : the name of the uniprot entry. String type
 * pfam_domain_consensus_position : the consensus position of the Pfam domain where this position is aligned to. Numeric type  or None
