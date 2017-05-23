@@ -36,8 +36,6 @@ All endpoints retrieve the information that is aligned to the position of intere
 | :---: | :-- | :-- |
 | GET | [hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | `locus` |
 
- \*: zero or many
-
 ### Input
 
 * `<str:chr>` : ['1-23', 'X'], excluding 'Y'. String type.
@@ -64,6 +62,7 @@ A `locus` entry consists of:
         ],
 }
 ```
+ \*: zero or many
 
 An `information` entry consists of:
 * chromosome : ['1-23', 'X'], excluding 'Y'. String type.
