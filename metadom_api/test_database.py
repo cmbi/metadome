@@ -1,16 +1,22 @@
+from metadom_api.controller import database
+from metadom_api.model.mapping import Mapping
+from metadom_api.model.chromosome import Chromosome
+from metadom_api.model.gene import Gene
+from metadom_api.model.protein import Protein
+from metadom_api.model.pfam import Pfam
 
 if __name__ == '__main__':
     ## Simulate the database
     from sqlalchemy import create_engine
     from sqlalchemy import and_
     engine = create_engine('sqlite:///:memory:', echo=True)
-    Base.metadata.create_all(engine)
+    database.Base.metadata.create_all(engine)
     
     ## Save the schema of the database
     from sqlalchemy_schemadisplay import create_schema_graph
     
     # create the pydot graph object by autoloading all tables via a bound metadata object
-    graph = create_schema_graph(metadata=Base.metadata,
+    graph = create_schema_graph(metadata=database.Base.metadata,
        show_datatypes=True, # The image would get nasty big if we'd show the datatypes
        show_indexes=True, # ditto for indexes
        rankdir='LR', # From left to right (instead of top to bottom)
