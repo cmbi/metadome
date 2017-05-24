@@ -110,7 +110,7 @@ class Pfam(Base):
     
     # Fields
     id = Column(Integer, primary_key=True)
-    pfam_id = Column(String(12))
+    pfam_id = Column(String(12), nullable=False)
     name = Column(String)
     interpro_id = Column(String(12))
     uniprot_ac = Column(String(12), ForeignKey('proteins.uniprot_ac'), nullable=False)
@@ -211,6 +211,7 @@ class Gene(Base):
 if __name__ == '__main__':
     ## Simulate the database
     from sqlalchemy import create_engine
+    from sqlalchemy import and_
     engine = create_engine('sqlite:///:memory:', echo=True)
     Base.metadata.create_all(engine)
     
@@ -227,91 +228,97 @@ if __name__ == '__main__':
     graph.write_png('dbschema.png') # write out the file
     
     ## test with real data
-    test_mapping_1 = Mapping(allele='G',
+    from sqlalchemy.orm import sessionmaker
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    
+    _mapping_pacs1_1 = Mapping(allele='G',
                              codon='CAG',
                              codon_allele_position=2,
                              amino_acid_residue='Q',
                              cDNA_position=1800,
                              uniprot_position=599,
                              pfam_consensus_position=52,)
-    
-    test_chrompos_1 = Chromosome(chromosome='11', position=66000499)
-    test_chrompos_1.mappings.append(test_mapping_1)
-    
-    test_mapping_2 = Mapping(allele='A',
+    _mapping_pacs1_2 = Mapping(allele='A',
                              codon='GAA',
                              codon_allele_position=1,
                              amino_acid_residue='E',
                              cDNA_position=8,
                              uniprot_position=2,)
-    test_chrompos_2 = Chromosome(chromosome='11', position=65837965)
-    test_chrompos_2.mappings.append(test_mapping_2)
-
-    test_pacs1_mappings = [test_mapping_1, test_mapping_2]
-    
-    test_gene_1 = Gene(strand=Gene.Strand.plus, gene_name='PACS1',
-                gencode_transcription_id='ENST00000320580.4', 
-                gencode_translation_name='PACS1-001', 
-                gencode_gene_id='ENSG00000175115.7',
-                havana_gene_id='OTTHUMG00000166889.3',
-                havana_translation_id='OTTHUMT00000391690.2',)
-    
-    test_protein_1 = Protein(uniprot_ac='Q6VY07', 
-                             uniprot_name='PACS1_HUMAN', 
-                             source=Protein.ProteinSource.swissprot,)
-    
-    for mapping in test_pacs1_mappings: 
-        test_gene_1.mappings.append(mapping)
-        test_protein_1.mappings.append(mapping)
-    
-    test_pfam_domain_1 = Pfam(pfam_id='PF10254', 
-                              name='PACS-1 cytosolic sorting protein', 
-                              interpro_id='IPR019381',
-                              uniprot_ac='Q6VY07',
-                              uniprot_start=548,
-                              uniprot_stop=958,)
-    test_protein_1.pfam_domains.append(test_pfam_domain_1)
-    test_pfam_domain_1.mappings.append(test_mapping_1)
-    
-    
-    
-    
-    test_mapping_pacs2_1 = Mapping(allele='C',
+    _mapping_pacs2_1 = Mapping(allele='C',
                              codon='CAG',
                              codon_allele_position=0,
                              amino_acid_residue='Q',
                              cDNA_position=1585,
                              uniprot_position=528,
                              pfam_consensus_position=52,)
-    test_chrompos_pacs2_1 = Chromosome(chromosome='14', position=105849210)
-    test_chrompos_pacs2_1.mappings.append(test_mapping_pacs2_1)
     
+    _chrompos_pacs1_1 = Chromosome(chromosome='11', position=66000499)
+    _chrompos_pacs1_2 = Chromosome(chromosome='11', position=65837965)
+    _chrompos_pacs2_1 = Chromosome(chromosome='14', position=105849210)
     
-    test_protein_pacs2_1 = Protein(uniprot_ac='Q86VP3-2', 
-                             uniprot_name='PACS2_HUMAN', 
-                             source=Protein.ProteinSource.swissprot,)
-    test_protein_pacs2_1.mappings.append(test_mapping_pacs2_1)
-    
-    test_gene_pacs2_1 = Gene(strand=Gene.Strand.plus, gene_name='PACS2',
+    _gene_pacs1 = Gene(strand=Gene.Strand.plus, gene_name='PACS1',
+                gencode_transcription_id='ENST00000320580.4', 
+                gencode_translation_name='PACS1-001', 
+                gencode_gene_id='ENSG00000175115.7',
+                havana_gene_id='OTTHUMG00000166889.3',
+                havana_translation_id='OTTHUMT00000391690.2',)
+    _gene_pacs2 = Gene(strand=Gene.Strand.plus, gene_name='PACS2',
                 gencode_transcription_id='ENST00000458164.2', 
                 gencode_translation_name='PACS2-001', 
                 gencode_gene_id='ENSG00000179364.9',
                 havana_gene_id='OTTHUMG00000170450.1',
                 havana_translation_id='OTTHUMT00000409210.1',)
-    test_gene_pacs2_1.mappings.append(test_mapping_pacs2_1)
+                                   
+    _protein_pacs1 = Protein(uniprot_ac='Q6VY07', 
+                             uniprot_name='PACS1_HUMAN', 
+                             source=Protein.ProteinSource.swissprot,)
+    _protein_pacs2 = Protein(uniprot_ac='Q86VP3-2', 
+                             uniprot_name='PACS2_HUMAN', 
+                             source=Protein.ProteinSource.swissprot,)
     
-    test_pfam_domain_pacs2_1 = Pfam(pfam_id='PF10254', 
+    _pfam_domain_pacs1_1 = Pfam(pfam_id='PF10254', 
+                              name='PACS-1 cytosolic sorting protein', 
+                              interpro_id='IPR019381',
+                              uniprot_ac='Q6VY07',
+                              uniprot_start=548,
+                              uniprot_stop=958,)
+    _pfam_domain_pacs2_1 = Pfam(pfam_id='PF10254', 
                               name='PACS-1 cytosolic sorting protein', 
                               interpro_id='IPR019381',
                               uniprot_ac='Q86VP3-2',
                               uniprot_start=477,
                               uniprot_stop=900,)
-    test_protein_pacs2_1.pfam_domains.append(test_pfam_domain_pacs2_1)
-    test_pfam_domain_pacs2_1.mappings.append(test_mapping_pacs2_1)
     
-    test = 0
-#     chromosome_id = Column(Integer, ForeignKey('chromosomes.id'), nullable=False)
-#     gene_id = Column(Integer, ForeignKey('genes.id'), nullable=False)
-#     protein_id = Column(Integer, ForeignKey('proteins.id'))
-#     pfam_domain_id = Column(Integer, ForeignKey('pfam_domains.id'))
+    _chrompos_pacs1_1.mappings.append(_mapping_pacs1_1)
+    _chrompos_pacs1_2.mappings.append(_mapping_pacs1_2)
+    _chrompos_pacs2_1.mappings.append(_mapping_pacs2_1)
+    _gene_pacs1.mappings.append(_mapping_pacs1_1)
+    _gene_pacs1.mappings.append(_mapping_pacs1_2)
+    _gene_pacs2.mappings.append(_mapping_pacs2_1)
+    _protein_pacs1.mappings.append(_mapping_pacs1_1)
+    _protein_pacs1.mappings.append(_mapping_pacs1_2)
+    _protein_pacs2.mappings.append(_mapping_pacs2_1)
+    _pfam_domain_pacs1_1.mappings.append(_mapping_pacs1_1)
+    _pfam_domain_pacs2_1.mappings.append(_mapping_pacs2_1)
+    _protein_pacs1.pfam_domains.append(_pfam_domain_pacs1_1)
+    _protein_pacs2.pfam_domains.append(_pfam_domain_pacs2_1)
+    
+    session.add(_mapping_pacs1_1)
+    session.add(_mapping_pacs1_2)
+    session.add(_mapping_pacs2_1)
+    session.add(_chrompos_pacs1_1)
+    session.add(_chrompos_pacs1_2)
+    session.add(_chrompos_pacs2_1)
+    session.add(_gene_pacs1)
+    session.add(_gene_pacs2)
+    session.add(_protein_pacs1)
+    session.add(_protein_pacs2)
+    session.add(_pfam_domain_pacs1_1)
+    session.add(_pfam_domain_pacs2_1)
+    session.commit()
+    
+    for x in session.query(Mapping).join(Pfam).filter(and_(Mapping.pfam_consensus_position==52, Pfam.pfam_id == 'PF10254')):
+        for y in session.query(Chromosome).filter(Chromosome.id == x.chromosome_id):
+            print(y,x)
     
