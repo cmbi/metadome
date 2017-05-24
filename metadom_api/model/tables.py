@@ -17,7 +17,7 @@ class Chromosome(Base):
     position                  position in the chromosome
     
     Relationships
-    mappings                  one to many relationship with Mapping
+    one to many               mappings
     """
     
     # Table configuration
@@ -48,8 +48,16 @@ class Mapping(Base):
     cDNA_position             the position in the cDNA
     uniprot_position          the position in the protein
     pfam_consensus_position   position in the aligned Pfam domain or None
+    chromosome_id             Foreign key
+    gene_id                   Foreign key
+    protein_id                Foreign key
+    pfam_domain_id            Foreign key
     
     Relationships
+    many to one               chromosome
+    many to one               gene
+    many to one               protein
+    many to one               pfam_domain
     """
     # Table configuration
     __tablename__ = 'mapping'
@@ -63,33 +71,16 @@ class Mapping(Base):
     cDNA_position = Column(Integer)
     uniprot_position = Column(Integer)
     pfam_consensus_position = Column(Integer)
-    chromosome_id = Column(Integer, ForeignKey('chromosomes.id'))
+    chromosome_id = Column(Integer, ForeignKey('chromosomes.id'), nullable=False)
+    gene_id = Column(Integer, ForeignKey('genes.id'), nullable=False)
+    protein_id = Column(Integer, ForeignKey('proteins.id'))
+    pfam_domain_id = Column(Integer, ForeignKey('pfam_domains.id'))
     
     # Relationships
     chromosome = relationship('Chromosome', back_populates="mappings")
-    
-#     "relationships": {
-#         "meta_domains": {
-#             "data": [
-#                 { "type": "mapping", "id": 2 }
-#             ]
-#         },
-#         "genes": {
-#             "data": [
-#                 { "type": "gene", "id": "ENST00000320580.4" }
-#             ]
-#         },
-#         "proteins": {
-#             "data": [
-#                 { "type": "protein", "id": "Q6VY07" }
-#             ]
-#         },
-#         "pfams": {
-#             "data": [
-#                 { "type": "pfam", "id": 1 }
-#             ]
-#         }
-#     }
+    gene = relationship("Gene", back_populates="mappings")
+    protein = relationship("Protein", back_populates="mappings")
+    pfam_domain = relationship("Pfam", back_populates="mappings")
     
     def __repr__(self):
         return "<Mapping(allele='%s', codon='%s', codon_allele_position='%s', amino_acid_residue='%s', cDNA_position='%s', uniprot_position='%s', pfam_consensus_position='%s')>" % (
@@ -98,7 +89,7 @@ class Mapping(Base):
     
 class Pfam(Base):
     """
-    Table: pfam
+    Table: pfam_domains
     
     Fields
     id                        identifier
@@ -108,17 +99,26 @@ class Pfam(Base):
     uniprot_ac                uniprot accession code
     uniprot_start             0 <= uniprot_start < uniprot_stop
     uniprot_stop              uniprot_stop <= uniprot_end
+    
+    Relationships
+    one to many               mappings
+    many to one               protein
     """
+    # Table configuration
+    __tablename__ = 'pfam_domains'
     
-    __tablename__ = 'pfam'
-    
+    # Fields
     id = Column(Integer, primary_key=True)
     pfam_id = Column(String(12))
     name = Column(String)
-    interpro_id = Column(String(12))  
-    uniprot_ac = Column(String(12), ForeignKey('protein.uniprot_ac'))
+    interpro_id = Column(String(12))
+    uniprot_ac = Column(String(12), ForeignKey('proteins.uniprot_ac'), nullable=False)
     uniprot_start = Column(Integer)
     uniprot_stop = Column(Integer)
+    
+    # Relationships
+    protein = relationship("Protein", back_populates="pfam_domains")
+    mappings = relationship('Mapping', back_populates="pfam_domain")
     
     def __repr__(self):
         return "<Pfam(pfam_id='%s', name='%s', interpro_id='%s', uniprot_ac='%s', uniprot_start='%s', uniprot_stop='%s')>" % (
@@ -126,26 +126,35 @@ class Pfam(Base):
 
 class Protein(Base):
     """
-    Table: protein
+    Table: proteins
     
     Fields
     id                        identifier
     uniprot_ac                uniprot accession code
     uniprot_name              uniprot name
     source                    'swissprot' or 'uniprot'
-    """
     
+    Relationships
+    one to many               mappings
+    one to many               pfam_domains
+    """
+    # Custom field declarations
     class ProteinSource(enum.Enum):
         uniprot = 'uniprot'
         swissprot = 'swissprot'
     
+    # Table configuration
+    __tablename__ = 'proteins'
     
-    __tablename__ = 'protein'
-    
+    # Fields
     id = Column(Integer, primary_key=True)
     uniprot_ac = Column(String(12), unique=True)
     uniprot_name = Column(String(20))
     source = Column(Enum(ProteinSource))
+    
+    # Relationships
+    mappings = relationship('Mapping', back_populates="protein")
+    pfam_domains = relationship("Pfam", back_populates="protein")
 
     def __repr__(self):
         return "<Protein(uniprot_ac='%s', uniprot_name='%s', source='%s')>" % (
@@ -153,7 +162,7 @@ class Protein(Base):
 
 class Gene(Base):
     """
-    Table: gene
+    Table: genes
     
     Fields
     id                        identifier
@@ -164,14 +173,19 @@ class Gene(Base):
     gencode_gene_id           e.g. ENSG####...
     havana_gene_id            e.g. OTTHUMG#####....
     havana_translation_id     e.g. OTTHUMT#####....
-    """
     
+    Relationships
+    one to many               mappings
+    """
+    # Custom field declarations
     class Strand(enum.Enum):
         plus = '+'
         minus = '-'
-        
-    __tablename__ = 'gene'
     
+    # Table configuration
+    __tablename__ = 'genes'
+    
+    # Fields
     id = Column(Integer, primary_key=True)
     strand = Column(Enum(Strand))
     gene_name = Column(String(50))
@@ -180,6 +194,10 @@ class Gene(Base):
     gencode_gene_id = Column(String(50), unique=True)
     havana_gene_id = Column(String(50), unique=True)
     havana_translation_id = Column(String(50), unique=True)
+    
+    # Relationships
+    mappings = relationship('Mapping', back_populates="gene")
+    
     
     def __repr__(self):
         return "<Gene(strand='%s', gene_name='%s', gencode_transcription_id='%s', gencode_translation_name='%s', gencode_gene_id='%s', havana_gene_id='%s', havana_translation_id='%s')>" % (
@@ -268,5 +286,17 @@ if __name__ == '__main__':
     engine = create_engine('sqlite:///:memory:', echo=True)
     Base.metadata.create_all(engine)
     
-    chrompos = Chromosome(chromosome='11', position=66000499)
+#     chrompos = Chromosome(chromosome='11', position=66000499)
+
+    from sqlalchemy import MetaData
+    from sqlalchemy_schemadisplay import create_schema_graph
+    
+    # create the pydot graph object by autoloading all tables via a bound metadata object
+    graph = create_schema_graph(metadata=Base.metadata,
+       show_datatypes=True, # The image would get nasty big if we'd show the datatypes
+       show_indexes=True, # ditto for indexes
+       rankdir='LR', # From left to right (instead of top to bottom)
+       concentrate=False # Don't try to join the relation lines together
+    )
+    graph.write_png('dbschema.png') # write out the file
     
