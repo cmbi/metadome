@@ -66,23 +66,3 @@ def parseGFF3(filename, filter_on_values=None):
             #Alternatively, you can emit the dictionary here, if you need mutability:
             #    yield normalizedInfo
             yield GFFRecord(**normalizedInfo)
-            
-
-if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("file", help="The GFF3 input file (.gz allowed)")
-    parser.add_argument("--print-records", action="store_true", help="Print all GeneInfo objects, not only")
-    parser.add_argument("--filter-type", help="Ignore records not having the given type")
-    args = parser.parse_args()
-    #Execute the parser
-    recordCount = 0
-    for record in parseGFF3(args.file):
-        #Apply filter, if any
-        if args.filter_type and record.type != args.filter_type:
-            continue
-        #Print record if specified by the user
-        if args.print_records: print(record)
-        #Access attributes like this: my_strand = record.strand
-        recordCount += 1
-    print("Total records: %d" % recordCount)
