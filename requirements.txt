@@ -1,3 +1,4 @@
+biopython==1.69
 click==6.7
 Flask==0.12.1
 Flask-SQLAlchemy==2.2
