@@ -5,8 +5,9 @@ Created on Jul 25, 2016
 '''
 
 from metadom_api.default_settings import PFAM_HMM_DAT, HMMFETCH_EXECUTABLE, PFAM_HMM,\
-    LOGGER_NAME, HMMALIGN_EXECUTABLE, HMMEMIT_EXECUTABLE, HMMSTAT_EXECUTABLE,\
+    HMMALIGN_EXECUTABLE, HMMEMIT_EXECUTABLE, HMMSTAT_EXECUTABLE,\
     HMMLOGO_EXECUTABLE, PFAM_ALIGNMENT_DIR
+from metadom_api.controller.parsers.fasta import unwrap_fasta_alignment
 from builtins import FileNotFoundError
 import os
 import tempfile
@@ -15,7 +16,6 @@ import logging
 import subprocess
 import re
 import errno
-from metadom_api.controller.parsers.fasta import unwrap_fasta_alignment
 
 _log = logging.getLogger(__name__)
 
@@ -118,7 +118,7 @@ def retrieve_PFAM_full_alignment_by_AC(pfam_ac):
     try:
         subprocess.call(fetch_args)
     except subprocess.CalledProcessError as e:
-        logging.getLogger(LOGGER_NAME).error("{}".format(e.output))
+        _log.error("{}".format(e.output))
     consensus_identifier, consensus_sequence = retrieve_consensus_sequence(tmp_hmm_file.name)
     
     pfam_alignment_output = {'AC':pfam_ac,
@@ -161,10 +161,10 @@ def retrieve_PFAM_full_alignment_by_AC(pfam_ac):
                     # Number of sequences, start of alignment.
                     n_sequences = int([al for al in line.strip().split(" ") if len(al)>0][2])
     except IOError as e:
-        logging.getLogger(LOGGER_NAME).error("{}".format(e.output))
+        _log.error("{}".format(e.output))
     
     if n_sequences != len(pfam_alignment_output['alignments']):
-        logging.getLogger(LOGGER_NAME).error("Number of sequences in full alignment for Pfam "+pfam_ac+" ('"+n_sequences+"') does not match the actual number of sequences '"+len(pfam_alignment_output['alignments'])+"'")
+        _log.error("Number of sequences in full alignment for Pfam "+pfam_ac+" ('"+n_sequences+"') does not match the actual number of sequences '"+len(pfam_alignment_output['alignments'])+"'")
 
     # remove the temporary files
     os.remove(tmp_hmm_file.name)
@@ -189,7 +189,7 @@ def retrieve_consensus_sequence(hmm_file):
             try:
                 subprocess.call(emit_args)
             except subprocess.CalledProcessError as e:
-                logging.getLogger(LOGGER_NAME).error("{}".format(e.output))
+                _log.error("{}".format(e.output))
             
             # Process the output of the hmmemit call
             if os.path.exists(tmp_consensus_sequence_file.name):
@@ -204,7 +204,7 @@ def retrieve_consensus_sequence(hmm_file):
                     consensus_sequence = aln[1]
                     
     except IOError as e:
-        logging.getLogger(LOGGER_NAME).error("{}".format(e.output))        
+        _log.error("{}".format(e.output))        
     os.remove(tmp_consensus_sequence_file.name)
     
     if consensus_sequence is None:
@@ -245,7 +245,7 @@ def report_hmm_logo_for_pfam(pfam_ac):
     try:
         subprocess.call(fetch_args)
     except subprocess.CalledProcessError as e:
-        logging.getLogger(LOGGER_NAME).error("{}".format(e.output))
+        _log.error("{}".format(e.output))
     
     # Create temp file for storing the hmm logo
     tmp_hmm_logo_file = tempfile.NamedTemporaryFile(suffix=".hmm_hmmlogo", delete=False)
@@ -255,7 +255,7 @@ def report_hmm_logo_for_pfam(pfam_ac):
     try:
         subprocess.call(hmmlogo_args, stdout=tmp_hmm_logo_file)
     except subprocess.CalledProcessError as e:
-        logging.getLogger(LOGGER_NAME).error("{}".format(e.output))
+        _log.error("{}".format(e.output))
     
     # interpret the hmm logo
     hmmlogo_output = []
@@ -293,7 +293,7 @@ def report_hmm_logo_for_pfam(pfam_ac):
                                     }
                     hmmlogo_output.append(hmmlogo_entry)
     except IOError as e:
-        logging.getLogger(LOGGER_NAME).error("{}".format(e.output))
+        _log.error("{}".format(e.output))
     
     # remove the temporary files
     os.remove(tmp_hmm_file.name)
@@ -365,7 +365,7 @@ def report_hmm_stat_for_pfam(pfam_ac):
     try:
         subprocess.call(fetch_args)
     except subprocess.CalledProcessError as e:
-        logging.getLogger(LOGGER_NAME).error("{}".format(e.output))
+        _log.error("{}".format(e.output))
         
     
     # Create temp file for storing the statistics
@@ -376,7 +376,7 @@ def report_hmm_stat_for_pfam(pfam_ac):
     try:
         subprocess.call(hmmstat_args, stdout=tmp_hmm_stat_file)
     except subprocess.CalledProcessError as e:
-        logging.getLogger(LOGGER_NAME).error("{}".format(e.output))
+        _log.error("{}".format(e.output))
     
     # interpret the statistics from thePfam's HMM
     hmmstat_output = []
@@ -404,7 +404,7 @@ def report_hmm_stat_for_pfam(pfam_ac):
                     assert len( hmmstat_entry ) == len(tokens)
                     hmmstat_output.append(hmmstat_entry)
     except IOError as e:
-        logging.getLogger(LOGGER_NAME).error("{}".format(e.output))
+        _log.error("{}".format(e.output))
     
     # remove the temporary files
     os.remove(tmp_hmm_file.name)
@@ -461,7 +461,7 @@ def align_sequences_according_to_PFAM_HMM(sequences, pfam_ac):
     try:
         subprocess.call(fetch_args)
     except subprocess.CalledProcessError as e:
-        logging.getLogger(LOGGER_NAME).error("{}".format(e.output))
+        _log.error("{}".format(e.output))
     
     # get the consensus sequence
     consensus_identifier, consensus_sequence = retrieve_consensus_sequence(tmp_hmm_file.name)
@@ -480,7 +480,7 @@ def align_sequences_according_to_PFAM_HMM(sequences, pfam_ac):
     try:
         subprocess.call(hmmalign_args)
     except subprocess.CalledProcessError as e:
-        logging.getLogger(LOGGER_NAME).error("{}".format(e.output))
+        _log.error("{}".format(e.output))
     
     # interpret the alignments made by Pfam's HMM
     hmmalign_output = {'alignments':[], 
@@ -512,7 +512,7 @@ def align_sequences_according_to_PFAM_HMM(sequences, pfam_ac):
                         rf = [al.strip() for al in line.strip().split("#=GC RF") if len(al)>0]
                         hmmalign_output['RF'] = rf[0]
     except IOError as e:
-        logging.getLogger(LOGGER_NAME).error("{}".format(e.output))
+        _log.error("{}".format(e.output))
         
     # remove the temporary files
     os.remove(tmp_hmm_file.name)
