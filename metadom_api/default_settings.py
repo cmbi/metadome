@@ -18,6 +18,8 @@ HMMSTAT_EXECUTABLE = "/usr/bin/hmmstat"
 
 # Configuration
 MINIMAL_BLASTPE_VALUE = 0.01
+MINIMAL_TRANSLATION_TO_STRUCTURE_PIDENT_VALUE = 95.0
+MINIMAL_XRAY_STRUCTURE_RESOLUTION = 4.0
 
 # Exac specific files
 EXAC_DIR = DATA_DIR + "Exac/release0.3.1/"
@@ -65,9 +67,3 @@ PFAM_DIR = DATA_DIR+"PFAM/Pfam30.0"
 PFAM_ALIGNMENT_DIR = PFAM_DIR+"/alignment/"
 PFAM_HMM_DAT = PFAM_DIR+"/Pfam-A.hmm.dat.gz"
 PFAM_HMM = PFAM_DIR+"/Pfam-A.hmm"
-
-# MRS client
-MRS_CLIENT = 'http://mrs.cmbi.ru.nl/mrsws/search/wsdl'
-
-# development logging
-LOGGER_NAME = 'logger_dev'
