@@ -42,6 +42,8 @@ def retrieveTopUniprotMatch(geneTranslation, uniprot_database="sp", species_filt
     top_result = sequence_results[0]
     
     # analyse the top result
+    if top_result['length'] != len(geneTranslation['sequence']):
+        _log.warning("Length of gene translation ('"+str(len(geneTranslation['sequence']))+"') does not match uniprot sequence ('"+str(top_result['length'])+"')")
     if top_result['pident'] < 100:
         _log.warning("Percentage identity of gene translation to uniprot sequence is not 100%, but is '"+str(top_result['pident'])+"%'")
     if top_result['evalue'] > 0.01:
