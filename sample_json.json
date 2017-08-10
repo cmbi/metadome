@@ -1,0 +1,116 @@
+{
+    "data": {
+        "type": "chromosome",
+        "id": "11:66000499",
+        "chromosome": "11"
+        "position": 66000499
+    },
+
+    "relationships": {
+        "mappings": [
+            { "type": "mapping", "id": 1 }
+        ]
+    }
+}
+
+{
+    "type": "mapping",
+    "data": {
+        "id": 1,
+
+        "allele": "G",
+        "codon": "CAG",
+        "codon_allele_position": 2,
+        "amino_acid_residue": "Q",
+        "cDNA_position": 1800,
+        "uniprot_position": 599,
+        "pfam_consensus_position" : 123
+    },
+
+    "relationships": {
+        "meta_domains": {
+            "data": [
+                { "type": "mapping", "id": 2 }
+            ]
+        },
+        "genes": {
+            "data": [
+                { "type": "gene", "id": "ENST00000320580.4" }
+            ]
+        },
+        "proteins": {
+            "data": [
+                { "type": "protein", "id": "Q6VY07" }
+            ]
+        },
+        "pfams": {
+            "data": [
+                { "type": "pfam", "id": 1 }
+            ]
+        }
+    }
+}
+
+{
+    "data": {
+        "id": 1,
+        "type": "pfam",
+        "attributes": {
+            "pfam_id": "PF10254",
+            "name" : "PACS-1 cytosolic sorting protein",
+            "interpro_id" : "IPR019381",
+            "uniprot_id": "Q6VY07",
+            "uniprot_beg" : 548,
+            "uniprot_end" : 958
+        }
+    }
+}
+
+{
+    "data": {
+       "type": "protein",
+       "id" : "Q6VY07",
+       "attributes": {
+           "ac" : "Q6VY07",
+           "name" : "PACS1_HUMAN",
+           "source": "swissprot"
+       }
+    }
+}
+
+{
+    "data": {
+        "type": "gene",
+        "id": "ENST00000320580.4",
+        "attributes": {
+            "strand": "+",
+            "gene_name" : "PACS1",
+            "gencode_transcription_id" : "ENST00000320580.4",
+            "gencode_translation_name" : "PACS1-001",
+            "gencode_gene_id" : "ENSG00000175115.7",
+            "havana_gene_id" : "OTTHUMG00000166889.3",
+            "havana_translation_id" : "OTTHUMT00000391690.2"
+        }
+    }
+}
+
+GET /api/chromosome/:id
+GET /api/mapping/:id
+GET /api/gene/:id
+GET /api/protein/:id
+GET /api/pfam/:id
+
+class Chromosome:
+    pass
+
+class Mapping:
+    pass
+
+class Gene:
+    pass
+
+class Protein:
+    pass
+
+class Pfam:
+    pass
