@@ -1,5 +1,5 @@
 *.log
 *.project
 *.pydevproject
-metadom-api/*
+env_metadom/*
 **/__pycache__/
