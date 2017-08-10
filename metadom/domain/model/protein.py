@@ -1,4 +1,4 @@
-from metadom.controller import database
+from metadom.infrastructure import database
 from sqlalchemy import Column, Integer, String, Enum
 from sqlalchemy.orm import relationship
 import enum
