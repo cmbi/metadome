@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{% endblock %}</title>
+
+
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.1/css/bulma.min.css">
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container">
+       <div class="navbar-brand">
+         <a class="navbar-item" href="http://bulma.io">
+           <img src="http://bulma.io/images/bulma-logo.png"
+                alt="Bulma: a modern CSS framework based on Flexbox"
+                width="112" height="28">
+         </a>
+
+         <div class="navbar-burger">
+           <span></span>
+           <span></span>
+           <span></span>
+         </div>
+       </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      {% block content %}
+      {% endblock %}
+    </div>
+
+    {% block js %}
+    {% endblock %}
+  </body>
+</html>

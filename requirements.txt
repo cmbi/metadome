@@ -11,7 +11,6 @@ pydot==1.2.3
 pyparsing==2.2.0
 pysam==0.11.2.2
 PyVCF==0.6.8
-redis==2.10.5
 scikit-learn==0.18.1
 scipy==0.19.0
 SQLAlchemy==1.1.10
