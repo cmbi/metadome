@@ -1,9 +1,9 @@
-from metadom.controller import database
-from metadom.model.mapping import Mapping
-from metadom.model.chromosome import Chromosome
-from metadom.model.gene import Gene
-from metadom.model.protein import Protein
-from metadom.model.pfam import Pfam
+from metadom.infrastructure import database
+from metadom.domain.model.mapping import Mapping
+from metadom.domain.model.chromosome import Chromosome
+from metadom.domain.model.gene import Gene
+from metadom.domain.model.protein import Protein
+from metadom.domain.model.pfam import Pfam
 
 if __name__ == '__main__':
     ## Simulate the database
