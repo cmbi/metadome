@@ -1,5 +1,5 @@
 # local data directory
-DATA_DIR = ""
+DATA_DIR = "/media/laurens/LVDW_DATA_SSD/"
 
 # local executables
 BLASTP_EXECUTABLE = "/usr/bin/blastp"
