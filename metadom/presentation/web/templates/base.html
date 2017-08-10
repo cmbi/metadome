@@ -1,42 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}{% endblock %}</title>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{% endblock %}</title>
 
 
-    <link rel="stylesheet"
-          href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.1/css/bulma.min.css">
-  </head>
-  <body>
-    <nav class="navbar">
-      <div class="container">
-       <div class="navbar-brand">
-         <a class="navbar-item" href="http://bulma.io">
-           <img src="http://bulma.io/images/bulma-logo.png"
-                alt="Bulma: a modern CSS framework based on Flexbox"
-                width="112" height="28">
-         </a>
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.1/css/bulma.min.css">
+</head>
+<body>
+	<nav class="navbar">
+		<div class="container">
+			<div class="navbar-brand">
 
-         <div class="navbar-burger">
-           <span></span>
-           <span></span>
-           <span></span>
-         </div>
-       </div>
-      </div>
-    </nav>
+				<!-- Navbar header -->
+				<div class="navbar-header">
+					<a class="navbar-brand logo"
+						href="{{ url_for('dashboard.index') }}"> <img
+					src="https://static.detivgorode.ua/files/organizations/450/450_sc_56efcc917f557.jpg"
+					alt="MetaDom: Using domain-homology to interpret genetic variants"
+					width="112" height="28">
+						<p>MetaDom</p>
+					</a>
+				</div>
+				<ul class="nav navbar-nav">
+					<li><a href="{{ url_for('report.input') }}"> <i
+							class="fa fa-file-text"> Create report</i>
+					</a></li>
+				</ul>
 
-    <div class="container">
-      {% block content %}
-      {% endblock %}
-    </div>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="{{ url_for('dashboard.support') }}"> <i
+							class="fa fa-support"> Support</i>
+					</a></li>
+					<li><a href="{{ url_for('dashboard.about') }}"> <i
+							class="fa fa-question-circle"> About</i>
+					</a></li>
+					<li><a href="{{ url_for('api.api_doc') }}"> <i
+							class="fa fa-code"> API</i>
+					</a></li>
+				</ul>
+				<a class="navbar-item" href="http://bulma.io">
+				</a>
 
-    {% block js %}
-    {% endblock %}
-  </body>
+				<div class="navbar-burger">
+					<span></span> <span></span> <span></span>
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<div class="container">{% block content %} {% endblock %}</div>
+
+
+	<footer class="footer">
+		<div class="container">
+			<div class="content has-text-centered">
+				<p>
+					<strong>MetaDom</strong> by <a
+						href="https://www.linkedin.com/in/laurensvdwiel/"> Laurens van
+						de Wiel</a>. The source code is licensed <a
+						href="http://opensource.org/licenses/mit-license.php">MIT</a>. The
+					website content is licensed <a
+						href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC
+						ANS 4.0</a>.
+				</p>
+			</div>
+			<div class="content has-text-centered" style="color: lightgray;">
+				<p>
+					MetaDom Version {{ METADOM_VERSION }}, Source code is available at:
+					<br> <a class="icon" href="https://github.com/cmbi/metadom">
+						<i class="fa fa-github"></i> GitHub
+					</a>
+				</p>
+			</div>
+		</div>
+	</footer>
+
+	{% block js %} {% endblock %}
+</body>
 </html>
