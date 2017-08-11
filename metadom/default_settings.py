@@ -1,3 +1,6 @@
+# Flask settings
+SECRET_KEY = 'asfdcq93n4c981q34hfn39890'
+
 # local data directory
 DATA_DIR = "/media/laurens/LVDW_DATA_SSD/"
 

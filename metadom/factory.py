@@ -2,6 +2,7 @@ import logging
 
 from flask import Flask
 
+
 _log = logging.getLogger(__name__)
 
 

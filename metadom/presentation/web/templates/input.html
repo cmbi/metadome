@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% from "form_macros.html" import render_form_errors %}
+
+{{ render_form_errors(form) }}
+
+<form id="metadom_form" method="post" action="{{ url_for('web.input') }}"
+      role="form">
+  {{ form.hidden_tag() }}
+
+  <div class="field is-horizontal">
+    <div class="field-label is-normal">
+      <label class="label">{{ form.entry_id.label }}</label>
+    </div>
+    <div class="field-body">
+      <div class="field">
+        {{ form.entry_id(class_='input') }}
+      </div>
+    </div>
+    <div class="field-label is-normal">
+      <label class="label">{{ form.position.label }}</label>
+    </div>
+    <div class="field-body">
+      <div class="field">
+        {{ form.position(class_='input') }}
+      </div>
+    </div>
+
+    <div class="field is-grouped is-pulled-right" style="margin-left: 10px;">
+      <div class="control">
+        <button type="submit" class="button is-primary">Submit</button>
+      </div>
+      <div class="control">
+        <button class="button is-light">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+</form>
+
+{% endblock %}
+
+{% block js %}
+
+<script type="text/javascript">
+  function show_pdbid_input() {
+    $('#pdb_id_div').removeClass('hidden');
+    $('#sequence_div').addClass('hidden');
+    $('#pdb_file_div').addClass('hidden');
+  }
+
+  function show_pdbfile_input() {
+    $('#pdb_id_div').addClass('hidden');
+    $('#sequence_div').addClass('hidden');
+    $('#pdb_file_div').removeClass('hidden');
+  }
+
+  function show_sequence_input() {
+    $('#pdb_id_div').addClass('hidden');
+    $('#sequence_div').removeClass('hidden');
+    $('#pdb_file_div').addClass('hidden');
+  }
+
+  function update_input_types() {
+    var selected = $('#output_type').children(":selected").attr('value');
+    switch (selected) {
+      case 'dssp':
+        $('#input_type').empty();
+        $('#input_type').append('<option value="pdb_id">PDB Id</option>');
+        $('#input_type').append('<option value="pdb_redo_id">PDB_REDO Id</option>');
+        $('#input_type').append('<option value="pdb_file">PDB File</option>');
+        break;
+      case 'hssp_hssp':
+        $('#input_type').empty();
+        $('#input_type').append('<option value="pdb_id">PDB Id</option>');
+        $('#input_type').append('<option value="pdb_file">PDB File</option>');
+        $('#input_type').append('<option value="sequence">Sequence</option>');
+        break;
+      case 'hssp_stockholm':
+        $('#input_type').empty();
+        $('#input_type').append('<option value="pdb_id">PDB Id</option>');
+        $('#input_type').append('<option value="pdb_file">PDB File</option>');
+        $('#input_type').append('<option value="sequence">Sequence</option>');
+        break;
+      case 'hg_hssp':
+        $('#input_type').empty();
+        $('#input_type').append('<option value="sequence">Sequence</option>');
+        break;
+    }
+    show_data_input();
+  }
+
+  function show_data_input() {
+      var selected = $('#input_type').children(":selected").attr('value');
+      switch (selected) {
+      case 'pdb_id':
+        show_pdbid_input();
+        break;
+      case 'pdb_redo_id':
+        show_pdbid_input();
+        break;
+      case 'pdb_file':
+        show_pdbfile_input();
+        break;
+      case 'sequence':
+        show_sequence_input();
+        break;
+      }
+  }
+
+  function show_tour_data_input(index) {
+      switch (index) {
+      case 3:
+        show_pdbid_input();
+        break;
+      case 4:
+        show_pdbfile_input();
+        break;
+      case 5:
+        show_sequence_input();
+        break;
+      }
+  }
+
+  function get_query_param(param) {
+    var result =  window.location.search.match(
+        new RegExp("(\\?|&)" + param + "(\\[\\])?=([^&]*)"));
+    return result ? result[3] : false;
+  }
+
+  $(document).on('change', '.btn-file :file', function() {
+    var input = $(this),
+        numFiles = input.get(0).files ? input.get(0).files.length : 1,
+        label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+    input.trigger('fileselect', [numFiles, label]);
+  });
+
+  $(document).ready( function() {
+    $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
+          var input = $(this).parents('.input-group').find(':text'),
+              log = numFiles > 1 ? numFiles + ' files selected' : label;
+
+          if( input.length ) {
+              input.val(log);
+          } else {
+              if( log ) alert(log);
+          }
+    });
+
+    // Setup tour
+    var tour = new Tour({
+      backdrop: true,
+      orphan: true,
+      storage: false,
+      onNext: function (tour) {
+        show_tour_data_input(tour.getCurrentStep() + 1)
+      },
+      onPrev: function (tour) {
+        show_tour_data_input(tour.getCurrentStep() - 1)
+      },
+      onEnd: function (tour) { show_data_input(); },
+      steps: [
+      {
+        element: "",
+        title: "Start Tour",
+        content: "Welcome to XSSP. This tour explains the usage of XSSP." +
+                 " Once the tour is complete, you can get started!" +
+                 "<br><br>Click next to begin."
+      },
+      {
+        element: "#output_type_div",
+        title: "Output Type",
+        content: "Select the output generated by XSSP."
+      },
+      {
+        element: "#input_type_div",
+        title: "Input Type",
+        content: "Select the type of protein data you will provide." +
+                 "<br><br>Each option will change the input form to provide " +
+                 "an appropriate form control." +
+                 "<br><br>PDB_REDO ids correspond to fully optimised PDB_REDO " +
+                 "structure models."
+      },
+      {
+        element: "#pdb_id_div",
+        title: "PDB Identifier",
+        content: "For the PDB id input type, enter a Protein Data Bank code. " +
+                 "For example: 1CRN"
+      },
+      {
+        element: "#pdb_file_div",
+        title: "PDB File",
+        content: "For the PDB file input type, click the " +
+                 "<code>Browse...</code> button and select the PDB file to " +
+                 "upload." +
+                 "<br><br>PDB files are accepted in both PDB format and " +
+                 "mmCIF format. Additionally, compressed .gz and .bz2 files" +
+                 " can be uploaded."
+      },
+      {
+        element: "#sequence_div",
+        title: "Sequence",
+        content: 'For the sequence input type, enter the protein sequence ' +
+                 'using the 1-letter codes of the 20 canonical amino acids. ' +
+                 'The sequence must be at least 25 residues long. ' +
+                 'FASTA format is allowed.'
+      },
+      {
+        element: "#form_submit_div",
+        title: "Submit",
+        content: "When you're ready, click <code>Submit</code> to send your " +
+                 "request to the server.<br><br>A result page will be shown " +
+                 "with the status of your request, and when completed, the " +
+                 "output will be shown."
+      }
+    ]});
+    tour.init();
+
+    // Start the tour automatically if redirected to the index page via the
+    // help button.
+    if (get_query_param('tour')) {
+      tour.restart();
+    }
+
+    $('#start_tour').click(function() { tour.restart(); });
+
+    // Show the correct input widget depending on the selected input method.
+    $('#input_type').change(function() { show_data_input(); });
+
+    // Update the input type selection list to exclude invalid combinations.
+    $('#output_type').change(update_input_types);
+
+    // Ensure that the correct input field is displayed when the form reloads
+    // due to form errors, page refreshing, or the back button.
+    $('#input_type').trigger('change');
+
+    // Ensure the correct input field is displayed when the form is cleared.
+    $('#btn_clear').click(function() { $('#xssp_form')[0].reset();
+      show_data_input();
+    });
+
+    // Ensure that the input types listed are correct for the selected output
+    // type.
+    var selected = $('#input_type').children(":selected").attr('value');
+    update_input_types();
+    $('#input_type option[value=' + selected + ']').prop('selected', true);
+  });
+</script>
+
+{% endblock %}

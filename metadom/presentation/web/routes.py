@@ -1,11 +1,9 @@
 import logging
 
-from flask import Blueprint, render_template, current_app as app, url_for, request
+from flask import Blueprint, redirect, render_template, url_for, request
 
-
-from metadom import get_version
 from metadom.presentation.web.forms import MetaDomForm
-# from metadom.services.xssp import process_request
+
 
 _log = logging.getLogger(__name__)
 
@@ -15,21 +13,37 @@ bp = Blueprint('web', __name__, static_folder='static',
 
 @bp.route('/', methods=['GET'])
 def index():
-#     form = MetaDomForm()
-#     if form.validate_on_submit():
-#         celery_id = process_request(form.input_type.data, form.output_type.data,
-#                                     form.pdb_id.data, request.files,
-#                                     form.sequence.data)
-
-#         _log.info("Redirecting to output page")
-#         return redirect(url_for('dashboard.output',
-#                                 input_type=form.input_type.data,
-#                                 output_type=form.output_type.data,
-#                                 celery_id=celery_id))
-    
     _log.info("Rendering index page")
-    
     return render_template('index.html')
+
+
+@bp.route("/input", methods=['GET', 'POST'])
+def input():
+    form = MetaDomForm()
+    if form.validate_on_submit():
+        # form.entry_id.data, form.postion.data)
+
+        #mappings = MappingRepository.get_mappings(entry_id, position)
+        mappings = {
+            "test": "hey there"
+        }
+
+        # TODO: access database
+        # TODO: render result template
+
+        _log.debug("Redirecting to result page")
+
+        # TODO: Send data to result page
+        return redirect(url_for('web.result', mappings=mappings))
+
+    _log.debug("Rendering input page")
+    return render_template("input.html", form=form)
+
+
+@bp.route("/result", methods=["GET"])
+def result():
+    mappings = request.args['mappings']
+    return render_template("result.html", mappings=mappings)
 
 
 @bp.errorhandler(Exception)

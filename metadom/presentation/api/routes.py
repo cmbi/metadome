@@ -1,9 +1,9 @@
 import logging
 
 from flask import abort, Blueprint, jsonify, render_template
-from metadom.domain.model.pfam import Pfam
-from metadom.domain.model.chromosome import Chromosome
-from metadom.domain.model.mapping import Mapping
+from metadom.domain.models.pfam import Pfam
+from metadom.domain.models.chromosome import Chromosome
+from metadom.domain.models.mapping import Mapping
 
 from sqlalchemy import and_
 

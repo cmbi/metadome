@@ -1,9 +1,9 @@
 from metadom.infrastructure import database
-from metadom.domain.model.mapping import Mapping
-from metadom.domain.model.chromosome import Chromosome
-from metadom.domain.model.gene import Gene
-from metadom.domain.model.protein import Protein
-from metadom.domain.model.pfam import Pfam
+from metadom.domain.models.mapping import Mapping
+from metadom.domain.models.chromosome import Chromosome
+from metadom.domain.models.gene import Gene
+from metadom.domain.models.protein import Protein
+from metadom.domain.models.pfam import Pfam
 
 ## Simulate the database
 from sqlalchemy import create_engine

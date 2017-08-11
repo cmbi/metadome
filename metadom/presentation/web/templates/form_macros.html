@@ -1,0 +1,13 @@
+{% macro render_form_errors(form) %}
+  {% if form.errors %}
+    <div class="alert alert-danger">
+      {% for field_name, field_errors
+         in form.errors|dictsort if field_errors %}
+        {% for error in field_errors %}
+          {{ form[field_name].label }}: {{ error }}
+          <br/>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endmacro %}
