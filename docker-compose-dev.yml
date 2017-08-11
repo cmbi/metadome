@@ -2,12 +2,10 @@ version: '2'
 services:
     app:
         build: .
-        command: "flask run --host=0.0.0.0"
+        command: watchmedo auto-restart -d /usr/src/app -p "*" -D -R -- flask run -h 0.0.0.0
         environment:
             - FLASK_APP=metadom/application.py
         ports:
             - "5000:5000"
-    db:
-        image: postgres
-        environment:
-            POSTGRES_PASSWORD: example
+        volumes:
+            - .:/usr/src/app
