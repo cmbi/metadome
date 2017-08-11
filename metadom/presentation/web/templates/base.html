@@ -13,49 +13,77 @@
 	href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.1/css/bulma.min.css">
 </head>
 <body>
-	<nav class="navbar">
-		<div class="container">
-			<div class="navbar-brand">
+	<nav class="navbar ">
+		<div class="navbar-brand">
+			<a class="navbar-item" href="{{ url_for('web.index') }}"> <img
+				src="https://static.detivgorode.ua/files/organizations/450/450_sc_56efcc917f557.jpg"
+				alt="MetaDom: Using domain-homology to interpret genetic variants"
+				width="112" height="28">
+			</a> <a class="navbar-item is-hidden-desktop"
+				href="https://github.com/cmbi/metadom" target="_blank"> <span
+				class="icon" style="color: #333;"> <i class="fa fa-github"></i>
+			</span>
+			</a> <a class="navbar-item is-hidden-desktop"
+				href="https://twitter.com/laurensvdwiel" target="_blank"> <span
+				class="icon" style="color: #55acee;"> <i
+					class="fa fa-twitter"></i>
+			</span>
+			</a>
 
-				<!-- Navbar header -->
-				<div class="navbar-header">
-					<a class="navbar-brand logo"
-						href="{{ url_for('web.index') }}"> <img
-					src="https://static.detivgorode.ua/files/organizations/450/450_sc_56efcc917f557.jpg"
-					alt="MetaDom: Using domain-homology to interpret genetic variants"
-					width="112" height="28">
-						<p>MetaDom</p>
-					</a>
+			<div class="navbar-burger burger" data-target="navMenuExample">
+				<span></span> <span></span> <span></span>
+			</div>
+		</div>
+
+		<div id="navMenuExample" class="navbar-menu">
+			<div class="navbar-start">
+				<div class="navbar-item has-dropdown is-hoverable">
+					<a class="navbar-link  is-active"
+						href="/documentation/overview/start/"> Docs </a>
+					<div class="navbar-dropdown ">
+						<a class="navbar-item " href="{{ url_for('web.index') }}">
+							Overview </a> <a class="navbar-item "
+							href="{{ url_for('web.index') }}"> Help </a>
+						<hr class="navbar-divider">
+						<div class="navbar-item">
+							<div>
+								<p class="is-size-6-desktop">
+									<strong class="has-text-info">{{ METADOM_VERSION }}</strong>
+								</p>
+
+								<small> <a class="view-all-versions" href="{{ url_for('web.index') }}">View
+										all versions</a>
+								</small>
+
+							</div>
+						</div>
+					</div>
 				</div>
-				<ul class="nav navbar-nav">
-					<li><a href="{{ url_for('web.index') }}"> <i
-							class="fa fa-file-text"> Create report</i>
-					</a></li>
-				</ul>
+			</div>
 
-				<ul class="nav navbar-nav navbar-right">
-					<li><a href="{{ url_for('web.index') }}"> <i
-							class="fa fa-support"> Support</i>
-					</a></li>
-					<li><a href="{{ url_for('web.index') }}"> <i
-							class="fa fa-question-circle"> About</i>
-					</a></li>
-					<li><a href="{{ url_for('web.index') }}"> <i
-							class="fa fa-code"> API</i>
-					</a></li>
-				</ul>
-				<a class="navbar-item" href="http://bulma.io">
-				</a>
-
-				<div class="navbar-burger">
-					<span></span> <span></span> <span></span>
+			<div class="navbar-end">
+				<a class="navbar-item is-hidden-desktop-only"
+					href="https://github.com/jgthms/bulma" target="_blank"> Github
+				</a> <a class="navbar-item is-hidden-desktop-only"
+					href="https://twitter.com/jgthms" target="_blank"> Twitter </a>
+				<div class="navbar-item">
+					<div class="field is-grouped">
+						<p class="control">
+							<a class="tw-button button" data-social-network="Twitter"
+								data-social-action="tweet" data-social-target="http://bulma.io"
+								target="_blank"
+								href="https://twitter.com/intent/tweet?text=Bulma: a modern CSS framework based on Flexbox&hashtags=bulmaio&url=http://bulma.io&via=jgthms">
+								<span class="icon"> <i class="fa fa-twitter"></i>
+							</span> <span> Tweet </span>
+							</a>
+						</p>
+					</div>
 				</div>
 			</div>
 		</div>
 	</nav>
 
 	<div class="container">{% block content %} {% endblock %}</div>
-
 
 	<footer class="footer">
 		<div class="container">
