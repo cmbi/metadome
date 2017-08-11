@@ -1,8 +1,9 @@
 import logging
 
-from flask import Blueprint, redirect, render_template, url_for, request
+from flask import Blueprint, redirect, render_template, url_for, request, session
 
 from metadom.presentation.web.forms import MetaDomForm
+from metadom.domain.MappingRepository import MappingRepository
 
 
 _log = logging.getLogger(__name__)
@@ -21,20 +22,13 @@ def index():
 def input():
     form = MetaDomForm()
     if form.validate_on_submit():
-        # form.entry_id.data, form.postion.data)
-
-        #mappings = MappingRepository.get_mappings(entry_id, position)
-        mappings = {
-            "test": "hey there"
-        }
-
-        # TODO: access database
-        # TODO: render result template
+        # get result
+        mappings = MappingRepository.get_mappings(form.entry_id.data, form.position.data)
 
         _log.debug("Redirecting to result page")
 
-        # TODO: Send data to result page
-        return redirect(url_for('web.result', mappings=mappings))
+        session['mappings'] = mappings
+        return redirect(url_for('web.result'))
 
     _log.debug("Rendering input page")
     return render_template("input.html", form=form)
@@ -42,7 +36,7 @@ def input():
 
 @bp.route("/result", methods=["GET"])
 def result():
-    mappings = request.args['mappings']
+    mappings = session.get('mappings', None)
     return render_template("result.html", mappings=mappings)
 
 
