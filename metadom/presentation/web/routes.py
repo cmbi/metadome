@@ -1,7 +1,9 @@
 import logging
 
-from flask import Blueprint, redirect, render_template, url_for, request, session
+from flask import Blueprint, redirect, g, render_template, url_for, request, session
 
+
+from metadom import get_version
 from metadom.presentation.web.forms import MetaDomForm
 from metadom.domain.MappingRepository import MappingRepository
 
@@ -39,6 +41,10 @@ def result():
     mappings = session.get('mappings', None)
     return render_template("result.html", mappings=mappings)
 
+
+@bp.before_request
+def before_request():
+    g.metadom_version = get_version()
 
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover
