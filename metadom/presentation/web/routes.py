@@ -8,8 +8,7 @@ from metadom.domain.MappingRepository import MappingRepository
 
 _log = logging.getLogger(__name__)
 
-bp = Blueprint('web', __name__, 
-               template_folder='templates')
+bp = Blueprint('web', __name__)
 
 
 @bp.route('/', methods=['GET'])
