@@ -8,7 +8,7 @@ from metadom.domain.MappingRepository import MappingRepository
 
 _log = logging.getLogger(__name__)
 
-bp = Blueprint('web', __name__, static_folder='static',
+bp = Blueprint('web', __name__, 
                template_folder='templates')
 
 
@@ -23,7 +23,8 @@ def input():
     form = MetaDomForm()
     if form.validate_on_submit():
         # get result
-        mappings = MappingRepository.get_mappings(form.entry_id.data, form.position.data)
+        mappings = MappingRepository.get_mappings(form.entry_id.data, 
+                                                  form.position.data)
 
         _log.debug("Redirecting to result page")
 

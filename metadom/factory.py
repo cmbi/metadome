@@ -9,7 +9,8 @@ _log = logging.getLogger(__name__)
 def create_app(settings=None):
     _log.info("Creating app")
 
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='presentation/web/static',
+               template_folder='presentation/web/templates')
     app.config.from_object('metadom.default_settings')
     if settings:
         app.config.update(settings)
