@@ -1,8 +1,8 @@
-from metadom.infrastructure import database
+from metadom.application import db
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
-class Mapping(database.Base):
+class Mapping(db.Model):
     """
     Table: mapping
     

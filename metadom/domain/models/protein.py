@@ -1,9 +1,9 @@
-from metadom.infrastructure import database
+from metadom.application import db
 from sqlalchemy import Column, Integer, String, Enum
 from sqlalchemy.orm import relationship
 import enum
 
-class Protein(database.Base):
+class Protein(db.Model):
     """
     Table: proteins
     

@@ -1,8 +1,8 @@
-from metadom.infrastructure import database
+from metadom.application import db
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
-class Chromosome(database.Base):
+class Chromosome(db.Model):
     """
     Table: chromosomes
     

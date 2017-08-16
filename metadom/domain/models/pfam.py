@@ -1,9 +1,9 @@
-from metadom.infrastructure import database
+from metadom.application import db
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 
-class Pfam(database.Base):
+class Pfam(db.Model):
     """
     Table: pfam_domains
     
