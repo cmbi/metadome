@@ -1,5 +1,15 @@
 # Flask settings
+DEBUG = True
 SECRET_KEY = 'asfdcq93n4c981q34hfn39890'
+
+# FLask-SQLAchemy settings
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+SQLALCHEMY_DATABASE_URI = "postgresql://metadom_user:example@metadom_db_1/"
+SQLALCHEMY_ECHO = True
+
+# Debug toolbar
+DEBUG_TB_ENABLED = DEBUG
+DEBUG_TB_INTERCEPT_REDIRECTS = False
 
 # local data directory
 DATA_DIR = "/media/laurens/LVDW_DATA_SSD/"

@@ -15,15 +15,9 @@ def create_app(settings=None):
         app.config.update(settings)
         
     # Initialize database
-    app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://metadom_user:example@metadom_db_1/"
-    app.config['SQLALCHEMY_ECHO'] = True
-    
-    if app.testing:
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-    else:
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db = SQLAlchemy(app)
     
+    # Initialize database scheme
     db.create_all()
     
     # Ignore Flask's built-in logging
@@ -53,6 +47,11 @@ def create_app(settings=None):
             metadom_logger.setLevel(logging.DEBUG)
         else:
             metadom_logger.setLevel(logging.INFO)
+    
+    
+    # Initialise extensions
+    from metadom import toolbar
+    toolbar.init_app(app)
 
     return app, db
 
