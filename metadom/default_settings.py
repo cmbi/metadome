@@ -6,6 +6,7 @@ SECRET_KEY = 'asfdcq93n4c981q34hfn39890'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_DATABASE_URI = "postgresql://metadom_user:example@metadom_db_1/"
 SQLALCHEMY_ECHO = True
+SQLALCHEMY_POOL_TIMEOUT = 10
 
 # Debug toolbar
 DEBUG_TB_ENABLED = DEBUG
