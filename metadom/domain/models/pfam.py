@@ -1,7 +1,4 @@
-from metadom.application import db
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql.schema import UniqueConstraint
+from metadom.database import db
 
 class Pfam(db.Model):
     """
@@ -24,20 +21,20 @@ class Pfam(db.Model):
     __tablename__ = 'pfam_domains'
     
     # Fields
-    id = Column(Integer, primary_key=True)
-    pfam_id = Column(String(12), nullable=False)
-    name = Column(String)
-    interpro_id = Column(String(12))
-    uniprot_ac = Column(String(12), ForeignKey('proteins.uniprot_ac'), nullable=False)
-    uniprot_start = Column(Integer, nullable=False)
-    uniprot_stop = Column(Integer, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    pfam_id = db.Column(db.String(12), nullable=False)
+    name = db.Column(db.String)
+    interpro_id = db.Column(db.String(12))
+    uniprot_ac = db.Column(db.String(12), db.ForeignKey('proteins.uniprot_ac'), nullable=False)
+    uniprot_start = db.Column(db.Integer, nullable=False)
+    uniprot_stop = db.Column(db.Integer, nullable=False)
     
     # Relationships
-    protein = relationship("Protein", back_populates="pfam_domains")
-    mappings = relationship('Mapping', back_populates="pfam_domain")
+    protein = db.relationship("Protein", back_populates="pfam_domains")
+    mappings = db.relationship('Mapping', back_populates="pfam_domain")
     
     # Constraints
-    __table_args__ = (UniqueConstraint('uniprot_ac', 'uniprot_start', 'uniprot_stop', name='_unique_protein_region'),
+    __table_args__ = (db.UniqueConstraint('uniprot_ac', 'uniprot_start', 'uniprot_stop', name='_unique_protein_region'),
                      )
     
     def __repr__(self):

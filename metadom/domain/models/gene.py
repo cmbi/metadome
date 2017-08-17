@@ -1,6 +1,4 @@
-from metadom.application import db
-from sqlalchemy import Column, Integer, String, Enum
-from sqlalchemy.orm import relationship
+from metadom.database import db
 import enum
 
 class Gene(db.Model):
@@ -29,17 +27,17 @@ class Gene(db.Model):
     __tablename__ = 'genes'
     
     # Fields
-    id = Column(Integer, primary_key=True)
-    strand = Column(Enum(Strand), nullable=False)
-    gene_name = Column(String(50))
-    gencode_transcription_id = Column(String(50), unique=True, nullable=False)
-    gencode_translation_name = Column(String(50), unique=True, nullable=False)
-    gencode_gene_id = Column(String(50), unique=True, nullable=False)
-    havana_gene_id = Column(String(50), unique=True)
-    havana_translation_id = Column(String(50), unique=True)
+    id = db.Column(db.Integer, primary_key=True)
+    strand = db.Column(db.Enum(Strand), nullable=False)
+    gene_name = db.Column(db.String(50))
+    gencode_transcription_id = db.Column(db.String(50), unique=True, nullable=False)
+    gencode_translation_name = db.Column(db.String(50), unique=True, nullable=False)
+    gencode_gene_id = db.Column(db.String(50), unique=True, nullable=False)
+    havana_gene_id = db.Column(db.String(50), unique=True)
+    havana_translation_id = db.Column(db.String(50), unique=True)
     
     # Relationships
-    mappings = relationship('Mapping', back_populates="gene")
+    mappings = db.relationship('Mapping', back_populates="gene")
     
     
     def __repr__(self):

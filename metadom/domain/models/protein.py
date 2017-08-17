@@ -1,6 +1,4 @@
-from metadom.application import db
-from sqlalchemy import Column, Integer, String, Enum
-from sqlalchemy.orm import relationship
+from metadom.database import db
 import enum
 
 class Protein(db.Model):
@@ -26,14 +24,14 @@ class Protein(db.Model):
     __tablename__ = 'proteins'
     
     # Fields
-    id = Column(Integer, primary_key=True)
-    uniprot_ac = Column(String(12), unique=True, nullable=False)
-    uniprot_name = Column(String(20))
-    source = Column(Enum(ProteinSource), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    uniprot_ac = db.Column(db.String(12), unique=True, nullable=False)
+    uniprot_name = db.Column(db.String(20))
+    source = db.Column(db.Enum(ProteinSource), nullable=False)
     
     # Relationships
-    mappings = relationship('Mapping', back_populates="protein")
-    pfam_domains = relationship("Pfam", back_populates="protein")
+    mappings = db.relationship('Mapping', back_populates="protein")
+    pfam_domains = db.relationship("Pfam", back_populates="protein")
 
     def __repr__(self):
         return "<Protein(uniprot_ac='%s', uniprot_name='%s', source='%s')>" % (

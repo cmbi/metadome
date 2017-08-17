@@ -1,6 +1,4 @@
-from metadom.application import db
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from metadom.database import db
 
 class Mapping(db.Model):
     """
@@ -30,24 +28,24 @@ class Mapping(db.Model):
     __tablename__ = 'mapping'
     
     # Fields
-    id = Column(Integer, primary_key=True)
-    allele = Column(String(1))
-    codon = Column(String(3))
-    codon_allele_position = Column(Integer)
-    amino_acid_residue = Column(String(1))
-    cDNA_position = Column(Integer)
-    uniprot_position = Column(Integer)
-    pfam_consensus_position = Column(Integer)
-    chromosome_id = Column(Integer, ForeignKey('chromosomes.id'), nullable=False)
-    gene_id = Column(Integer, ForeignKey('genes.id'), nullable=False)
-    protein_id = Column(Integer, ForeignKey('proteins.id'))
-    pfam_domain_id = Column(Integer, ForeignKey('pfam_domains.id'))
+    id = db.Column(db.Integer, primary_key=True)
+    allele = db.Column(db.String(1))
+    codon = db.Column(db.String(3))
+    codon_allele_position = db.Column(db.Integer)
+    amino_acid_residue = db.Column(db.String(1))
+    cDNA_position = db.Column(db.Integer)
+    uniprot_position = db.Column(db.Integer)
+    pfam_consensus_position = db.Column(db.Integer)
+    chromosome_id = db.Column(db.Integer, db.ForeignKey('chromosomes.id'), nullable=False)
+    gene_id = db.Column(db.Integer, db.ForeignKey('genes.id'), nullable=False)
+    protein_id = db.Column(db.Integer, db.ForeignKey('proteins.id'))
+    pfam_domain_id = db.Column(db.Integer, db.ForeignKey('pfam_domains.id'))
     
     # Relationships
-    chromosome = relationship('Chromosome', back_populates="mappings")
-    gene = relationship("Gene", back_populates="mappings")
-    protein = relationship("Protein", back_populates="mappings")
-    pfam_domain = relationship("Pfam", back_populates="mappings")
+    chromosome = db.relationship('Chromosome', back_populates="mappings")
+    gene = db.relationship("Gene", back_populates="mappings")
+    protein = db.relationship("Protein", back_populates="mappings")
+    pfam_domain = db.relationship("Pfam", back_populates="mappings")
     
     def __repr__(self):
         return "<Mapping(allele='%s', codon='%s', codon_allele_position='%s', amino_acid_residue='%s', cDNA_position='%s', uniprot_position='%s', pfam_consensus_position='%s')>" % (

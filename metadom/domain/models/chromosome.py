@@ -1,6 +1,4 @@
-from metadom.application import db
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
+from metadom.database import db
 
 class Chromosome(db.Model):
     """
@@ -19,12 +17,12 @@ class Chromosome(db.Model):
     __tablename__ = 'chromosomes'
     
     # Fields
-    id = Column(Integer, primary_key=True)
-    chromosome = Column(String(2), nullable=False)
-    position = Column(Integer, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    chromosome = db.Column(db.String(2), nullable=False)
+    position = db.Column(db.Integer, nullable=False)
     
     # Relationships
-    mappings = relationship('Mapping', back_populates="chromosome")
+    mappings = db.relationship('Mapping', back_populates="chromosome")
     
     def __repr__(self):
         return "<Chromosome(chromosome='%s', position='%s')>" % (
