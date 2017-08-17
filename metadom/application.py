@@ -1,6 +1,3 @@
-from metadom.factory import create_app, create_blueprints
+from metadom.factory import create_app
 # initialize the application and database
-app, db = create_app()
-
-# initialize the user interface
-create_blueprints(app)
+app = create_app()

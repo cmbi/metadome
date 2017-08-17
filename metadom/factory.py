@@ -1,7 +1,6 @@
 import logging
 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 
 _log = logging.getLogger(__name__)
 
@@ -12,13 +11,7 @@ def create_app(settings=None):
                template_folder='presentation/web/templates')
     app.config.from_object('metadom.default_settings')
     if settings:
-        app.config.update(settings)
-        
-    # Initialize database
-    db = SQLAlchemy(app)
-    
-    # Initialize database scheme
-    db.create_all()
+        app.config.update(settings)        
     
     # Ignore Flask's built-in logging
     # app.logger is accessed here so Flask tries to create it
@@ -52,12 +45,15 @@ def create_app(settings=None):
     # Initialise extensions
     from metadom import toolbar
     toolbar.init_app(app)
-
-    return app, db
-
-def create_blueprints(app):
+        
     # Blueprints
     from metadom.presentation.web.routes import bp as web_bp
     from metadom.presentation.api.routes import bp as api_bp
     app.register_blueprint(web_bp)
     app.register_blueprint(api_bp)
+    
+    # Database
+    from metadom.database import db
+    db.init_app(app)
+
+    return app
