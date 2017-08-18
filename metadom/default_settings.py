@@ -3,6 +3,7 @@ DEBUG = True
 SECRET_KEY = 'asfdcq93n4c981q34hfn39890'
 
 # FLask-SQLAchemy settings
+SQLALCHEMY_RECORD_QUERIES = True # TODO: should be false when not debug
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_DATABASE_URI = "postgresql://metadom_user:example@metadom_db_1/"
 SQLALCHEMY_ECHO = True
