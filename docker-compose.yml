@@ -7,6 +7,8 @@ services:
             - FLASK_APP=metadom/application.py
         ports:
             - "5000:5000"
+        depends_on:
+            - "db"
     db:
         image: postgres
         environment:
