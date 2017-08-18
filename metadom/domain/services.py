@@ -1,16 +1,17 @@
 import time
 
 from metadom import _log
+from metadom.database import db
 from psycopg2 import OperationalError
 
-def list_tables(_db):
-    return _db.Model.metadata.tables.keys()
+def list_tables():
+    return db.Model.metadata.tables.keys()
   
 def test_connection(_db):
     try:
-        _db.session.commit()
+        db.session.commit()
         return True
-    except _db.OperationalError as e:
+    except db.OperationalError as e:
         _log.error(e)
     return False
 # 
