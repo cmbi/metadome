@@ -11,7 +11,6 @@ SQLALCHEMY_POOL_TIMEOUT = 10
 
 # Debug toolbar
 DEBUG_TB_ENABLED = DEBUG
-DEBUG_TB_INTERCEPT_REDIRECTS = False
 
 # local data directory
 DATA_DIR = "/media/laurens/LVDW_DATA_SSD/"
