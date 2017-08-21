@@ -17,6 +17,7 @@ import logging
 from BGVM.Domains.HomologuesDomains import load_homologue_domain_dataset,\
     annotate_homologue_domains_with_intolerance_scores
 import time
+from BGVM.Metrics.EvaluationMetrics import cohen_d
 
 def generate_random_variants(X, X_prime, p_missense_x, p_missense_residue_x):
     # create the permutation
@@ -323,10 +324,12 @@ def check_significance_of_characteristic_variants(meta_domain_variant_analysis, 
         permuted_characteristic_variant_significance_check_input.append(x[key_to_check])
         
     result = ttest_ind(original_characteristic_variant_significance_check_input, permuted_characteristic_variant_significance_check_input, equal_var=assume_equal_variance)
-    return result.statistic, result.pvalue, original_characteristic_variant_significance_check_input_value, permuted_characteristic_variant_significance_check_input
+    cohens_d_value = cohen_d(original_characteristic_variant_significance_check_input, permuted_characteristic_variant_significance_check_input) 
+    
+    return result.statistic, result.pvalue, cohens_d_value, original_characteristic_variant_significance_check_input_value, permuted_characteristic_variant_significance_check_input
 
 def check_significance_of_variants_ratios(meta_domain_variant_analysis, permutations_meta_domain_variant_analysis, assume_equal_variance):
-    ratio_M_unique_x_j_t_stat,  ratio_M_unique_x_j_p_value = {}, {}
+    ratio_M_unique_x_j_t_stat,  ratio_M_unique_x_j_p_value, ratio_M_unique_x_j_cohens_d = {}, {}, {}
     original_variant_ratio_significance_check_input_value_x_j = {}
     permuted_variant_ratio_significance_check_input_x_j = {}
     percentage_of_significant_variant_ratios = 0
@@ -341,10 +344,12 @@ def check_significance_of_variants_ratios(meta_domain_variant_analysis, permutat
             permuted_variant_ratio_significance_check_input.append(x["ratio_M_unique_x_j"][j])
         
         result = ttest_ind(original_variant_ratio_significance_check_input, permuted_variant_ratio_significance_check_input, equal_var=assume_equal_variance)
+        cohens_d_value = cohen_d(original_variant_ratio_significance_check_input, permuted_variant_ratio_significance_check_input) 
         
         # test statistical significance while correcting for the number of tests
         ratio_M_unique_x_j_t_stat[j] = result.statistic
         ratio_M_unique_x_j_p_value[j] = result.pvalue * meta_domain_variant_analysis["L_x"]
+        ratio_M_unique_x_j_cohens_d[j] = cohens_d_value
         permuted_variant_ratio_significance_check_input_x_j[j] = permuted_variant_ratio_significance_check_input
         original_variant_ratio_significance_check_input_value_x_j[j] = meta_domain_variant_analysis["ratio_M_unique_x_j"][j]
         
@@ -353,7 +358,7 @@ def check_significance_of_variants_ratios(meta_domain_variant_analysis, permutat
     
     percentage_of_significant_variant_ratios /= meta_domain_variant_analysis["L_x"]
     
-    return ratio_M_unique_x_j_t_stat, ratio_M_unique_x_j_p_value, original_variant_ratio_significance_check_input_value_x_j, permuted_variant_ratio_significance_check_input_x_j, percentage_of_significant_variant_ratios
+    return ratio_M_unique_x_j_t_stat, ratio_M_unique_x_j_p_value, ratio_M_unique_x_j_cohens_d, original_variant_ratio_significance_check_input_value_x_j, permuted_variant_ratio_significance_check_input_x_j, percentage_of_significant_variant_ratios
 
 
 def analyse_significance_of_characteristic_variants_in_a_single_domains(domain_intolerance_signals, tolerance_score_name, meta_domain, n_permutations, random_seed_value, group_of_interest, adjusted_observed_variant_percentage):
@@ -373,9 +378,9 @@ def analyse_significance_of_characteristic_variants_in_a_single_domains(domain_i
     meta_domain_variant_analysis, permutations_meta_domain_variant_analysis = generate_permutations_characteristic_meta_domain_variations(domain_id, merged_meta_domain, len(meta_domain['meta_domain']['consensus_sequence']), n_permutations, random_seed_value, group_of_interest, adjusted_observed_variant_percentage)
     
     # check for statistical significance
-    ratio_M_unique_x_j_t_stat, ratio_M_unique_x_j_p_value, original_variant_ratio_significance_check_input_value_x_j, permuted_variant_ratio_significance_check_input_x_j, percentage_of_significant_variant_ratios = check_significance_of_variants_ratios(meta_domain_variant_analysis, permutations_meta_domain_variant_analysis, assume_equal_variance=True)
-    t_stat_strict, p_val_strict, original_strict_characteristic_variant_significance_check_input_value, permuted_strict_characteristic_variant_significance_check_input = check_significance_of_characteristic_variants(meta_domain_variant_analysis, permutations_meta_domain_variant_analysis, key_to_check="strict_normalized_characteristic_missense_variant_score",  assume_equal_variance=True)
-    t_stat_unstrict, p_val_unstrict, original_unstrict_characteristic_variant_significance_check_input_value, permuted_unstrict_characteristic_variant_significance_check_input = check_significance_of_characteristic_variants(meta_domain_variant_analysis, permutations_meta_domain_variant_analysis, key_to_check="unstrict_normalized_characteristic_missense_variant_score",  assume_equal_variance=True)
+    ratio_M_unique_x_j_t_stat, ratio_M_unique_x_j_p_value, ratio_M_unique_x_j_cohens_d, original_variant_ratio_significance_check_input_value_x_j, permuted_variant_ratio_significance_check_input_x_j, percentage_of_significant_variant_ratios = check_significance_of_variants_ratios(meta_domain_variant_analysis, permutations_meta_domain_variant_analysis, assume_equal_variance=True)
+    t_stat_strict, p_val_strict, cohens_d_value_strict, original_strict_characteristic_variant_significance_check_input_value, permuted_strict_characteristic_variant_significance_check_input = check_significance_of_characteristic_variants(meta_domain_variant_analysis, permutations_meta_domain_variant_analysis, key_to_check="strict_normalized_characteristic_missense_variant_score",  assume_equal_variance=True)
+    t_stat_unstrict, p_val_unstrict, cohens_d_value_unstrict, original_unstrict_characteristic_variant_significance_check_input_value, permuted_unstrict_characteristic_variant_significance_check_input = check_significance_of_characteristic_variants(meta_domain_variant_analysis, permutations_meta_domain_variant_analysis, key_to_check="unstrict_normalized_characteristic_missense_variant_score",  assume_equal_variance=True)
     
     logging.getLogger(LOGGER_NAME).info(domain_id+" NCMVS[strict] vs permuted("+str(n_permutations)+"x) NCMVS[strict] t-statistic: "+str(t_stat_strict)+", p-value: "+str(p_val_strict))
     logging.getLogger(LOGGER_NAME).info(domain_id+" NCMVS[unstrict] vs permuted("+str(n_permutations)+"x) NCMVS[unstrict] t-statistic: "+str(t_stat_unstrict)+", p-value: "+str(p_val_unstrict))
@@ -401,14 +406,17 @@ def analyse_significance_of_characteristic_variants_in_a_single_domains(domain_i
                                    "NCMVS_unstrict":meta_domain_variant_analysis["unstrict_normalized_characteristic_missense_variant_score"],\
                                    "t_stat_strict":t_stat_strict,\
                                    "p_val_strict":p_val_strict,\
+                                   "cohens_d_val_strict":cohens_d_value_strict,\
                                    "t_stat_unstrict":t_stat_unstrict,\
                                    "p_val_unstrict":p_val_unstrict,\
+                                   "cohens_d_val_unstrict":cohens_d_value_unstrict,\
                                    "original_unstrict_characteristic_variant_significance_check_input_value":original_unstrict_characteristic_variant_significance_check_input_value, \
                                    "permuted_unstrict_characteristic_variant_significance_check_input":permuted_unstrict_characteristic_variant_significance_check_input,\
                                    "original_strict_characteristic_variant_significance_check_input_value":original_strict_characteristic_variant_significance_check_input_value, \
                                    "permuted_strict_characteristic_variant_significance_check_input":permuted_strict_characteristic_variant_significance_check_input,\
                                    "ratio_M_unique_x_j_p_value":ratio_M_unique_x_j_p_value,\
                                    "ratio_M_unique_x_j_t_stat":ratio_M_unique_x_j_t_stat,\
+                                   "ratio_M_unique_x_j_cohens_d":ratio_M_unique_x_j_cohens_d,\
                                    "original_variant_ratio_significance_check_input_value_x_j":original_variant_ratio_significance_check_input_value_x_j,\
                                    "permuted_variant_ratio_significance_check_input_x_j":permuted_variant_ratio_significance_check_input_x_j,\
                                    "percentage_of_significant_variant_ratios":percentage_of_significant_variant_ratios,\
