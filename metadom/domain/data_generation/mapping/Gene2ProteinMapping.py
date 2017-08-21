@@ -9,9 +9,8 @@ from metadom.controller.wrappers.pdb import getRefseqForPDBfile,\
     retrieveAtomicStructureSequence, retrieveAtomicStructureMapping,\
     AtomicSequenceIDMappingFailedException
 import numpy as np
-import logging
 
-_log = logging.getLogger(__name__)
+from metadom import _log
 
 class RegioncDNALengthDoesNotEqualProteinLengthException(Exception):
     pass
