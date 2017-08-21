@@ -1,14 +1,9 @@
-'''
-Created on Sep 2, 2015
-
-@author: Laurens van de Wiel
-'''
-from metadom.controller.wrappers.blast import run_blast, interpretation_to_string,\
+import logging
+from metadom.domain.wrappers.blast import run_blast, interpretation_to_string,\
     interpret_blast_as_pdb
 from metadom.default_settings import PDB_SEQRES_FASTA, PDB_STRUCTURE_DIR,\
     MINIMAL_BLASTPE_VALUE, MINIMAL_TRANSLATION_TO_STRUCTURE_PIDENT_VALUE,\
     MINIMAL_XRAY_STRUCTURE_RESOLUTION
-import logging
 import warnings
 import numpy as np
 import gzip

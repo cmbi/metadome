@@ -1,16 +1,10 @@
-'''
-Created on Sep 2, 2015
-
-@author: Laurens van de Wiel
-'''
+import logging
 import tempfile
 import subprocess
-import logging
 import os
 from metadom.default_settings import BLASTP_EXECUTABLE
 
 _log = logging.getLogger(__name__)
-
 
 # The supported format specifiers are:
 #          qseqid means Query Seq-id

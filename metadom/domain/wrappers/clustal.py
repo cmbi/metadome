@@ -1,17 +1,10 @@
-'''
-Created on Dec 21, 2015
-
-Implements alignment methods for use throughout the project
-
-@author: laurensvdwiel
-'''
-import tempfile
 import logging
+import tempfile
 import subprocess
 import os
 from Bio.Align.Applications._Clustalw import ClustalwCommandline
 from metadom.default_settings import CLUSTALW_EXECUTABLE
-from metadom.controller.parsers.fasta import unwrap_fasta_alignment
+from metadom.domain.parsers.fasta import unwrap_fasta_alignment
 
 _log = logging.getLogger(__name__)
 

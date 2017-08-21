@@ -1,13 +1,8 @@
-'''
-Created on Apr 29, 2016
-
-@author: laurens
-'''
+import logging
 from metadom.default_settings import INTERPROSCAN_EXECUTABLE, INTERPRO_PRO2IPR_DB
 import sqlite3
 import urllib.request
 import tempfile
-import logging
 import subprocess
 import os
 

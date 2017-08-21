@@ -1,15 +1,11 @@
-'''
-Created on Dec 15, 2015
-
-@author: laurensvdwiel
-'''
+import logging
 from metadom.default_settings import GENCODE_HG_TRANSLATION_FILE,\
     GENCODE_SWISSPROT_FILE, GENCODE_HG_TRANSCRIPTION_FILE,\
     GENCODE_HG_ANNOTATION_FILE_GFF3, GENCODE_BASIC_FILE
-from metadom.controller.parsers import gff3
+from metadom.domain.parsers import gff3
 from Bio.Seq import translate
-import logging
 import urllib
+
 _log = logging.getLogger(__name__)
 
 class NoGeneTranslationsFoundException(Exception):

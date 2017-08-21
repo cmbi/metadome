@@ -1,17 +1,13 @@
-'''
-Created on May 3, 2016
-
-@author: laurens
-'''
-from metadom.controller.wrappers.blast import run_blast, interpret_blast_as_uniprot
-from metadom.controller.wrappers.gencode import retrieveSwissProtIDs,\
+import logging
+from metadom.domain.wrappers.blast import run_blast, interpret_blast_as_uniprot
+from metadom.domain.wrappers.gencode import retrieveSwissProtIDs,\
     NoSwissProtEntryFoundException
 from metadom.default_settings import UNIPROT_SPROT_CANONICAL, UNIPROT_TREMBL,\
     UNIPROT_MAX_BLAST_RESULTS, UNIPROT_SPROT_CANONICAL_AND_ISOFORM,\
     UNIPROT_SPROT_ISOFORM
-import logging
 
 _log = logging.getLogger(__name__)
+
 
 class NoUniProtACFoundException(Exception):
     pass
