@@ -7,6 +7,14 @@ Module Description:
 
 import numpy as np
 from sklearn.metrics import mean_squared_error, explained_variance_score, mean_absolute_error, roc_curve, auc, confusion_matrix,  accuracy_score, precision_score, recall_score, f1_score
+from statistics import mean, stdev
+from math import sqrt
+
+def cohen_d(group_a, group_b):
+    if (sqrt((stdev(group_a) ** 2 + stdev(group_b) ** 2) / 2)) == 0:
+        return 0.0
+    else:
+        return (mean(group_a) - mean(group_b)) / (sqrt((stdev(group_a) ** 2 + stdev(group_b) ** 2) / 2))
 
 def MedianAbsoluteDeviation(data, axis=None):
     """Computes the median absolute deviation (MAD): a robust measure 
