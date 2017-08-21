@@ -5,7 +5,7 @@ from flask import Blueprint, redirect, g, render_template, url_for, request, ses
 
 from metadom import get_version
 from metadom.presentation.web.forms import MetaDomForm
-from metadom.domain.MappingRepository import MappingRepository
+from metadom.domain.repositories import MappingRepository
 
 
 _log = logging.getLogger(__name__)
