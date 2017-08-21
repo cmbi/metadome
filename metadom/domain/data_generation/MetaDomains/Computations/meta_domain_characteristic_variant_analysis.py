@@ -1,8 +1,3 @@
-'''
-Created on Aug 31, 2016
-
-@author: laurens
-'''
 import pandas as pd
 from sklearn.externals.joblib.parallel import Parallel, delayed
 from BGVM.MetaDomains.Database.database_queries import retrieve_all_meta_domains,\

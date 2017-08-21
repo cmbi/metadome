@@ -1,23 +1,20 @@
-'''
-Created on Aug 31, 2016
-
-@author: laurens
-'''
+import logging
 import pandas as pd
 import numpy as np
+
 from scipy.stats.stats import ttest_ind
 from sklearn.externals.joblib.parallel import Parallel, delayed
 from BGVM.MetaDomains.Database.database_queries import retrieve_single_meta_domain, retrieve_all_meta_domains, retrieve_all_meta_domain_ids
 from BGVM.MetaDomains.Construction.meta_domain_merging import EXAC_TYPE_NAME,\
     HG19_REFERENCE_TYPE_NAME, HGMD_TYPE_NAME
 from BGVM.Tools.ParallelHelper import CalculateNumberOfActiveThreads
-from dev_settings import LOGGER_NAME,\
-    GENE2PROTEIN_ANNOTATED_HOMOLOGUE_DOMAINS_DATASET
-import logging
+from metadom.default_settings import GENE2PROTEIN_ANNOTATED_HOMOLOGUE_DOMAINS_DATASET
 from BGVM.Domains.HomologuesDomains import load_homologue_domain_dataset,\
     annotate_homologue_domains_with_intolerance_scores
 import time
 from BGVM.Metrics.EvaluationMetrics import cohen_d
+
+_log = logging.getLogger(__name__)
 
 def generate_random_variants(X, X_prime, p_missense_x, p_missense_residue_x):
     # create the permutation
@@ -86,7 +83,7 @@ def count_variants(X, X_prime, L_x):
         
             unique_X_prime_i_j = np.unique(X_prime[i][j])
             if len(X_prime[i][j]) != len(unique_X_prime_i_j):
-                logging.getLogger(LOGGER_NAME).warning("Variant list (X_prime_i_j) was not unique for "+i+"at position "+str(j))
+                _log.warning("Variant list (X_prime_i_j) was not unique for "+i+"at position "+str(j))
             
             if len(unique_X_prime_i_j) > 0:
                 # if at least one variant is found in this gene increment the single_variant_counts with 1
@@ -95,7 +92,7 @@ def count_variants(X, X_prime, L_x):
             # be sure we are not comparing the same occurrences
             for X_prime_i_j in  unique_X_prime_i_j:
                 if X[i][j] == X_prime_i_j:
-                    logging.getLogger(LOGGER_NAME).warning("Variant list (X_prime_i_j) contained a synonymous variant for domain "+i+"at position "+str(j))
+                    _log.warning("Variant list (X_prime_i_j) contained a synonymous variant for domain "+i+"at position "+str(j))
                     continue
                 
                 variant_key = X[i][j]+">"+X_prime_i_j
@@ -293,9 +290,9 @@ def generate_permutations_characteristic_meta_domain_variations(domain_id, merge
     
     # report on domain analysis information
     if adjusted_observed_variant_percentage is None:
-        logging.getLogger(LOGGER_NAME).info(generate_report_meta_domain_variant_analysis("Original domain of: "+domain_id, meta_domain_variant_analysis))
+        _log.info(generate_report_meta_domain_variant_analysis("Original domain of: "+domain_id, meta_domain_variant_analysis))
     else:
-        logging.getLogger(LOGGER_NAME).info(generate_report_meta_domain_variant_analysis("Original ("+str(adjusted_observed_variant_percentage)+" percentage) domain of: "+domain_id, meta_domain_variant_analysis))
+        _log.info(generate_report_meta_domain_variant_analysis("Original ("+str(adjusted_observed_variant_percentage)+" percentage) domain of: "+domain_id, meta_domain_variant_analysis))
     
     
     # generate variation permutations for this meta domain
@@ -305,7 +302,7 @@ def generate_permutations_characteristic_meta_domain_variations(domain_id, merge
         X_prime_random = generate_random_variants(x, x_prime, p_missense_x, p_missense_residue_x)
         permuted_meta_domain_variant_analysis = analyse_meta_domain_variants(x, X_prime_random, L_x)
         # report on domain analysis information
-        logging.getLogger(LOGGER_NAME).info(generate_report_meta_domain_variant_analysis("Permutation ("+str(E+1)+"/"+str(n_permutations)+") of "+domain_id, permuted_meta_domain_variant_analysis))
+        _log.info(generate_report_meta_domain_variant_analysis("Permutation ("+str(E+1)+"/"+str(n_permutations)+") of "+domain_id, permuted_meta_domain_variant_analysis))
         
         # add the results to the set
         permutations_meta_domain_variant_analysis.append(permuted_meta_domain_variant_analysis)
@@ -382,8 +379,8 @@ def analyse_significance_of_characteristic_variants_in_a_single_domains(domain_i
     t_stat_strict, p_val_strict, cohens_d_value_strict, original_strict_characteristic_variant_significance_check_input_value, permuted_strict_characteristic_variant_significance_check_input = check_significance_of_characteristic_variants(meta_domain_variant_analysis, permutations_meta_domain_variant_analysis, key_to_check="strict_normalized_characteristic_missense_variant_score",  assume_equal_variance=True)
     t_stat_unstrict, p_val_unstrict, cohens_d_value_unstrict, original_unstrict_characteristic_variant_significance_check_input_value, permuted_unstrict_characteristic_variant_significance_check_input = check_significance_of_characteristic_variants(meta_domain_variant_analysis, permutations_meta_domain_variant_analysis, key_to_check="unstrict_normalized_characteristic_missense_variant_score",  assume_equal_variance=True)
     
-    logging.getLogger(LOGGER_NAME).info(domain_id+" NCMVS[strict] vs permuted("+str(n_permutations)+"x) NCMVS[strict] t-statistic: "+str(t_stat_strict)+", p-value: "+str(p_val_strict))
-    logging.getLogger(LOGGER_NAME).info(domain_id+" NCMVS[unstrict] vs permuted("+str(n_permutations)+"x) NCMVS[unstrict] t-statistic: "+str(t_stat_unstrict)+", p-value: "+str(p_val_unstrict))
+    _log.info(domain_id+" NCMVS[strict] vs permuted("+str(n_permutations)+"x) NCMVS[strict] t-statistic: "+str(t_stat_strict)+", p-value: "+str(p_val_strict))
+    _log.info(domain_id+" NCMVS[unstrict] vs permuted("+str(n_permutations)+"x) NCMVS[unstrict] t-statistic: "+str(t_stat_unstrict)+", p-value: "+str(p_val_unstrict))
     
     meta_domain_analysis_result = {"domain_id":domain_id,\
                                    "tolerance_score":tolerance_score_name,\
@@ -461,4 +458,4 @@ def create_characteristic_variants_dataset(filename, group_of_interest, n_permut
     
     pd.DataFrame(results).to_csv(filename, sep='\t')
     time_step = time.perf_counter()
-    logging.getLogger(LOGGER_NAME).info("Finished permuting domains with '"+group_of_interest+"' variants in "+str(time_step-start_time)+" seconds")
+    _log.info("Finished permuting domains with '"+group_of_interest+"' variants in "+str(time_step-start_time)+" seconds")

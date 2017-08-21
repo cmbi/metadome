@@ -1,8 +1,4 @@
-'''
-Created on Aug 17, 2016
-
-@author: laurens
-'''
+import logging
 import pandas as pd
 import numpy as np
 from BGVM.MetaDomains.Database.database_queries import retrieve_all_meta_domains,\
@@ -12,9 +8,10 @@ from BGVM.MetaDomains.Construction.meta_domain_merging import EXAC_TYPE_NAME, HG
 from sklearn.externals.joblib.parallel import Parallel, delayed
 from BGVM.Tools.ParallelHelper import CalculateNumberOfActiveThreads
 from BGVM.Tools.CustomLogger import initLogging
-import logging
-from dev_settings import LOGGER_NAME
 import time
+
+_log = logging.getLogger(__name__)
+
 
 def analyse_all_merged_meta_domains(meta_domain_analysis_filename):
     meta_domain_analysis_df = pd.DataFrame.from_csv(meta_domain_analysis_filename, sep='\t')
@@ -296,7 +293,7 @@ def construct_single_meta_domain_analysis_dataset_entry(meta_domain_entry, domai
     return meta_domain_analysis        
     
 def construct_meta_domain_statistics_dataset(domain_dataset, filename, use_parallel):
-    logging.getLogger(LOGGER_NAME).info("Started creating the merged domain data statistics dataset")
+    _log.info("Started creating the merged domain data statistics dataset")
     start_time = time.clock()
     
     # perform the analysis (e.g. aggregation)
@@ -308,7 +305,7 @@ def construct_meta_domain_statistics_dataset(domain_dataset, filename, use_paral
         meta_domain_analysis = [construct_single_meta_domain_analysis_dataset_entry(meta_domain_entry, domain_dataset) for meta_domain_entry in retrieve_all_meta_domains()]
     
     time_step = time.clock()
-    logging.getLogger(LOGGER_NAME).info("Finished creating the merged domain data statistics dataset in "+str(time_step-start_time)+" seconds")
+    _log.info("Finished creating the merged domain data statistics dataset in "+str(time_step-start_time)+" seconds")
     
     # flatten the list
     meta_domain_analysis =  [val for sublist in meta_domain_analysis for val in sublist]
