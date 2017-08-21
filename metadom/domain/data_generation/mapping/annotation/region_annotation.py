@@ -4,7 +4,8 @@ Created on Oct 21, 2016
 @author: laurens
 '''
 from metadom.controller.mapping.annotation.GenomeTranscriptionAnnotation import annotateTranscriptWithExacData,\
-    annotateTranscriptWithHGMDData, annotateSNVs
+    annotateTranscriptWithHGMDData, annotateSNVs,\
+    annotateTranscriptWithClinvarData
 from metadom.controller.metrics.codon_statistics import calculate_CDS_background_rate
 from metadom.controller.mapping.Gene2ProteinMapping import extract_gene_region
 from Bio.Seq import translate
@@ -46,11 +47,19 @@ def analyse_dn_ds_over_protein_region(gene_mapping, region_start, region_stop):
     hgmd_annotations = annotateSNVs(annotateTranscriptWithHGMDData, gene_mapping, region_of_interest)
     hgmd_missense_in_region, hgmd_synonymous_in_region, hgmd_nonsense_in_region, hgmd_region_information = annotate_gene_variant_dataset_information(gene_mapping, hgmd_annotations)
 
+    # Annotate clinvar information
+    clinvar_annotations = annotateSNVs(annotateTranscriptWithClinvarData, gene_mapping, region_of_interest)
+    clinvar_missense_in_region, clinvar_synonymous_in_region, clinvar_nonsense_in_region, clinvar_region_information = annotate_gene_variant_dataset_information(gene_mapping, clinvar_annotations)
+
     # put all the results in a dictionary
     region_result = {"exac_missense":exac_missense_in_region,
                      "exac_nonsense":exac_nonsense_in_region,
                      "exac_synonymous":exac_synonymous_in_region,
                      "exac_information":exac_region_information, 
+                     "clinvar_missense":clinvar_missense_in_region,
+                     "clinvar_nonsense":clinvar_nonsense_in_region,
+                     "clinvar_synonymous":clinvar_synonymous_in_region,
+                     "clinvar_information":clinvar_region_information,
                      "hgmd_missense":hgmd_missense_in_region, 
                      "hgmd_synonymous":hgmd_synonymous_in_region,
                      "hgmd_nonsense":hgmd_nonsense_in_region,
