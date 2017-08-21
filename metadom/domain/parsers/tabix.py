@@ -1,11 +1,8 @@
-'''
-Parser for vcf files and used for running tabix queries to such files
-'''
 import logging
 import vcf
 from enum import Enum
-
 _log = logging.getLogger(__name__)
+
 
 class NoInputFileCoordinateSystemSelectedException(Exception):
     pass

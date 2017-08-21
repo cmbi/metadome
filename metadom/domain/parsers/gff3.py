@@ -1,12 +1,3 @@
-'''
-Created on Mar 13, 2016
-
-A parser for the GFF3 format, with some additional extras
-
-Version 1.0
-
-@author: laurensvdwiel
-'''
 from collections import namedtuple
 import gzip
 import urllib

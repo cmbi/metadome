@@ -1,9 +1,3 @@
-'''
-Function to help interpret fasta files
-
-@author: laurens
-'''
-
 def unwrap_fasta_alignment(alignment):
     """Unwraps a .fasta alignment by removing the end of line
     characters and formatting the fasta sequences as 
