@@ -1,9 +1,3 @@
-'''
-Created on Aug 9, 2016
-
-@author: laurens
-'''
-
 import pandas as pd
 import numpy as np
 from BGVM.Statistics.codon_statistics import calculate_codon_report

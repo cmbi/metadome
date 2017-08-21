@@ -1,8 +1,4 @@
-'''
-Created on Aug 2, 2016
-
-@author: laurens
-'''
+import logging
 import pandas as pd
 from BGVM.Mapping.Gene2ProteinMappingDatabase import retrieve_single_gene_entries
 from BGVM.Mapping.Regions.region_annotation import analyse_dn_ds_over_protein_region
@@ -12,12 +8,12 @@ from BGVM.BGVMExceptions import RegioncDNALengthDoesNotEqualProteinLengthExcepti
     FoundNoPfamHMMException, FoundMoreThanOnePfamHMMException,\
     RegionIsNotEncodedBycDNAException
 from BGVM.MetaDomains.Construction.meta_domain_merging import merge_meta_domain
-from dev_settings import LOGGER_NAME
-import logging
 import time
 from BGVM.APIConnectors.HMMERApi import convert_pfam_fasta_alignment_to_original_aligned_sequence,\
     map_sequence_to_aligned_sequence,\
     convert_pfam_fasta_alignment_to_strict_fasta
+
+_log = logging.getLogger(__name__)
 
 def annotate_genic_information(information_name, information_key, reference_domain_consensus, domain_id, hmmeralign_output, domain_of_interest_occurrences, ignore_list_of_indices, additional_information_keys):
     annotated_domain_consensus = []
@@ -29,7 +25,7 @@ def annotate_genic_information(information_name, information_key, reference_doma
                 reference_domain_consensus_entry = reference_domain_consensus[(reference_domain_consensus['domain_identifier'] == domain_identifier) & (reference_domain_consensus['swissprot_pos'] == entry['uniprot_pos'])]
                 
                 if len(reference_domain_consensus_entry) != 1:
-                    logging.getLogger(LOGGER_NAME).warning("At "+information_name+" annotation: For domain '"+str(domain_id)+
+                    _log.warning("At "+information_name+" annotation: For domain '"+str(domain_id)+
                                                        "' for occurrence '"+str(domain_occurrence['identifier'])+
                                                        "' at aligned position '"+str(entry['uniprot_pos'])+
                                                        "' no reference was mapped")
@@ -58,7 +54,7 @@ def annotate_genic_information(information_name, information_key, reference_doma
                 }
                 
                 if annotated_domain_consensus_entry['ref_codon'] != entry['ref_codon']:
-                    logging.getLogger(LOGGER_NAME).error("At "+information_name+" annotation: For domain '"+str(domain_id)+
+                    _log.error("At "+information_name+" annotation: For domain '"+str(domain_id)+
                                                        "' for occurrence '"+str(domain_occurrence['identifier'])+
                                                        "' at aligned position '"+str(entry['uniprot_pos'])+
                                                        "' ref codon '"+annotated_domain_consensus_entry['ref_codon']+
@@ -66,7 +62,7 @@ def annotate_genic_information(information_name, information_key, reference_doma
                     continue
                 
                 if annotated_domain_consensus_entry['ref_residue'] != entry['ref_residue']:
-                    logging.getLogger(LOGGER_NAME).error("At "+information_name+" annotation: For domain '"+str(domain_id)+
+                    _log.error("At "+information_name+" annotation: For domain '"+str(domain_id)+
                                                        "' for occurrence '"+str(domain_occurrence['identifier'])+
                                                        "' at aligned position '"+str(entry['uniprot_pos'])+
                                                        "' ref_residue '"+annotated_domain_consensus_entry['ref_residue']+
@@ -82,7 +78,7 @@ def annotate_genic_information(information_name, information_key, reference_doma
     return annotated_domain_consensus
 
 def create_annotated_meta_domain(domain_id, domain_dataset, minimal_merged_meta_domain_ExAC_frequency,  merged_meta_domain_missense_only): 
-    logging.getLogger(LOGGER_NAME).info("Started creating the '"+domain_id+"' 'meta'-domain")
+    _log.info("Started creating the '"+domain_id+"' 'meta'-domain")
     start_time = time.clock()
     
     # retrieve the data for the domain_id
@@ -113,26 +109,26 @@ def create_annotated_meta_domain(domain_id, domain_dataset, minimal_merged_meta_
                 if occurrence_sequence != '':
                     domain_of_interest_occurrences.append(occurrence_entry)
                 else:
-                    logging.getLogger(LOGGER_NAME).warning("Domain occurrence '"+occurence_id+"' did not have a sequence and therefore was not considered")
+                    _log.warning("Domain occurrence '"+occurence_id+"' did not have a sequence and therefore was not considered")
     
     # Report statistics
-    logging.getLogger(LOGGER_NAME).info("Found '"+str(len(domain_of_interest_occurrences))+"' occurrences of '"+domain_id+"' across HG19 over '"+str(len(pd.unique(domain_of_interest_domain_data.gene_name)))+"' genes")
+    _log.info("Found '"+str(len(domain_of_interest_occurrences))+"' occurrences of '"+domain_id+"' across HG19 over '"+str(len(pd.unique(domain_of_interest_domain_data.gene_name)))+"' genes")
     
     # Retrieve all the sequences of the domain of interest
     domain_of_interest_sequences = [domain_occurrence['sequence'] for domain_occurrence in domain_of_interest_occurrences]
     
-    logging.getLogger(LOGGER_NAME).info("Starting HMM based alignment on for domain '"+domain_id+"' for '"+str(len(domain_of_interest_domain_data))+"' occurrences across HG19")
+    _log.info("Starting HMM based alignment on for domain '"+domain_id+"' for '"+str(len(domain_of_interest_domain_data))+"' occurrences across HG19")
     # Run the HMMERAlign algorithm based on the Pfam HMM
     try:
         hmmeralign_output = HMMERApi.align_sequences_according_to_PFAM_HMM(domain_of_interest_sequences, domain_id)
     except (FoundNoPfamHMMException, FoundMoreThanOnePfamHMMException) as e:
-        logging.getLogger(LOGGER_NAME).error(e)
+        _log.error(e)
         time_step = time.clock()
-        logging.getLogger(LOGGER_NAME).info("Prematurely stopped creating the '"+domain_id+"' 'meta'-domain in "+str(time_step-start_time)+" seconds")
+        _log.info("Prematurely stopped creating the '"+domain_id+"' 'meta'-domain in "+str(time_step-start_time)+" seconds")
         return None
-    logging.getLogger(LOGGER_NAME).info("Finished HMM based alignment on for domain '"+domain_id+"'")
+    _log.info("Finished HMM based alignment on for domain '"+domain_id+"'")
     
-    logging.getLogger(LOGGER_NAME).info("Starting annotation of the '"+domain_id+"' domains with ExAC, ClinVar, and HGMD information")
+    _log.info("Starting annotation of the '"+domain_id+"' domains with ExAC, ClinVar, and HGMD information")
     ignore_list_of_indices = []
     for index in range(len(hmmeralign_output['alignments'])):
         domain_occurrence = domain_of_interest_occurrences[index]
@@ -146,12 +142,12 @@ def create_annotated_meta_domain(domain_id, domain_dataset, minimal_merged_meta_
             domain_occurrence['exac_information'] = sorted(exac_variation, key=lambda k: k['uniprot_pos'])
             domain_occurrence['clinvar_information'] = sorted(clinvar_variation, key=lambda k: k['uniprot_pos']) 
         except (RegionIsNotEncodedBycDNAException, RegioncDNALengthDoesNotEqualProteinLengthException) as e:
-            logging.getLogger(LOGGER_NAME).error(e)
+            _log.error(e)
             ignore_list_of_indices.append(index)
-    logging.getLogger(LOGGER_NAME).info("Finished annotating the '"+domain_id+"' domains with ExAC, ClinVar, and HGMD information: '"+str(len(domain_of_interest_domain_data)-len(ignore_list_of_indices)) +"' domain occurrences of the original '"+str(len(domain_of_interest_domain_data))+"' occurrences remained")
+    _log.info("Finished annotating the '"+domain_id+"' domains with ExAC, ClinVar, and HGMD information: '"+str(len(domain_of_interest_domain_data)-len(ignore_list_of_indices)) +"' domain occurrences of the original '"+str(len(domain_of_interest_domain_data))+"' occurrences remained")
     
     # Create the strict versions of the consensus alignment
-    logging.getLogger(LOGGER_NAME).info("Creating the mappings for '"+str(len(domain_of_interest_domain_data)-len(ignore_list_of_indices)) +"' '"+domain_id+"' domain occurrences based on the HMM alignment to consensus and original domain sequence")
+    _log.info("Creating the mappings for '"+str(len(domain_of_interest_domain_data)-len(ignore_list_of_indices)) +"' '"+domain_id+"' domain occurrences based on the HMM alignment to consensus and original domain sequence")
     
     # ensure we can map consensus residues back to consensus positions
     hmmeralign_output['consensus']['aligned_sequence'] = convert_pfam_fasta_alignment_to_original_aligned_sequence(hmmeralign_output['consensus']['alignment'])
@@ -173,10 +169,10 @@ def create_annotated_meta_domain(domain_id, domain_dataset, minimal_merged_meta_
             # create the mapping between the strict alignments and the original consensus sequence
             domain_occurrence['mapping_aligned_domain_to_domain_consensus'] = createAlignedSequenceMapping(domain_occurrence['strict_aligned_sequence'], hmmeralign_output['consensus']['aligned_sequence'], False)
             
-    logging.getLogger(LOGGER_NAME).info("Finished the mappings for '"+str(len(domain_of_interest_domain_data)-len(ignore_list_of_indices)) +"' '"+domain_id+"' domain occurrences")
+    _log.info("Finished the mappings for '"+str(len(domain_of_interest_domain_data)-len(ignore_list_of_indices)) +"' '"+domain_id+"' domain occurrences")
     
     # Add the reference genome information
-    logging.getLogger(LOGGER_NAME).info("Starting appending reference genome information to the '"+domain_id+"' 'meta'-domain")
+    _log.info("Starting appending reference genome information to the '"+domain_id+"' 'meta'-domain")
     reference_domain_consensus = []
     for index in range(len(hmmeralign_output['alignments'])):
         if index not in ignore_list_of_indices:
@@ -207,7 +203,7 @@ def create_annotated_meta_domain(domain_id, domain_dataset, minimal_merged_meta_
                 chromosome_double_check, genomic_stop_pos = gene_mapping['GenomeMapping']['cDNA'][str(cDNA_codon_end_pos)]['Genome'].split(':')
                 
                 if aligned_residue != uniprot_residue:
-                    logging.getLogger(LOGGER_NAME).error("At reference genome annotation: For domain '"+str(domain_id)+
+                    _log.error("At reference genome annotation: For domain '"+str(domain_id)+
                                                            "' for occurrence '"+str(domain_occurrence['identifier'])+
                                                            "' at aligned position '"+str(mapping_pos)+
                                                            "' aligned sequence residue '"+aligned_residue+
@@ -215,7 +211,7 @@ def create_annotated_meta_domain(domain_id, domain_dataset, minimal_merged_meta_
                     continue
                 
                 if translation_residue != uniprot_residue:
-                    logging.getLogger(LOGGER_NAME).error("At reference genome annotation: For domain '"+str(domain_id)+
+                    _log.error("At reference genome annotation: For domain '"+str(domain_id)+
                                                            "' for occurrence '"+str(domain_occurrence['identifier'])+
                                                            "' at aligned position '"+str(mapping_pos)+
                                                            "' translation residue '"+translation_residue+
@@ -223,7 +219,7 @@ def create_annotated_meta_domain(domain_id, domain_dataset, minimal_merged_meta_
                     continue
                 
                 if uniprot_residue != uniprot_residue_double_check:
-                    logging.getLogger(LOGGER_NAME).error("At reference genome annotation: For domain '"+str(domain_id)+
+                    _log.error("At reference genome annotation: For domain '"+str(domain_id)+
                                                            "' for occurrence '"+str(domain_occurrence['identifier'])+
                                                            "' at aligned position '"+str(mapping_pos)+
                                                            "' uniprot residue '"+uniprot_residue+
@@ -232,7 +228,7 @@ def create_annotated_meta_domain(domain_id, domain_dataset, minimal_merged_meta_
                     continue
                 
                 if chromosome != chromosome_double_check:
-                    logging.getLogger(LOGGER_NAME).error("At reference genome annotation: For domain '"+str(domain_id)+
+                    _log.error("At reference genome annotation: For domain '"+str(domain_id)+
                                                            "' for occurrence '"+str(domain_occurrence['identifier'])+
                                                            "' at aligned position '"+str(mapping_pos)+
                                                            "' chromosome '"+chromosome+
@@ -261,34 +257,34 @@ def create_annotated_meta_domain(domain_id, domain_dataset, minimal_merged_meta_
                     }
                     reference_domain_consensus.append(reference_domain_consensus_entry)
                 else:
-                    logging.getLogger(LOGGER_NAME).error("At reference genome annotation: For domain '"+str(domain_id)+
+                    _log.error("At reference genome annotation: For domain '"+str(domain_id)+
                                                        "' for occurrence '"+str(domain_occurrence['identifier'])+
                                                        "' at aligned position '"+str(uniprot_pos)+
                                                        "' uniprot residue '"+uniprot_residue+
                                                        "' did not translation reference residue '"+
                                                        gene_mappings[domain_occurrence['gene_name']]["translation_used"]["sequence"][uniprot_pos]+"'")
                         
-    logging.getLogger(LOGGER_NAME).info("Finished appending reference genome information to the '"+domain_id+"' 'meta'-domain")
+    _log.info("Finished appending reference genome information to the '"+domain_id+"' 'meta'-domain")
     
     # convert the domain consesus mapping into a dataframe
     reference_domain_consensus_df = pd.DataFrame(reference_domain_consensus)
 
     # Annotate genic information from the gene -> domain occurrence -> domain consensus
     # ExAC information
-    logging.getLogger(LOGGER_NAME).info("Starting appending ExAC information to the '"+domain_id+"' 'meta'-domain")
+    _log.info("Starting appending ExAC information to the '"+domain_id+"' 'meta'-domain")
     ExAC_additional_information_keys = {'alt_residue':'alt_residue', 'alt_codon':'alt_codon', 'ExAC_allele_frequency':'AF'}
     ExAC_annotated_domain_consensus = annotate_genic_information('ExAC', 'exac_information', reference_domain_consensus_df, domain_id, hmmeralign_output, domain_of_interest_occurrences, ignore_list_of_indices, ExAC_additional_information_keys)
-    logging.getLogger(LOGGER_NAME).info("Finished appending ExAC information to the '"+domain_id+"' 'meta'-domain")
+    _log.info("Finished appending ExAC information to the '"+domain_id+"' 'meta'-domain")
     # HGMD information
-    logging.getLogger(LOGGER_NAME).info("Starting appending HGMD information to the '"+domain_id+"' 'meta'-domain")
+    _log.info("Starting appending HGMD information to the '"+domain_id+"' 'meta'-domain")
     HGMD_additional_information_keys = {'alt_residue':'alt_residue', 'alt_codon':'alt_codon', 'HGMD_Prot':"PROT", 'HGMD_Phenotype':'PHEN', 'HGMD_Dna':"DNA", 'HGMD_STRAND':"STRAND", 'HGMD_MUT':"MUT", }
     HGMD_annotated_domain_consensus = annotate_genic_information('HGMD', 'hgmd_information', reference_domain_consensus_df, domain_id, hmmeralign_output, domain_of_interest_occurrences, ignore_list_of_indices, HGMD_additional_information_keys)
-    logging.getLogger(LOGGER_NAME).info("Finished appending HGMD information to the '"+domain_id+"' 'meta'-domain")
+    _log.info("Finished appending HGMD information to the '"+domain_id+"' 'meta'-domain")
     # ClinVar information
-    logging.getLogger(LOGGER_NAME).info("Starting appending ClinVar information to the '"+domain_id+"' 'meta'-domain")
+    _log.info("Starting appending ClinVar information to the '"+domain_id+"' 'meta'-domain")
     ClinVar_additional_information_keys = {'alt_residue':'alt_residue', 'alt_codon':'alt_codon', 'ClinVar_ID':"ID", 'ClinVar_alleleID':'ALLELEID', 'ClinVar_review_stat':'CLNREVSTAT', 'ClinVar_disease_name':'CLNDN', 'ClinVar_disease_db':'CLNDISDB', 'ClinVar_sources':'CLNVI', 'ClinVar_geneinfo':'GENEINFO', 'ClinVar_allele_origin':'ORIGIN', 'ClinVar_SO':'CLNVCSO',}
     ClinVar_annotated_domain_consensus = annotate_genic_information('ClinVar', 'clinvar_information', reference_domain_consensus_df, domain_id, hmmeralign_output, domain_of_interest_occurrences, ignore_list_of_indices, ClinVar_additional_information_keys)
-    logging.getLogger(LOGGER_NAME).info("Finished appending ClinVar information to the '"+domain_id+"' 'meta'-domain")
+    _log.info("Finished appending ClinVar information to the '"+domain_id+"' 'meta'-domain")
    
     # Formalize the meta domain
     meta_domain = {'domain_id':domain_id,
@@ -302,13 +298,13 @@ def create_annotated_meta_domain(domain_id, domain_dataset, minimal_merged_meta_
             'reference':reference_domain_consensus,
             'failed_domains':[domain_of_interest_occurrences[index] for index in range(len(hmmeralign_output['alignments'])) if index not in ignore_list_of_indices]}
     
-    logging.getLogger(LOGGER_NAME).info("Starting creating a merged domain consisting of HGMD, ExAC, ClinVar, and Reference information for the '"+domain_id+"' 'meta'-domain")
+    _log.info("Starting creating a merged domain consisting of HGMD, ExAC, ClinVar, and Reference information for the '"+domain_id+"' 'meta'-domain")
     merged_meta_domain = merge_meta_domain(meta_domain, minimal_merged_meta_domain_ExAC_frequency, merged_meta_domain_missense_only)
     meta_domain['merged_meta_domain'] = merged_meta_domain.to_dict('records')
-    logging.getLogger(LOGGER_NAME).info("Finished creating a merged domain consisting of HGMD, ExAC, ClinVar, and Reference information for the '"+domain_id+"' 'meta'-domain")
+    _log.info("Finished creating a merged domain consisting of HGMD, ExAC, ClinVar, and Reference information for the '"+domain_id+"' 'meta'-domain")
     
     time_step = time.clock()
-    logging.getLogger(LOGGER_NAME).info("Finished creating the '"+domain_id+"' 'meta'-domain in "+str(time_step-start_time)+" seconds")
+    _log.info("Finished creating the '"+domain_id+"' 'meta'-domain in "+str(time_step-start_time)+" seconds")
     return meta_domain
 
 if __name__ == '__main__':
