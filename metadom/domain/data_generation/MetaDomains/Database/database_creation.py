@@ -1,8 +1,3 @@
-'''
-Created on Aug 3, 2016
-
-@author: laurens
-'''
 import pandas as pd
 from sklearn.externals.joblib.parallel import Parallel, delayed
 import sqlite3

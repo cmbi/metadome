@@ -1,8 +1,3 @@
-'''
-Created on Aug 3, 2016
-
-@author: laurens
-'''
 import sqlite3
 import json
 import urllib.request
