@@ -12,6 +12,7 @@ HG19_REFERENCE_TYPE_NAME = "HG19_ref"
 HG_HSSP_TYPE_NAME = "HG_HSSP"
 HGMD_TYPE_NAME = "HGMD"
 EXAC_TYPE_NAME = "ExAC"
+CLINVAR_TYPE_NAME = "ClinVar"
 
 def annotate_alt_residues_per_domain_consensus_pos(position, data, entry_type):
     return str([x for x in data[(data.domain_consensus_pos == position) & (data.entry_type == entry_type)]['alt_residue']])
@@ -49,10 +50,12 @@ def merge_meta_domain(meta_domain, filter_ExAC_AF=None, filter_missense_only=Fal
     # Load the meta domain annotation for ExAC and HGMD
     ExAC_meta_domain = pd.DataFrame(meta_domain['ExAC'])
     HGMD_meta_domain = pd.DataFrame(meta_domain['HGMD'])
+    ClinVar_meta_domain = pd.DataFrame(meta_domain['ClinVar'])
     Reference_meta_domain = pd.DataFrame(meta_domain['reference'])
 
-    ExAC_meta_domain_columns = ['ExAC_alt_residues', 'entry_type', 'domain_identifier', 'domain_consensus_pos', 'consensus_domain_residue', 'ref_residue', 'alt_residue', 'ref_codon', 'alt_codon', 'ExAC_allele_frequency', 'uniprot_ac', 'uniprot_name', 'swissprot_pos', 'gene_name', 'gencode_gene_id', 'gencode_transcription_id', 'gencode_translation_name']
-    HGMD_meta_domain_columns = ['HGMD_alt_residues', 'entry_type', 'domain_identifier', 'domain_consensus_pos', 'consensus_domain_residue', 'ref_residue', 'alt_residue', 'ref_codon', 'alt_codon', 'HGMD_Phenotype', 'HGMD_Prot', 'HGMD_MUT', 'HGMD_Dna', 'HGMD_STRAND', 'uniprot_ac', 'uniprot_name', 'swissprot_pos', 'gene_name', 'gencode_gene_id', 'gencode_transcription_id', 'gencode_translation_name']
+    ExAC_meta_domain_columns = ['ExAC_alt_residues', 'entry_type', 'domain_identifier', 'domain_consensus_pos', 'consensus_domain_residue', 'chr', 'chr_start', 'chr_stop', 'ref_residue', 'alt_residue', 'ref_codon', 'alt_codon', 'ExAC_allele_frequency', 'uniprot_ac', 'uniprot_name', 'swissprot_pos', 'gene_name', 'gencode_gene_id', 'gencode_transcription_id', 'gencode_translation_name']
+    HGMD_meta_domain_columns = ['HGMD_alt_residues', 'entry_type', 'domain_identifier', 'domain_consensus_pos', 'consensus_domain_residue', 'chr', 'chr_start', 'chr_stop', 'ref_residue', 'alt_residue', 'ref_codon', 'alt_codon', 'HGMD_Phenotype', 'HGMD_Prot', 'HGMD_MUT', 'HGMD_Dna', 'HGMD_STRAND', 'uniprot_ac', 'uniprot_name', 'swissprot_pos', 'gene_name', 'gencode_gene_id', 'gencode_transcription_id', 'gencode_translation_name']
+    ClinVar_meta_domain_columns = ['ClinVar_alt_residues', 'entry_type', 'domain_identifier', 'domain_consensus_pos', 'consensus_domain_residue', 'chr', 'chr_start', 'chr_stop', 'ref_residue', 'alt_residue', 'ref_codon', 'alt_codon', 'ClinVar_ID', 'ClinVar_alleleID', 'ClinVar_review_stat', 'ClinVar_disease_name', 'ClinVar_disease_db', 'ClinVar_sources', 'ClinVar_geneinfo', 'ClinVar_allele_origin', 'ClinVar_SO', 'uniprot_ac', 'uniprot_name', 'swissprot_pos', 'gene_name', 'gencode_gene_id', 'gencode_transcription_id', 'gencode_translation_name']
     
     if len(ExAC_meta_domain) == 0:
         for column in ExAC_meta_domain_columns:
@@ -60,11 +63,15 @@ def merge_meta_domain(meta_domain, filter_ExAC_AF=None, filter_missense_only=Fal
     if len(HGMD_meta_domain) == 0:
         for column in HGMD_meta_domain_columns:
             HGMD_meta_domain[column] = np.nan                            
+    if len(ClinVar_meta_domain) == 0:
+        for column in ClinVar_meta_domain_columns:
+            ClinVar_meta_domain[column] = np.nan             
 
     # add the entry types to each set, so we can find each set again after merge
     Reference_meta_domain['entry_type'] = HG19_REFERENCE_TYPE_NAME
     HGMD_meta_domain['entry_type'] = HGMD_TYPE_NAME
     ExAC_meta_domain['entry_type'] = EXAC_TYPE_NAME
+    ClinVar_meta_domain['entry_type'] = CLINVAR_TYPE_NAME
     
     # Filter ExAC on population frequence
     if not(filter_ExAC_AF is None) and type(filter_ExAC_AF) == float:
@@ -90,16 +97,29 @@ def merge_meta_domain(meta_domain, filter_ExAC_AF=None, filter_missense_only=Fal
             HGMD_meta_domain['HGMD_variants'] = HGMD_meta_domain.apply(lambda data_entry: annotate_variants_per_domain_consensus_pos(data_entry['domain_consensus_pos'], HGMD_meta_domain, entry_type=HGMD_TYPE_NAME), axis=1)
             HGMD_meta_domain['HGMD_alt_residues'] = HGMD_meta_domain.apply(lambda data_entry: annotate_alt_residues_per_domain_consensus_pos(data_entry['domain_consensus_pos'], HGMD_meta_domain, entry_type=HGMD_TYPE_NAME), axis=1)
     
-    # Merge HGMD and ExAC
-    merged_meta_domain = pd.concat([ExAC_meta_domain, HGMD_meta_domain, Reference_meta_domain,])
+    # Annotate the merged set with any ExAC and HGMD variants that may occur at that point
+    if len(ClinVar_meta_domain) != 0:
+        if filter_missense_only:
+            # Filter ClinVar on missense only
+            ClinVar_meta_domain = ClinVar_meta_domain[(ClinVar_meta_domain.alt_residue != ClinVar_meta_domain.ref_residue) & (ClinVar_meta_domain.alt_residue != '*')]
+        # check if after filtering there is anything left
+        if len(ClinVar_meta_domain) != 0:
+            ClinVar_meta_domain['ClinVar_variants'] = ClinVar_meta_domain.apply(lambda data_entry: annotate_variants_per_domain_consensus_pos(data_entry['domain_consensus_pos'], ClinVar_meta_domain, entry_type=CLINVAR_TYPE_NAME), axis=1)
+            ClinVar_meta_domain['ClinVar_alt_residues'] = ClinVar_meta_domain.apply(lambda data_entry: annotate_alt_residues_per_domain_consensus_pos(data_entry['domain_consensus_pos'], ClinVar_meta_domain, entry_type=CLINVAR_TYPE_NAME), axis=1)
+    
+    
+    # Merge HGMD, ClinVar and ExAC
+    merged_meta_domain = pd.concat([ExAC_meta_domain, HGMD_meta_domain, ClinVar_meta_domain, Reference_meta_domain,])
 
     # Annotate the merged set with any ExAC and HGMD alt-residues that may occur at that point
     merged_meta_domain['ExAC_alt_residues'] = merged_meta_domain.apply(lambda data_entry: retrieve_field_of_interest_for_entry_per_domain_consensus_pos(data_entry['domain_consensus_pos'], merged_meta_domain, entry_type=EXAC_TYPE_NAME, field_of_interest='ExAC_alt_residues'), axis=1)
     merged_meta_domain['HGMD_alt_residues'] = merged_meta_domain.apply(lambda data_entry: retrieve_field_of_interest_for_entry_per_domain_consensus_pos(data_entry['domain_consensus_pos'], merged_meta_domain, entry_type=HGMD_TYPE_NAME, field_of_interest='HGMD_alt_residues'), axis=1)
+    merged_meta_domain['ClinVar_alt_residues'] = merged_meta_domain.apply(lambda data_entry: retrieve_field_of_interest_for_entry_per_domain_consensus_pos(data_entry['domain_consensus_pos'], merged_meta_domain, entry_type=CLINVAR_TYPE_NAME, field_of_interest='ClinVar_alt_residues'), axis=1)
     
     # Annotate the merged set with any ExAC and HGMD variants that may occur at that point
     merged_meta_domain['ExAC_variants'] = merged_meta_domain.apply(lambda data_entry: retrieve_field_of_interest_for_entry_per_domain_consensus_pos(data_entry['domain_consensus_pos'], merged_meta_domain, entry_type=EXAC_TYPE_NAME, field_of_interest='ExAC_variants'), axis=1)
     merged_meta_domain['HGMD_variants'] = merged_meta_domain.apply(lambda data_entry: retrieve_field_of_interest_for_entry_per_domain_consensus_pos(data_entry['domain_consensus_pos'], merged_meta_domain, entry_type=HGMD_TYPE_NAME, field_of_interest='HGMD_variants'), axis=1)
+    merged_meta_domain['ClinVar_variants'] = merged_meta_domain.apply(lambda data_entry: retrieve_field_of_interest_for_entry_per_domain_consensus_pos(data_entry['domain_consensus_pos'], merged_meta_domain, entry_type=CLINVAR_TYPE_NAME, field_of_interest='ClinVar_variants'), axis=1)
 
     # Annotate alt residues and variants that occur in both ExAC and HGMD at that 'meta' position
     merged_meta_domain['identical_ExAC_HGMD_alt_residue'] =  merged_meta_domain.apply(lambda data_entry: alt_residue_occurs_in_both_HGMD_and_ExAC_as_alt_meta_domain(data_entry), axis=1)
@@ -111,9 +131,5 @@ def merge_meta_domain(meta_domain, filter_ExAC_AF=None, filter_missense_only=Fal
     merged_meta_domain['synonymous_probability'] = merged_meta_domain.apply(lambda data_entry: calculate_codon_report(data_entry['ref_codon'])['synonymous_probability'], axis=1)
     merged_meta_domain['nonsense_probability'] = merged_meta_domain.apply(lambda data_entry: calculate_codon_report(data_entry['ref_codon'])['nonsense_probability'], axis=1)
     merged_meta_domain['nonsynonymous_probability'] = merged_meta_domain.apply(lambda data_entry: calculate_codon_report(data_entry['ref_codon'])['nonsynonymous_probability'], axis=1)
-     
-    # Specify how we want the column order and sort 
-    merged_meta_domain_column_sort = ['domain_identifier', 'domain_consensus_pos', 'consensus_domain_residue', 'ref_residue', 'alt_residue', 'ExAC_allele_frequency', 'HGMD_Phenotype', 'possible_missense_alt_residues', 'missense_probability', 'ref_codon', 'alt_codon', 'ExAC_alt_residues', 'ExAC_variants', 'HGMD_alt_residues', 'HGMD_variants', 'identical_ExAC_HGMD_alt_residue', 'identical_ExAC_HGMD_variant', 'synonymous_probability', 'nonsense_probability', 'nonsynonymous_probability', 'HGMD_Prot', 'HGMD_MUT', 'HGMD_Dna', 'HGMD_STRAND', 'uniprot_ac', 'uniprot_name', 'swissprot_pos', 'gene_name', 'gencode_gene_id', 'gencode_transcription_id', 'gencode_translation_name','entry_type',]
-    merged_meta_domain=merged_meta_domain[merged_meta_domain_column_sort]
     
     return merged_meta_domain
