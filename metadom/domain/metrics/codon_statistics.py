@@ -1,8 +1,3 @@
-'''
-Created on Mar 9, 2016
-
-@author: laurensvdwiel
-'''
 from Bio.Seq import translate
 import numpy as np
 

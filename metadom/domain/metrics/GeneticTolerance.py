@@ -1,9 +1,3 @@
-'''
-Created on Oct 21, 2016
-
-@author: laurens
-'''
-
 def mosy_score(missense, synonymous):
     try:
         return (missense+1)/(synonymous+1)

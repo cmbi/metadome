@@ -1,14 +1,11 @@
-'''
-Created on Jan 24, 2017
+import logging
 
-@author: laurens
-'''
 from BGVM.MetaDomains.Construction.meta_domain_merging import EXAC_TYPE_NAME,\
     HG19_REFERENCE_TYPE_NAME
 from BGVM.Mapping.Gene2ProteinMappingDatabase import retrieve_single_gene_entries
-from dev_settings import LOGGER_NAME
 import numpy as np
-import logging
+
+_log = logging.getLogger(__name__)
 
 def compute_logo_information_content_for_amino_acid_per_pos(amino_acid_entropy_per_pos, amino_acid_frequencies_per_pos, s=20):
     """ Computes the information content needed to construct a sequence logo.
@@ -246,6 +243,6 @@ def aggregate_amino_acid_frequences_in_pfam_alignment(pfam_alignment):
                 amino_acid_distribution[position][aa] += 1.0
                 amino_acid_distribution[position]['count'] += 1
             elif aa not in ignore_list:                
-                logging.getLogger(LOGGER_NAME).warning("For "+pfam_alignment['AC']+" at consensus position '"+str(position)+"' ignoring residue '"+aa+"' for amino acid distribution")
+                _log.warning("For "+pfam_alignment['AC']+" at consensus position '"+str(position)+"' ignoring residue '"+aa+"' for amino acid distribution")
     
     return amino_acid_distribution

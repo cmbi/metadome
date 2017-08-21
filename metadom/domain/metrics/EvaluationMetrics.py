@@ -1,10 +1,3 @@
-'''
-Module Description:
- This module specifies metrics that can be used for various evaluations
- 
-@author: Laurens van de wiel
-'''
-
 import numpy as np
 from sklearn.metrics import mean_squared_error, explained_variance_score, mean_absolute_error, roc_curve, auc, confusion_matrix,  accuracy_score, precision_score, recall_score, f1_score
 from statistics import mean, stdev
