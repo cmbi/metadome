@@ -2,16 +2,13 @@ import logging
 
 from flask import Blueprint, redirect, g, render_template, url_for, request, session
 
-
 from metadom import get_version
 from metadom.presentation.web.forms import MetaDomForm
 from metadom.domain.repositories import MappingRepository
 
-
 _log = logging.getLogger(__name__)
 
 bp = Blueprint('web', __name__)
-
 
 @bp.route('/', methods=['GET'])
 def index():
