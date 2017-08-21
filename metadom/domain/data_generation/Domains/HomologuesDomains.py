@@ -233,11 +233,15 @@ def create_annotated_domains_dataset(input_domains, output_domains, output_failu
                     "exac_missense_in_domain":domain_result["exac_missense"], \
                     "exac_synonymous_in_domain":domain_result["exac_synonymous"], \
                     "exac_nonsense_in_domain":domain_result["exac_nonsense"], \
+                    "clinvar_missense_in_domain":domain_result["clinvar_missense"],\
+                    "clinvar_nonsense_in_domain":domain_result["clinvar_nonsense"],\
+                    "clinvar_synonymous_in_domain":domain_result["clinvar_synonymous"],\
                     "hgmd_missense_in_domain":domain_result["hgmd_missense"], \
                     "hgmd_synonymous_in_domain":domain_result["hgmd_synonymous"], \
                     "hgmd_nonsense_in_domain":domain_result["hgmd_nonsense"], \
                     "exac_information_in_domain":domain_result["exac_information"], \
                     "hgmd_information_in_domain":domain_result["hgmd_information"], \
+                    "clinvar_information_in_domain":domain_result["clinvar_information"],\
                     }
                     
                 final_dataset.append(dataset_entry)
