@@ -48,6 +48,5 @@ def before_request():
 
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover
-    import traceback
-    _log.error("Unhandled exception:\n{}".format(traceback.format_exc(error)))
+    _log.error("Unhandled exception:\n{}".format(error))
     return render_template('error.html', msg=error), 500
