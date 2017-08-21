@@ -1,11 +1,6 @@
-'''
-Created on Oct 24, 2016
-
-@author: laurens
-'''
 import numpy as np
-from BGVM.Domains.HomologuesDomains import annotate_homologue_domains_with_intolerance_scores
-from BGVM.Metrics.EvaluationMetrics import MedianAbsoluteDeviation_permutation
+from metadom.domain.data_generation.Domains.HomologuesDomains import annotate_homologue_domains_with_intolerance_scores
+from metadom.domain.metrics.EvaluationMetrics import MedianAbsoluteDeviation_permutation
 from sklearn.metrics.regression import mean_squared_error
 
 def domain_intolerance_signal_analysis(domain_data,  domain_selection_name, score_of_interest, n_permutations, random_seed, original_y=None):

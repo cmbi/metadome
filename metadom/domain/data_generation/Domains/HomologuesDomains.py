@@ -1,29 +1,17 @@
-'''
-Created on Oct 24, 2016
-
-@author: laurens
-'''
-from BGVM.Tools.CustomLogger import initLogging
-from BGVM.Tools.DataIO import LoadDataFromJsonFile, SaveDataToJsonFile
-from dev_settings import GENE2PROTEIN_HOMOLOGUE_DOMAINS, LOGGER_NAME,\
-    GENE2PROTEIN_ANNOTATED_HOMOLOGUE_DOMAINS_DATASET,\
-    GENE2PROTEIN_ANNOTATED_HOMOLOGUE_DOMAINS_DATASET_FAILURES,\
-    GENE2PROTEIN_DOMAINS
-from BGVM.Mapping.Gene2ProteinMappingDatabase import retrieve_single_gene_entries
 import logging
-from BGVM.Mapping.Regions.region_annotation import analyse_dn_ds_over_protein_region
-from BGVM.BGVMExceptions import RegionIsNotEncodedBycDNAException,\
-    RegioncDNALengthDoesNotEqualProteinLengthException,\
-    ExternalREFAlleleNotEqualsTranscriptionException
 import pandas as pd
 import numpy as np
 import time
-from BGVM.Metrics.GeneticTolerance import mosy_score,\
-    background_corrected_mosy_score
-from BGVM.Metrics.EvaluationMetrics import MedianAbsoluteDeviation
 from sklearn.metrics.regression import mean_squared_error
-from BGVM.Annotation.CreateAnnotatedGenesDataset import retrieve_all_annotated_gene_entries,\
-    retrieve_single_annotated_gene
+from metadom.domain.metrics.GeneticTolerance import background_corrected_mosy_score,\
+    mosy_score
+from metadom.domain.metrics.EvaluationMetrics import MedianAbsoluteDeviation
+from metadom.domain.data_generation.mapping.annotation.region_annotation import analyse_dn_ds_over_protein_region,\
+    RegionIsNotEncodedBycDNAException,\
+    ExternalREFAlleleNotEqualsTranscriptionException
+from metadom.domain.data_generation.mapping.Gene2ProteinMapping import RegioncDNALengthDoesNotEqualProteinLengthException
+
+_log = logging.getLogger(__name__)
 
 def create_homologues_domains_dataset():
     """Creates 2 datasets that consist of domains that occur throughout H19,
@@ -32,13 +20,13 @@ def create_homologues_domains_dataset():
     The second dataset is stored in dev_settings.GENE2PROTEIN_HOMOLOGUE_DOMAINS
         consists of all domains that occur as homologues troughout HG19"""
     # retrieve and save all homologue domains
-    logging.getLogger(LOGGER_NAME).info("Starting analysing homologues domains for all genes in the mapping database")
+    _log.info("Starting analysing homologues domains for all genes in the mapping database")
     start_time = time.clock()
     domains, domains_in_homologues, genes_with_interpro_ids, genes_without_interpro_ids = extract_domains_and_homologue_domains()
     SaveDataToJsonFile(GENE2PROTEIN_DOMAINS, domains)
     SaveDataToJsonFile(GENE2PROTEIN_HOMOLOGUE_DOMAINS, domains_in_homologues)
     time_step = time.clock()
-    logging.getLogger(LOGGER_NAME).info("Finished analysing homologues domains for "+str(len(genes_with_interpro_ids)+len(genes_without_interpro_ids))+" genes and found '"+str(len(genes_without_interpro_ids))+"' genes without any interpro domains linked and "+str(len(domains_in_homologues))+" homologues domains in "+str(time_step-start_time)+" seconds")
+    _log.info("Finished analysing homologues domains for "+str(len(genes_with_interpro_ids)+len(genes_without_interpro_ids))+" genes and found '"+str(len(genes_without_interpro_ids))+"' genes without any interpro domains linked and "+str(len(domains_in_homologues))+" homologues domains in "+str(time_step-start_time)+" seconds")
 
 def load_homologue_domain_dataset(filename):
     """Loads the homologues domain dataset contained within filename
@@ -204,7 +192,7 @@ def create_annotated_domains_dataset(input_domains, output_domains, output_failu
             try:
                 domain_result = analyse_dn_ds_over_protein_region(gene_mapping, domain_uniprot_start_pos-1, domain_uniprot_end_pos)
             except (RegionIsNotEncodedBycDNAException, RegioncDNALengthDoesNotEqualProteinLengthException, ExternalREFAlleleNotEqualsTranscriptionException) as e:
-                logging.getLogger(LOGGER_NAME).error(e)
+                _log.error(e)
                 failed_genes.append(gene_name)
                 failed.append({'gene_name':gene_name,'error':e})
             
@@ -246,14 +234,14 @@ def create_annotated_domains_dataset(input_domains, output_domains, output_failu
                     
                 final_dataset.append(dataset_entry)
     try:
-        logging.getLogger(LOGGER_NAME).info("Writing to data to file ...")
+        _log.info("Writing to data to file ...")
         final_dataset_df = pd.DataFrame(final_dataset)
         final_dataset_df.to_csv(output_domains, sep=";")
-        logging.getLogger(LOGGER_NAME).info("Writing to data to file completed")
+        _log.info("Writing to data to file completed")
         
-        logging.getLogger(LOGGER_NAME).info("Writing "+str(len(failed))+" failed genes to text file ...")
+        _log.info("Writing "+str(len(failed))+" failed genes to text file ...")
         failed_df = pd.DataFrame(failed)
         failed_df.to_csv(output_failures, sep=';')
-        logging.getLogger(LOGGER_NAME).info("Writing failed genes to text file completed")
+        _log.info("Writing failed genes to text file completed")
     except Exception as e:
-        logging.getLogger(LOGGER_NAME).critical("Writing to text file failed due to: %s" % str(e))
+        _log.critical("Writing to text file failed due to: %s" % str(e))
