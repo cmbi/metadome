@@ -8,7 +8,7 @@ import numpy as np
 from BGVM.MetaDomains.Database.database_queries import retrieve_all_meta_domains,\
     retrieve_all_meta_domain_ids
 from BGVM.MetaDomains.Construction.meta_domain_merging import EXAC_TYPE_NAME, HGMD_TYPE_NAME,\
-    HG19_REFERENCE_TYPE_NAME
+    HG19_REFERENCE_TYPE_NAME, CLINVAR_TYPE_NAME
 from sklearn.externals.joblib.parallel import Parallel, delayed
 from BGVM.Tools.ParallelHelper import CalculateNumberOfActiveThreads
 from BGVM.Tools.CustomLogger import initLogging
@@ -232,6 +232,7 @@ def construct_single_meta_domain_analysis_dataset_entry(meta_domain_entry, domai
      
     exac_group = ExAC_HGMD_merge[(ExAC_HGMD_merge.entry_type == EXAC_TYPE_NAME)].groupby('domain_consensus_pos')
     hgmd_group = ExAC_HGMD_merge[(ExAC_HGMD_merge.entry_type == HGMD_TYPE_NAME)].groupby('domain_consensus_pos')
+    clinvar_group = ExAC_HGMD_merge[(ExAC_HGMD_merge.entry_type == CLINVAR_TYPE_NAME)].groupby('domain_consensus_pos')
  
     all_group = ExAC_HGMD_merge.groupby('domain_consensus_pos')
     for domain_consensus_pos, group in all_group:
@@ -276,6 +277,21 @@ def construct_single_meta_domain_analysis_dataset_entry(meta_domain_entry, domai
                      'n_domain_occurrences':n_domain_occurrences,
                      'n_domain_in_gene_occurrences':n_domain_in_gene_occurrences,}
             meta_domain_analysis.append(entry)
+    
+    for domain_consensus_pos, group in clinvar_group:
+        CLINVAR_variants = group['variant'].tolist()
+        for i in np.unique(CLINVAR_variants):
+            entry = {'domain_consensus_pos':int(domain_consensus_pos), 
+                     'entry_type':CLINVAR_TYPE_NAME, 
+                     'domain_id':meta_domain['domain_id'],
+                     'variant':i, 
+                     'variant_count':CLINVAR_variants.count(i), 
+                     'meta_domain_size':meta_domain_size,
+                     'n_domain_occurrences_in_meta_domain':n_domain_in_meta_domain_occurrences,
+                     'n_domain_occurrences':n_domain_occurrences,
+                     'n_domain_in_gene_occurrences':n_domain_in_gene_occurrences,}
+            meta_domain_analysis.append(entry)
+    
     
     return meta_domain_analysis        
     
