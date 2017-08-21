@@ -1,15 +1,11 @@
-'''
-Created on 18 jan. 2016
-
-@author: Laurens van de Wiel
-'''
+import logging
 from metadom.default_settings import EXAC_VCF_FILE, HGMD_VCF_FILE,\
     HGMD_CONSIDERED_CLASSES, EXAC_ACCEPTED_FILTERS, CLINVAR_CONSIDERED_CLINSIG,\
     CLINVAR_VCF_FILE
 from metadom.controller.parsers.tabix import tabix_query, variant_coordinate_system
 from metadom.controller.mapping.Gene2ProteinMapping import extract_gene_region,\
     RegioncDNALengthDoesNotEqualProteinLengthException
-from metadom import _log
+_log = logging.getLogger(__name__)
 
 class NucleotideConversionException(Exception):
     pass

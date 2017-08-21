@@ -1,16 +1,13 @@
-'''
-Created on May 6, 2016
+import logging
 
-@author: laurens
-'''
-from metadom.controller.mapping.Protein2ProteinMapping import createMappingOfAASequenceToAASequence,\
+from metadom.domain.data_generation.mapping.Protein2ProteinMapping import createMappingOfAASequenceToAASequence,\
     map_single_residue
-from metadom.controller.wrappers.pdb import getRefseqForPDBfile,\
+from metadom.domain.wrappers.pdb import getRefseqForPDBfile,\
     retrieveAtomicStructureSequence, retrieveAtomicStructureMapping,\
     AtomicSequenceIDMappingFailedException
 import numpy as np
 
-from metadom import _log
+_log = logging.getLogger(__name__)
 
 class RegioncDNALengthDoesNotEqualProteinLengthException(Exception):
     pass

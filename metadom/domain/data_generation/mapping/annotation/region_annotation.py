@@ -1,14 +1,13 @@
-'''
-Created on Oct 21, 2016
+import logging
 
-@author: laurens
-'''
 from metadom.controller.mapping.annotation.GenomeTranscriptionAnnotation import annotateTranscriptWithExacData,\
     annotateTranscriptWithHGMDData, annotateSNVs,\
     annotateTranscriptWithClinvarData
 from metadom.controller.metrics.codon_statistics import calculate_CDS_background_rate
 from metadom.controller.mapping.Gene2ProteinMapping import extract_gene_region
 from Bio.Seq import translate
+
+_log = logging.getLogger(__name__)
 
 class RegionIsNotEncodedBycDNAException(Exception):
     pass

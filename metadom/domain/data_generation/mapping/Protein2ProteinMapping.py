@@ -1,10 +1,8 @@
-'''
-Created on May 6, 2016
+import logging
 
-@author: laurens
-'''
-from metadom.controller.wrappers.clustal import clustalw_pairwiseAlignment
-from metadom import _log
+from metadom.domain.wrappers.clustal import clustalw_pairwiseAlignment
+
+_log = logging.getLogger(__name__)
 
 def createMappingOfAASequenceToAASequence(primary_sequence, secondary_sequence):
     """Annotates a blast result with the atomic sequence and a mapping of the translated

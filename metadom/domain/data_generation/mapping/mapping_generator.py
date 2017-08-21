@@ -1,31 +1,17 @@
-'''
-Created on Dec 22, 2015
-
-Writes an automated report for a gene analysis
-
-@author: laurensvdwiel
-'''
-from metadom.default_settings import UNIPROT_SPROT_SPECIES_FILTER
-from metadom.controller.wrappers.gencode import retrieveGeneTranslations_gencode,\
-    retrieveLongestTranslation, retrieveNucleotideSequence_gencode,\
-    retrieveCodingGenomicLocations_gencode,\
-    retrieveStrandDirection_gencode,\
-    retrieveMRNAValidatedTranslations_gencode, NoGeneTranslationsFoundException,\
-    TranscriptionNotContainingCDS, TranscriptionNotEncodingForTranslation,\
-    TranscriptionStrandMismatchException,\
-    MissMatchTranscriptIDToMatchingTranscript
-from metadom.controller.wrappers.uniprot import retrieveTopUniprotMatch,\
-    retrieveSwissprotFromGencode, NoUniProtACFoundException
-from metadom.controller.wrappers.interpro import retrieve_interpro_entries
-from metadom.controller.mapping.Gene2ProteinMapping import createMappingOfGeneTranscriptionToTranslationToProtein
 import logging
+from metadom.default_settings import UNIPROT_SPROT_SPECIES_FILTER
+from metadom.domain.wrappers.gencode import retrieveGeneTranslations_gencode,\
+    retrieveNucleotideSequence_gencode, retrieveCodingGenomicLocations_gencode,\
+    retrieveStrandDirection_gencode, retrieveMRNAValidatedTranslations_gencode,\
+    NoGeneTranslationsFoundException, TranscriptionNotContainingCDS,\
+    TranscriptionNotEncodingForTranslation, TranscriptionStrandMismatchException,\
+    MissMatchTranscriptIDToMatchingTranscript
+from metadom.domain.wrappers.uniprot import retrieveTopUniprotMatch,\
+    retrieveSwissprotFromGencode, NoUniProtACFoundException
+from metadom.domain.wrappers.interpro import retrieve_interpro_entries
+from metadom.domain.data_generation.mapping.Gene2ProteinMapping import createMappingOfGeneTranscriptionToTranslationToProtein
 
 _log = logging.getLogger(__name__)
-
-# from metadom.controller.wrappers.pdb import retrieveMatchingSeqresSequences,\
-#     retrieveBestMatchingSeqresSequence, retrieveAtomicStructureSequence,\
-#     getRefseqForPDBfile, cleanBlastResults, appendStructureDataToBlastResults
-
 
 def generate_gene_mapping(gene_name):
     """
