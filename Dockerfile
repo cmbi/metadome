@@ -1,8 +1,22 @@
 FROM python:3.5
 
+RUN mkdir -p /usr/externals
+
+# Install BLAST+
+RUN wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-x64-linux.tar.gz
+RUN tar -zxvf ncbi-blast-2.6.0+-x64-linux.tar.gz
+RUN mv ncbi-blast-2.6.0+ /usr/externals/blast
+
+# Install ClustalW
+RUN wget http://www.clustal.org/download/2.1/clustalw-2.1-linux-x86_64-libcppstatic.tar.gz
+RUN tar -zxvf clustalw-2.1-linux-x86_64-libcppstatic.tar.gz
+RUN mv clustalw-2.1-linux-x86_64-libcppstatic /usr/externals/clustalw
+
+# Create directory for app
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
+# Configure Python environment
 COPY requirements.txt /usr/src/app/
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . /usr/src/app
