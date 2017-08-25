@@ -79,7 +79,7 @@ def generate_gene_mapping(gene_name):
         gene_report["translation_used"] = matching_coding_translation
         
         # Annotate the interpro ids
-        gene_report['interpro'] = retrieve_interpro_entries(gene_report['uniprot'])
+#         gene_report['interpro'] = retrieve_interpro_entries(gene_report['uniprot'])
     
         # Annotateswissprot ac's from gencode
         gene_report['gencode_swissprot'] = retrieveSwissprotFromGencode(gene_report)
@@ -97,8 +97,8 @@ def generate_gene_mapping(gene_name):
         gene_report["GenomeMapping"] = createMappingOfGeneTranscriptionToTranslationToProtein(gene_report)
     
         
-#         yield gene_report
-    return
+        yield gene_report
+#     return
     
 def createGene2ProteinMapping(gene_report):
     # translation position: {Amino Acid, Nucleotides, chromosomal position range, Linked PDB seqres position, Linked PDB atom position}
