@@ -13,11 +13,11 @@ SQLALCHEMY_POOL_TIMEOUT = 10
 DEBUG_TB_ENABLED = DEBUG
 
 # local data directory
-DATA_DIR = "/media/laurens/LVDW_DATA_SSD/"
+DATA_DIR = "/usr/data/"
 
 # local executables
-BLASTP_EXECUTABLE = "/usr/bin/blastp"
-CLUSTALW_EXECUTABLE = "/usr/bin/clustalw"
+BLASTP_EXECUTABLE = "/usr/externals/blast/bin/blastp"
+CLUSTALW_EXECUTABLE = "/usr/externals/clustalw/clustalw2"
 HMMFETCH_EXECUTABLE = "/usr/bin/hmmfetch"
 HMMLOGO_EXECUTABLE = "/usr/bin/hmmlogo"
 HMMALIGN_EXECUTABLE = "/usr/bin/hmmalign"
