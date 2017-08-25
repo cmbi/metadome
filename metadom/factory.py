@@ -1,6 +1,7 @@
 import logging
 
 from flask import Flask
+from metadom.domain.services import create_db
 
 _log = logging.getLogger(__name__)
 
@@ -59,5 +60,6 @@ def create_app(settings=None):
         # Extensions like Flask-SQLAlchemy now know what the "current" app
         # is while within this block. Therefore, you can now run........
         db.create_all()
+        create_db()
 
     return app
