@@ -18,7 +18,7 @@ class Chromosome(db.Model):
     
     # Fields
     id = db.Column(db.Integer, primary_key=True)
-    chromosome = db.Column(db.String(2), nullable=False)
+    chromosome = db.Column(db.String(5), nullable=False)
     position = db.Column(db.Integer, nullable=False)
     
     # Relationships
