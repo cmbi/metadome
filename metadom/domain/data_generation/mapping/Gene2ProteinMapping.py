@@ -7,6 +7,13 @@ from metadom.domain.wrappers.pdb import getRefseqForPDBfile,\
     AtomicSequenceIDMappingFailedException
 import numpy as np
 
+from metadom.domain.models.mapping import Mapping
+from metadom.domain.models.chromosome import Chromosome
+from metadom.domain.models.gene import Gene
+from metadom.domain.models.protein import Protein
+from metadom.domain.models.pfam import Pfam
+from metadom.database import db
+
 _log = logging.getLogger(__name__)
 
 class RegioncDNALengthDoesNotEqualProteinLengthException(Exception):
@@ -63,9 +70,14 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_report):
             allele = coding_sequence[cDNA_pos]
             GenomePos = cd.seqid+':'+str(i)
             cDNA_pos = cDNA_pos+1
+
+            if Chromosome.query.filter_by(chromosome=str(cd.seqid), position=i).first() is None:
+                db.session.add(Chromosome(chromosome=str(cd.seqid), position=i))
             
             GenomeMapping['Genome'][GenomePos] = {'cDNA':cDNA_pos, 'allele':allele}
             GenomeMapping['cDNA'][cDNA_pos] = {'Genome':GenomePos, 'allele':allele}
+    
+    db.session.commit()
     
     # ensure we have the stop codon at the end of the translation sequence
     gene_protein_translation_sequence+='*'
@@ -104,6 +116,11 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_report):
     
     # Finsh the cDNA and Genome mapping
     for i in range(1, cDNA_pos+1):
+        mapping = Mapping()
+        mapping.allele
+        
+#         if Chromosome.query.filter_by(chr=)
+        
         genome_position = GenomeMapping['cDNA'][i]['Genome']
         n = int((i-1) / 3)
         
