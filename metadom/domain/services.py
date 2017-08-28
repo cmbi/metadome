@@ -1,6 +1,6 @@
 import logging
 from metadom.database import db
-from metadom.domain.data_generation.mapping.mapping_generator import generate_gene_mapping
+from metadom.domain.data_generation.mapping.mapping_generator import generate_gene_to_swissprot_mapping
 
 _log = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def create_db():
 #     list_of_failing_genes = LoadDataFromJsonFile(GENE2PROTEIN_LOCATION_OF_FAILING_GENE_LISTS)
            
     # the genes that are to be checked
-    genes_of_interest = ['USH2A', 'PACS1', 'PACS2']
+    genes_of_interest = ['LMX1A'] #, 'USH2A', 'PACS1', 'PACS2']
 #     genes_of_interest = lists_of_genes['all_gencode_genes']
 #     genes_of_interest = lists_of_genes['all_known_genes']
 #     genes_of_interest = lists_of_genes['longlist_of_well_structured_genes_that_have_swissprot']
@@ -38,5 +38,5 @@ def create_db():
  
     # (re-) construct the mapping database  => GENE2PROTEIN_MAPPING_DB
     for gene_name in genes_of_interest:
-        for gene_translation in generate_gene_mapping(gene_name):
+        for gene_translation in generate_gene_to_swissprot_mapping(gene_name):
             pass
