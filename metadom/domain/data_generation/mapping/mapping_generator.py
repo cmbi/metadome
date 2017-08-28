@@ -7,22 +7,20 @@ from metadom.domain.wrappers.gencode import retrieveGeneTranslations_gencode,\
     TranscriptionNotEncodingForTranslation, TranscriptionStrandMismatchException,\
     MissMatchTranscriptIDToMatchingTranscript
 from metadom.domain.wrappers.uniprot import retrieveTopUniprotMatch,\
-    retrieveSwissprotFromGencode, NoUniProtACFoundException
+    NoUniProtACFoundException
 from metadom.domain.wrappers.interpro import retrieve_interpro_entries
 from metadom.domain.data_generation.mapping.Gene2ProteinMapping import createMappingOfGeneTranscriptionToTranslationToProtein
 
 _log = logging.getLogger(__name__)
 
-def generate_gene_mapping(gene_name):
+def annotate_protein_domains_to_mappings():
+    pass
+
+def generate_gene_to_swissprot_mapping(gene_name):
     """
-    Given a gene_name, this method generates a mapping between swissprot and every 
-    GENCODE Basic protein-coding translation for that gene
-    
-    INPUT:gene_name - Gene Name
-    OUTPUT:
-        annotated_table:
-        DESCR: matched GENE_TRANSCRIPT with length xxx to PDB_CODE, chain CHAIN_ID, with length xxx having E_VALUE, RESOLUTION, R_FREE, _R_WORK
-        HG19_pos            | PDB_pos   | Exac SNP | HGMD mut | Interprot domain | .... additional space c.xxx[nucleotide]   | p.AAxxx"""
+    Given a gene_name, this method generates a mapping between swissprot and 
+    every GENCODE Basic protein-coding translation for that gene
+    """
 
     _log.info("Starting analysis for gene '"+gene_name+"'")
     
@@ -49,63 +47,31 @@ def generate_gene_mapping(gene_name):
     _log.info("Found '"+str(len(matching_coding_translations))+"' matching protein coding translation(s) for gene "+gene_name+", with lengths: "+str(sequences_lengths))
     
     for matching_coding_translation in matching_coding_translations:
-        # create a report
-        gene_report = {}
-    
+        # First try if this matching coding translation matches with a swissprot sequence     
         try:
-            # retrieve best translation for the gene
-#             longest_translation = retrieveLongestTranslation(matching_coding_translations)
-            
             # retrieve the nucleotide sequence
-            transcription = retrieveNucleotideSequence_gencode(matching_coding_translation)
-            transcription['CDS_annotation'] = retrieveCodingGenomicLocations_gencode(matching_coding_translation)
-            transcription['strand'] = retrieveStrandDirection_gencode(transcription['CDS_annotation'])
+            gene_transcription = retrieveNucleotideSequence_gencode(matching_coding_translation)
+            gene_transcription['CDS_annotation'] = retrieveCodingGenomicLocations_gencode(matching_coding_translation)
+            gene_transcription['strand'] = retrieveStrandDirection_gencode(gene_transcription['CDS_annotation'])
             
             # annotate the swissprot ID
-            gene_report['uniprot'] = retrieveTopUniprotMatch(matching_coding_translation, species_filter=UNIPROT_SPROT_SPECIES_FILTER)
+            uniprot = retrieveTopUniprotMatch(matching_coding_translation, species_filter=UNIPROT_SPROT_SPECIES_FILTER)
         except (NoGeneTranslationsFoundException, MissMatchTranscriptIDToMatchingTranscript,
                 TranscriptionNotContainingCDS, TranscriptionStrandMismatchException,
                 TranscriptionNotEncodingForTranslation, NoUniProtACFoundException) as e:
             _log.error(e)
             continue
         
-        if gene_report['uniprot']['sequence'] != matching_coding_translation['sequence']:
-            testing=0
-        
-        # construct the first part of the report
-        gene_report["gene_name"] = gene_name
-        gene_report["gene_transcription"] = transcription
-        gene_report["matching_coding_translations"] = matching_coding_translations
-        gene_report["translation_used"] = matching_coding_translation
-        
         # Annotate the interpro ids
 #         gene_report['interpro'] = retrieve_interpro_entries(gene_report['uniprot'])
-    
-        # Annotateswissprot ac's from gencode
-        gene_report['gencode_swissprot'] = retrieveSwissprotFromGencode(gene_report)
         
-        
-        _log.info("For gene '"+str(gene_report["gene_name"])+
-                                            "' used translation '"+str(gene_report["translation_used"]['translation-name'])+
-                                            "', with translation length "+str(gene_report["translation_used"]['sequence-length'])+
+        _log.info("For gene '"+str(gene_name)+
+                                            "' used translation '"+str(matching_coding_translation['translation-name'])+
+                                            "', with translation length "+str(matching_coding_translation['sequence-length'])+
     #                                         " to find corresponding PDB file '"+str(gene_report["pdb_seqres_used"]['sseqid'])+
     #                                         "', with seqres of length '"+str(gene_report["pdb_seqres_used"]['length'])+
     #                                         "' and structure length '"+str(len(gene_report["measured_structure_sequence"]))+
     #                                         " found corresponding uniprot ID '"+str(gene_report["uniprot"]['uniprot_ac'])+
                                             "'")
         # translation position: {Amino Acid, Nucleotides, chromosomal position range, Linked PDB seqres position, Linked PDB atom position}
-        gene_report["GenomeMapping"] = createMappingOfGeneTranscriptionToTranslationToProtein(gene_report)
-    
-        
-        yield gene_report
-#     return
-    
-def createGene2ProteinMapping(gene_report):
-    # translation position: {Amino Acid, Nucleotides, chromosomal position range, Linked PDB seqres position, Linked PDB atom position}
-    GenomeMapping = createMappingOfGeneTranscriptionToTranslationToProtein(gene_report)
-    
-    # add to report    
-    gene_report["GenomeMapping"] = GenomeMapping         
-    
-
-
+        createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, matching_coding_translation, uniprot)
