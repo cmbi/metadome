@@ -33,13 +33,14 @@ class Mapping(db.Model):
     codon = db.Column(db.String(3))
     codon_allele_position = db.Column(db.Integer)
     amino_acid_residue = db.Column(db.String(1))
+    uniprot_residue = db.Column(db.String(1))
     cDNA_position = db.Column(db.Integer)
     uniprot_position = db.Column(db.Integer)
     pfam_consensus_position = db.Column(db.Integer)
     chromosome_id = db.Column(db.Integer, db.ForeignKey('chromosomes.id'), nullable=False)
     gene_id = db.Column(db.Integer, db.ForeignKey('genes.id'), nullable=False)
     protein_id = db.Column(db.Integer, db.ForeignKey('proteins.id'))
-    pfam_domain_id = db.Column(db.Integer, db.ForeignKey('pfam_domains.id'))
+    pfam_domain_id = db.Column(db.Integer, db.ForeignKey('pfam_domains.id'), nullable=True)
     
     # Relationships
     chromosome = db.relationship('Chromosome', back_populates="mappings")

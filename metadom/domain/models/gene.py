@@ -32,13 +32,31 @@ class Gene(db.Model):
     gene_name = db.Column(db.String(50))
     gencode_transcription_id = db.Column(db.String(50), unique=True, nullable=False)
     gencode_translation_name = db.Column(db.String(50), unique=True, nullable=False)
-    gencode_gene_id = db.Column(db.String(50), unique=True, nullable=False)
-    havana_gene_id = db.Column(db.String(50), unique=True)
+    gencode_gene_id = db.Column(db.String(50))
+    havana_gene_id = db.Column(db.String(50))
     havana_translation_id = db.Column(db.String(50), unique=True)
+    sequence_length = db.Column(db.Integer)
     
     # Relationships
     mappings = db.relationship('Mapping', back_populates="gene")
     
+    def __init__(self, _strand, _gene_name, _gencode_transcription_id, 
+                 _gencode_translation_name, _gencode_gene_id, _havana_gene_id, 
+                 _havana_translation_id, _sequence_length):
+        if _strand == '-':
+            self.strand = Gene.Strand.minus
+        elif _strand == '+':
+            self.strand = Gene.Strand.plus
+        else:
+            raise Exception('no strand defined for gene')
+        
+        self.gene_name = _gene_name
+        self.gencode_transcription_id = _gencode_transcription_id
+        self.gencode_translation_name = _gencode_translation_name
+        self.gencode_gene_id = _gencode_gene_id
+        self.havana_gene_id = _havana_gene_id
+        self.havana_translation_id = _havana_translation_id
+        self.sequence_length = _sequence_length
     
     def __repr__(self):
         return "<Gene(strand='%s', gene_name='%s', gencode_transcription_id='%s', gencode_translation_name='%s', gencode_gene_id='%s', havana_gene_id='%s', havana_translation_id='%s')>" % (

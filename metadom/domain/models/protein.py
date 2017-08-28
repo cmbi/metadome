@@ -32,6 +32,16 @@ class Protein(db.Model):
     # Relationships
     mappings = db.relationship('Mapping', back_populates="protein")
     pfam_domains = db.relationship("Pfam", back_populates="protein")
+    
+    def __init__(self, _uniprot_ac, _uniprot_name, _source):
+        if _source == 'swissprot':
+            self.source = Protein.ProteinSource.swissprot
+        elif _strand == 'uniprot':
+            self.source = Protein.ProteinSource.uniprot
+        else:
+            raise Exception('no source database defined for protein')
+        self.uniprot_ac = _uniprot_ac
+        self.uniprot_name = _uniprot_name
 
     def __repr__(self):
         return "<Protein(uniprot_ac='%s', uniprot_name='%s', source='%s')>" % (
