@@ -104,33 +104,3 @@ def retrieveMatchingUniprotSequences(geneTranslation, blast_db=UNIPROT_SPROT_CAN
     
     
     return sequence_results
-
-
-def retrieveSwissprotFromGencode(gene_report):
-    try:
-        # retrieve translation ids
-        translationIDs = [translation['transcription-id'] for translation in gene_report['matching_coding_translations']]
-         
-        # Retrieve any id that matches one of the translation ids for this gene
-        swissprot_results = retrieveSwissProtIDs(translationIDs)
-                 
-        # check if there are more then one results, validate
-        if len(swissprot_results) > 1:
-            previous_swissprot_ac= None
-            translation_ids_checked = []
-            for translation_id in swissprot_results.keys():
-                translation_ids_checked.append(translation_id)
-                if previous_swissprot_ac is None:
-                    previous_swissprot_ac = swissprot_results[translation_id]['ac']
-                elif previous_swissprot_ac != swissprot_results[translation_id]['ac']:
-                    raise MissMatchingSwissProtEntriesFoundException("Found non-matching swissprot ids / accession codes '"+str(previous_swissprot_ac)+"' vs '"+str(swissprot_results[translation_id]['swissprot_id'])+"/"+str(swissprot_results[translation_id]['ac'])+"' for the gene '"+gene_report['gene_name']+"'")
-            
-            # Check if the chosen translation_used, also was allocated to the swissprot ids/acs 
-            if not(gene_report["translation_used"]['transcription-id'] in translation_ids_checked):
-                _log.warning("Used an alternative SwissProt ID and AC, as the original translation_id '"+str(gene_report["translation_used"]['transcription-id'])+"' was not present in the translation ids found in the GenCode Swissprot allocation file '"+str(translation_ids_checked)+"'")
-                
-        return swissprot_results
-    except (NoSwissProtEntryFoundException, MissMatchingSwissProtEntriesFoundException) as e:
-        _log.error(e)
-
-    
