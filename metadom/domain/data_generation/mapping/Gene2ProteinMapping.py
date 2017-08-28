@@ -2,9 +2,6 @@ import logging
 
 from metadom.domain.data_generation.mapping.Protein2ProteinMapping import createMappingOfAASequenceToAASequence,\
     map_single_residue
-from metadom.domain.wrappers.pdb import getRefseqForPDBfile,\
-    retrieveAtomicStructureSequence, retrieveAtomicStructureMapping,\
-    AtomicSequenceIDMappingFailedException
 import numpy as np
 
 from metadom.domain.models.mapping import Mapping
@@ -29,34 +26,64 @@ def convertListOfIntegerToRanges(p):
             i = j
     yield (q[i], q[-1])
 
-def createMappingOfGeneTranscriptionToTranslationToProtein(gene_report):
-    # Retrieve the gene transcription
-    transcription = gene_report["gene_transcription"]
+def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, matching_coding_translation, uniprot):
     # Retrieve the amino acid sequence according to the translation
-    gene_protein_translation_sequence = gene_report["translation_used"]['sequence']
+    gene_protein_translation_sequence = matching_coding_translation['sequence']
     # Retrieve the canonical uniprot sequence
-    canonical_protein_sequence = gene_report["uniprot"]["sequence"]
+    canonical_protein_sequence = uniprot["sequence"]
     # nucleotide sequence containing of the CDS
-    coding_sequence = transcription['coding-sequence']
+    coding_sequence = gene_transcription['coding-sequence']
     # CDS for nucleotide positions
-    cds =  transcription['CDS_annotation']
+    cds =  gene_transcription['CDS_annotation']
     
-    if not ("pdb_seqres_used" in gene_report.keys()) \
-        or not("measured_structure_sequence" in gene_report.keys()) \
-        or gene_report["pdb_seqres_used"] is None \
-        or gene_report["measured_structure_sequence"] is None: has_structure = False
-    else:
-        has_structure = True
+    to_be_added_sql_rows = []
+    
+    # add gene entry in database if it does not already exists
+    gene_translation = Gene.query.filter_by(
+        gencode_transcription_id = matching_coding_translation['transcription-id'],
+        gencode_translation_name = matching_coding_translation['translation-name'],
+        havana_translation_id = matching_coding_translation['Havana-translation-id']).first()
+    if gene_translation is None:
+        # No matching gene translation present in database, creating...
+        gene_translation = Gene(
+            _strand=gene_transcription['strand'],
+            _gene_name = matching_coding_translation['gene-name'],
+            _gencode_transcription_id = matching_coding_translation['transcription-id'],
+            _gencode_translation_name = matching_coding_translation['translation-name'],
+            _gencode_gene_id = matching_coding_translation['gene_name-id'],
+            _havana_gene_id = matching_coding_translation['Havana-gene_name-id'],
+            _havana_translation_id = matching_coding_translation['Havana-translation-id'],
+            _sequence_length = matching_coding_translation['sequence-length'])
+        to_be_added_sql_rows.append(gene_translation)
+    
+    # add protein entry in database if it does not already exists
+    matching_protein = Protein.query.filter_by(uniprot_ac = uniprot['uniprot_ac']).first()
+    if matching_protein is None:
+        # No matching protein present in database, creating...
+        matching_protein = Protein(
+            _uniprot_ac = uniprot['uniprot_ac'],
+            _uniprot_name = uniprot['uniprot_name'],
+            _source = uniprot['database'])
+        to_be_added_sql_rows.append(matching_protein)    
         
     # check if there are multiple chromosomal positions
     chr_in_cds = list(set([cd.seqid for cd in cds]))
     if len(chr_in_cds) > 1:
         _log.warning('Found multiple chromosomes in coding sequence: '+str(chr_in_cds)+', using only '+str(chr_in_cds[0])+', this may indicate pseudoautosomal genes')
     
+    # ensure we have the stop codon at the end of the translation sequence
+    gene_protein_translation_sequence+='*'
+    
+    # align cDNA sequence with uniprot canonical sequence
+    translation_to_uniprot_mapping  = createMappingOfAASequenceToAASequence(gene_protein_translation_sequence, canonical_protein_sequence)
+    
+    # Retrieve the codons from the cDNA translation 
+    translationCodons = []
+    for i in range(0, len(gene_protein_translation_sequence)): translationCodons.append(coding_sequence[i * 3 : i * 3 + 3])
+    
     # Create mapping between Gene and cDNA
     cDNA_pos = 0
     currentChr = ''
-    GenomeMapping = {"Genome":dict(), "cDNA":dict()}
     for cd in cds:
         if currentChr == '': currentChr = cd.seqid # set it as the first
         elif not(cd.seqid == currentChr):
@@ -67,90 +94,64 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_report):
         else:
             custom_range = range(cd.start, cd.end+1)
         for i in custom_range:
+            # create mapping object for this position
             allele = coding_sequence[cDNA_pos]
-            GenomePos = cd.seqid+':'+str(i)
+            
+            # increment cDNA position
             cDNA_pos = cDNA_pos+1
+            aa_pos = int((cDNA_pos-1) / 3)
+            
+            # add chromosome entry in database if it does not already exists
+            chrom_pos = Chromosome.query.filter_by(chromosome=str(cd.seqid), position=i).first()
+            if chrom_pos is None:
+                chrom_pos = Chromosome(chromosome=str(cd.seqid), position=i)
+                to_be_added_sql_rows.append(chrom_pos) 
+#             genome_position = GenomeMapping['cDNA'][i]['Genome']
+#             aa_pos = int((i-1) / 3)
+            
+            # add codon to the mapping
+#             GenomeMapping['cDNA'][i]['translation_codon'] = translationCodons[aa_pos]
+            codon = translationCodons[aa_pos]
+            
+            # add codon allele number to the mapping
+#             GenomeMapping['cDNA'][i]['translation_codon_allele_pos'] = ((i-1)%3)
+            codon_allele_position = ((cDNA_pos-1)%3)
+            
+            # Add residue from translation
+#             GenomeMapping['cDNA'][i]['translation_residue'] = gene_protein_translation_sequence[aa_pos]
+            amino_acid_residue = gene_protein_translation_sequence[aa_pos]
+            
+            # Add information for uniprot
+#             GenomeMapping['cDNA'][i]['uniprot'], GenomeMapping['cDNA'][i]['uniprot_residue'] = map_single_residue(translation_to_uniprot_mapping, aa_pos)
+            if amino_acid_residue == '*':
+                uniprot_residue = '*'
+                uniprot_position = None
+            else:
+                uniprot_position, uniprot_residue = map_single_residue(translation_to_uniprot_mapping, aa_pos)
+            
+            # create the mapping
+            mapping = Mapping(
+                allele = allele,
+                cDNA_position = cDNA_pos,
+                codon = codon,
+                codon_allele_position = codon_allele_position,
+                amino_acid_residue = amino_acid_residue,
+                uniprot_position = uniprot_position,
+                uniprot_residue = uniprot_residue
+                )
+            _log.debug(mapping)
 
-            if Chromosome.query.filter_by(chromosome=str(cd.seqid), position=i).first() is None:
-                db.session.add(Chromosome(chromosome=str(cd.seqid), position=i))
-            
-            GenomeMapping['Genome'][GenomePos] = {'cDNA':cDNA_pos, 'allele':allele}
-            GenomeMapping['cDNA'][cDNA_pos] = {'Genome':GenomePos, 'allele':allele}
+            with db.session.no_autoflush as _session:
+                chrom_pos.mappings.append(mapping)
+                gene_translation.mappings.append(mapping)
+                matching_protein.mappings.append(mapping)
     
-    db.session.commit()
-    
-    # ensure we have the stop codon at the end of the translation sequence
-    gene_protein_translation_sequence+='*'
-    
-    # align cDNA sequence with uniprot canonical sequence
-    translation_to_uniprot_mapping  = createMappingOfAASequenceToAASequence(gene_protein_translation_sequence, canonical_protein_sequence)
-    
-    PDBStructureMappings = []
-    if has_structure:
-        # Create a mapping for each of the found structures and chains
-        for matched_pdb_structure in gene_report['pdb_seqres_matches']:
-            # Retrieve the seqres sequence of the pdb file
-            matched_pdb_structure['sequence'] = getRefseqForPDBfile(matched_pdb_structure['pdb_id'], matched_pdb_structure["chain_id"])
-            
-            # Retrieve the measured structure sequence as found in the PDB file
-            matched_pdb_structure['measured_structure_sequence'] = retrieveAtomicStructureSequence(matched_pdb_structure)
-        
-            # create a mapping from the gene translation to the PDB seqres 
-            matched_pdb_structure['translation_to_seqres_mapping'] = createMappingOfAASequenceToAASequence(gene_protein_translation_sequence, matched_pdb_structure['sequence'])
-            
-            # create a mapping from the gene translation sequence and the measured structure sequence
-            matched_pdb_structure['translation_to_structure_mapping'] = createMappingOfAASequenceToAASequence(gene_protein_translation_sequence, matched_pdb_structure['measured_structure_sequence'])
-            
-            try: 
-                # create a mapping in order to interpret the sequence to structure mapping based on the atomic structure
-                matched_pdb_structure['measured_structure_mapping'] = retrieveAtomicStructureMapping(matched_pdb_structure, matched_pdb_structure['translation_to_structure_mapping'])
-                
-                # add the matched and mapped structure to the PDB structure mappings
-                PDBStructureMappings.append(matched_pdb_structure)
-            except (AtomicSequenceIDMappingFailedException) as e:
-                _log.error(e)
-         
-    # Retrieve the codons from the cDNA translation 
-    translationCodons = []
-    for i in range(0, len(gene_protein_translation_sequence)): translationCodons.append(coding_sequence[i * 3 : i * 3 + 3])
-    
-    # Finsh the cDNA and Genome mapping
-    for i in range(1, cDNA_pos+1):
-        mapping = Mapping()
-        mapping.allele
-        
-#         if Chromosome.query.filter_by(chr=)
-        
-        genome_position = GenomeMapping['cDNA'][i]['Genome']
-        n = int((i-1) / 3)
-        
-        # add codon to the mapping
-        GenomeMapping['cDNA'][i]['translation_codon'] = translationCodons[n]
-        GenomeMapping['Genome'][genome_position]['translation_codon'] = GenomeMapping['cDNA'][i]['translation_codon']
-        
-        # add codon allele number to the mapping
-        GenomeMapping['cDNA'][i]['translation_codon_allele_pos'] = ((i-1)%3)
-        GenomeMapping['Genome'][genome_position]['translation_codon_allele_pos'] = GenomeMapping['cDNA'][i]['translation_codon_allele_pos']
-        
-        # Add residue from translation
-        GenomeMapping['cDNA'][i]['translation_residue'] = gene_protein_translation_sequence[n]
-        GenomeMapping['Genome'][genome_position]['translation_residue'] = GenomeMapping['cDNA'][i]['translation_residue']
-        
-        # Add information for uniprot
-        GenomeMapping['cDNA'][i]['uniprot'], GenomeMapping['cDNA'][i]['uniprot_residue'] = map_single_residue(translation_to_uniprot_mapping, n)
-        GenomeMapping['Genome'][genome_position]['uniprot'], GenomeMapping['Genome'][genome_position]['uniprot_residue'] = GenomeMapping['cDNA'][i]['uniprot'], GenomeMapping['cDNA'][i]['uniprot_residue']
-        
-        if has_structure:
-            for matched_pdb_structure in PDBStructureMappings:
-                # Add pdb seqres mapping
-                GenomeMapping['cDNA'][i][matched_pdb_structure['sseqid']+'_seqres'], GenomeMapping['cDNA'][i][matched_pdb_structure['sseqid']+'_seqres_residue'] = map_single_residue(matched_pdb_structure['translation_to_seqres_mapping'], n)
-                GenomeMapping['Genome'][genome_position][matched_pdb_structure['sseqid']+'_seqres'], GenomeMapping['Genome'][genome_position][matched_pdb_structure['sseqid']+'_seqres_residue'] = GenomeMapping['cDNA'][i][matched_pdb_structure['sseqid']+'_seqres'], GenomeMapping['cDNA'][i][matched_pdb_structure['sseqid']+'_seqres_residue']
-                
-                # Add pdb structure mapping
-                GenomeMapping['cDNA'][i][matched_pdb_structure['sseqid']+'_structure'], GenomeMapping['cDNA'][i][matched_pdb_structure['sseqid']+'_structure_residue'] = map_single_residue(matched_pdb_structure['translation_to_structure_mapping'], n, matched_pdb_structure['measured_structure_mapping'])
-                GenomeMapping['Genome'][genome_position][matched_pdb_structure['sseqid']+'_structure'], GenomeMapping['Genome'][genome_position][matched_pdb_structure['sseqid']+'_structure_residue'] = GenomeMapping['cDNA'][i][matched_pdb_structure['sseqid']+'_structure'], GenomeMapping['cDNA'][i][matched_pdb_structure['sseqid']+'_structure_residue']
-    
-    return GenomeMapping
+                _session.add(mapping)
+                for x in to_be_added_sql_rows:
+                    _session.add(x)
+                           
+                _session.commit()
+            to_be_added_sql_rows = []
 
 
 def extract_pdb_from_gene_region(gene_mapping, gene_region):
