@@ -36,15 +36,16 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
     # CDS for nucleotide positions
     cds =  gene_transcription['CDS_annotation']
     
+    # Create list of objects that will be added to the database
     to_be_added_sql_rows = []
     
     # add gene entry in database if it does not already exists
+    gene_translation_was_present_in_db = True
     gene_translation = Gene.query.filter_by(
-        gencode_transcription_id = matching_coding_translation['transcription-id'],
-        gencode_translation_name = matching_coding_translation['translation-name'],
-        havana_translation_id = matching_coding_translation['Havana-translation-id']).first()
+        gencode_transcription_id = matching_coding_translation['transcription-id']).first()
     if gene_translation is None:
         # No matching gene translation present in database, creating...
+        gene_translation_was_present_in_db = False
         gene_translation = Gene(
             _strand=gene_transcription['strand'],
             _gene_name = matching_coding_translation['gene-name'],
@@ -57,9 +58,11 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
         to_be_added_sql_rows.append(gene_translation)
     
     # add protein entry in database if it does not already exists
+    matching_protein_was_present_in_db = True
     matching_protein = Protein.query.filter_by(uniprot_ac = uniprot['uniprot_ac']).first()
     if matching_protein is None:
         # No matching protein present in database, creating...
+        matching_protein_was_present_in_db = False
         matching_protein = Protein(
             _uniprot_ac = uniprot['uniprot_ac'],
             _uniprot_name = uniprot['uniprot_name'],
@@ -73,6 +76,15 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
     
     # ensure we have the stop codon at the end of the translation sequence
     gene_protein_translation_sequence+='*'
+    
+    # test if mapping is already present in database
+    if gene_translation_was_present_in_db and\
+        matching_protein_was_present_in_db and\
+        gene_translation.get_aa_sequence()==gene_protein_translation_sequence and\
+        gene_translation.get_cDNA_sequence()==coding_sequence and\
+        matching_protein.get_aa_sequence()==(canonical_protein_sequence+"*"):
+        _log.info("Gene transcription "+str(gene_translation.gencode_transcription_id)+" was already succesfully mapped to protein "+str(matching_protein.uniprot_ac)+". No Mapping was generated")
+        return 
     
     # align cDNA sequence with uniprot canonical sequence
     translation_to_uniprot_mapping  = createMappingOfAASequenceToAASequence(gene_protein_translation_sequence, canonical_protein_sequence)
@@ -126,22 +138,23 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
             if amino_acid_residue == '*':
                 uniprot_residue = '*'
                 uniprot_position = None
+                aa_pos = None
             else:
                 uniprot_position, uniprot_residue = map_single_residue(translation_to_uniprot_mapping, aa_pos)
             
-            # create the mapping
-            mapping = Mapping(
-                allele = allele,
-                cDNA_position = cDNA_pos,
-                codon = codon,
-                codon_allele_position = codon_allele_position,
-                amino_acid_residue = amino_acid_residue,
-                uniprot_position = uniprot_position,
-                uniprot_residue = uniprot_residue
-                )
-            _log.debug(mapping)
-
             with db.session.no_autoflush as _session:
+                # create the mapping
+                mapping = Mapping(
+                    allele = allele,
+                    cDNA_position = cDNA_pos,
+                    codon = codon,
+                    codon_allele_position = codon_allele_position,
+                    amino_acid_residue = amino_acid_residue,
+                    amino_acid_position = aa_pos,
+                    uniprot_position = uniprot_position,
+                    uniprot_residue = uniprot_residue
+                    )
+                
                 chrom_pos.mappings.append(mapping)
                 gene_translation.mappings.append(mapping)
                 matching_protein.mappings.append(mapping)
