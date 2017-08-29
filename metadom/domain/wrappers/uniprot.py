@@ -18,7 +18,7 @@ class NoneExistingUniprotDatabaseProvidedException(Exception):
 class MissMatchingSwissProtEntriesFoundException(Exception):
     pass
 
-def retrieveTopUniprotMatch(geneTranslation, uniprot_database="sp", species_filter=None):
+def retrieveIdenticalUniprotMatch(geneTranslation, uniprot_database="sp", species_filter=None):
     """Retrieves the top swiss-/Uniprot match for the provided sequence"""
     # Which database to blast to
     if uniprot_database=="sp":
@@ -34,20 +34,17 @@ def retrieveTopUniprotMatch(geneTranslation, uniprot_database="sp", species_filt
     sequence_results = retrieveMatchingUniprotSequences(geneTranslation, blast_db, species_filter)
     _log.debug("Retrieved '"+str(len(sequence_results))+"' results from blasting to Uniprot")
     
-    # retrieve the top result
-    top_result = sequence_results[0]
+    # retrieve the best matching result
+    top_result = None
+    for result in sequence_results:
+        _result_sequence = getUniprotSequence(result['accession_code'], blast_db)
+        if _result_sequence == geneTranslation['sequence']:
+            _log.debug('input and blast resilt sequences are identical')
+            top_result = result
+            break
     
-    # analyse the top result
-    if top_result['length'] != len(geneTranslation['sequence']):
-        _log.warning("Length of gene translation ('"+str(len(geneTranslation['sequence']))+"') does not match uniprot sequence ('"+str(top_result['length'])+"')")
-    if top_result['pident'] < 100:
-        _log.warning("Percentage identity of gene translation to uniprot sequence is not 100%, but is '"+str(top_result['pident'])+"%'")
-    if top_result['evalue'] > 0.01:
-        _log.warning("E-value of uniprot sequence is '"+str(top_result['evalue'])+"'")
-    if top_result['send'] != top_result['qend']:
-        _log.warning("End position of uniprot sequence ('"+str(top_result['send'])+"') does not match the end position of the gene translation ('"+str(top_result['qend'])+"')")
-    if top_result['sstart'] != top_result['qstart']:
-        _log.warning("Start position of uniprot sequence ('"+str(top_result['sstart'])+"') does not match the start position of the gene translation ('"+str(top_result['qstart'])+"')")
+    if top_result is None:
+        raise NoUniProtACFoundException("No identical uniprot sequence found for "+geneTranslation['gene-name']+" after blast search")
     
     # construct the result    
     uniprot_result = {
