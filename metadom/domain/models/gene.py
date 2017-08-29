@@ -35,7 +35,7 @@ class Gene(db.Model):
     gencode_translation_name = db.Column(db.String(50), unique=True, nullable=False)
     gencode_gene_id = db.Column(db.String(50))
     havana_gene_id = db.Column(db.String(50))
-    havana_translation_id = db.Column(db.String(50), unique=True)
+    havana_translation_id = db.Column(db.String(50))
     sequence_length = db.Column(db.Integer)
     
     # Relationships
@@ -69,8 +69,8 @@ class Gene(db.Model):
         self.gencode_transcription_id = _gencode_transcription_id
         self.gencode_translation_name = _gencode_translation_name
         self.gencode_gene_id = _gencode_gene_id
-        self.havana_gene_id = _havana_gene_id
-        self.havana_translation_id = _havana_translation_id
+        self.havana_gene_id = None if _havana_gene_id == '-' else _havana_gene_id
+        self.havana_translation_id = None if _havana_translation_id == '-' else _havana_translation_id
         self.sequence_length = _sequence_length
     
     def __repr__(self):
