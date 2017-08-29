@@ -1,5 +1,6 @@
 from metadom.database import db
 import enum
+from metadom.domain.models.mapping import Mapping
 
 class Protein(db.Model):
     """
@@ -32,6 +33,13 @@ class Protein(db.Model):
     # Relationships
     mappings = db.relationship('Mapping', back_populates="protein")
     pfam_domains = db.relationship("Pfam", back_populates="protein")
+    
+    def get_aa_sequence(self):
+        _aa_sequence = ""
+        mappings = {x.uniprot_position:x.uniprot_residue for x in Mapping.query.filter_by(protein_id = self.id).all()}
+        for key in sorted(mappings, key=lambda x: (x is None, x)):
+            _aa_sequence+= mappings[key]
+        return _aa_sequence
     
     def __init__(self, _uniprot_ac, _uniprot_name, _source):
         if _source == 'swissprot':
