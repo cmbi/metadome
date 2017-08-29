@@ -44,7 +44,7 @@ class Protein(db.Model):
     def __init__(self, _uniprot_ac, _uniprot_name, _source):
         if _source == 'swissprot':
             self.source = Protein.ProteinSource.swissprot
-        elif _strand == 'uniprot':
+        elif _source == 'uniprot':
             self.source = Protein.ProteinSource.uniprot
         else:
             raise Exception('no source database defined for protein')
