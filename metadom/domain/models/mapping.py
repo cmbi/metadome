@@ -33,6 +33,7 @@ class Mapping(db.Model):
     codon = db.Column(db.String(3))
     codon_allele_position = db.Column(db.Integer)
     amino_acid_residue = db.Column(db.String(1))
+    amino_acid_position = db.Column(db.Integer)
     uniprot_residue = db.Column(db.String(1))
     cDNA_position = db.Column(db.Integer)
     uniprot_position = db.Column(db.Integer)
