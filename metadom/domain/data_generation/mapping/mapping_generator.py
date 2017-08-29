@@ -6,7 +6,7 @@ from metadom.domain.wrappers.gencode import retrieveGeneTranslations_gencode,\
     NoGeneTranslationsFoundException, TranscriptionNotContainingCDS,\
     TranscriptionNotEncodingForTranslation, TranscriptionStrandMismatchException,\
     MissMatchTranscriptIDToMatchingTranscript
-from metadom.domain.wrappers.uniprot import retrieveTopUniprotMatch,\
+from metadom.domain.wrappers.uniprot import retrieveIdenticalUniprotMatch,\
     NoUniProtACFoundException
 from metadom.domain.wrappers.interpro import retrieve_interpro_entries
 from metadom.domain.data_generation.mapping.Gene2ProteinMapping import createMappingOfGeneTranscriptionToTranslationToProtein
@@ -55,7 +55,7 @@ def generate_gene_to_swissprot_mapping(gene_name):
             gene_transcription['strand'] = retrieveStrandDirection_gencode(gene_transcription['CDS_annotation'])
             
             # annotate the swissprot ID
-            uniprot = retrieveTopUniprotMatch(matching_coding_translation, species_filter=UNIPROT_SPROT_SPECIES_FILTER)
+            uniprot = retrieveIdenticalUniprotMatch(matching_coding_translation, species_filter=UNIPROT_SPROT_SPECIES_FILTER)
         except (NoGeneTranslationsFoundException, MissMatchTranscriptIDToMatchingTranscript,
                 TranscriptionNotContainingCDS, TranscriptionStrandMismatchException,
                 TranscriptionNotEncodingForTranslation, NoUniProtACFoundException) as e:
