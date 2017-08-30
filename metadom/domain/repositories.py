@@ -6,8 +6,8 @@ from metadom.domain.models.chromosome import Chromosome
 from metadom.domain.models.gene import Gene
 from metadom.domain.models.protein import Protein
 from metadom.domain.models.pfam import Pfam
+from metadom.domain.models.pfam_domain_alignment import PfamDomainAlignment
 
-# from sqlalchemy import and_
 from metadom.domain.services import test_connection, list_tables
 
 _log = logging.getLogger(__name__)
