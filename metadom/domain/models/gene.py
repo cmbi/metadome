@@ -5,6 +5,7 @@ from metadom.domain.models.mapping import Mapping
 class Gene(db.Model):
     """
     Table: genes
+    Representation of a single gencode gene translation
     
     Fields
     id                        identifier
@@ -15,6 +16,7 @@ class Gene(db.Model):
     gencode_gene_id           e.g. ENSG####...
     havana_gene_id            e.g. OTTHUMG#####....
     havana_translation_id     e.g. OTTHUMT#####....
+    sequence_length           length of cDNA sequence
     
     Relationships
     one to many               mappings
@@ -74,6 +76,6 @@ class Gene(db.Model):
         self.sequence_length = _sequence_length
     
     def __repr__(self):
-        return "<Gene(strand='%s', gene_name='%s', gencode_transcription_id='%s', gencode_translation_name='%s', gencode_gene_id='%s', havana_gene_id='%s', havana_translation_id='%s')>" % (
-                            self.strand, self.gene_name, self.gencode_transcription_id, self.gencode_translation_name, self.gencode_gene_id, self.havana_gene_id, self.havana_translation_id)
+        return "<Gene(strand='%s', gene_name='%s', gencode_transcription_id='%s', gencode_translation_name='%s', gencode_gene_id='%s', havana_gene_id='%s', havana_translation_id='%s', sequence_length='%s')>" % (
+                            self.strand, self.gene_name, self.gencode_transcription_id, self.gencode_translation_name, self.gencode_gene_id, self.havana_gene_id, self.havana_translation_id, self.sequence_length)
         
