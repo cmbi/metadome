@@ -27,122 +27,91 @@ def convertListOfIntegerToRanges(p):
     yield (q[i], q[-1])
 
 def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, matching_coding_translation, uniprot):
-    # Retrieve the amino acid sequence according to the translation
-    gene_protein_translation_sequence = matching_coding_translation['sequence']
-    # Retrieve the canonical uniprot sequence
-    canonical_protein_sequence = uniprot["sequence"]
-    # nucleotide sequence containing of the CDS
-    coding_sequence = gene_transcription['coding-sequence']
-    # CDS for nucleotide positions
-    cds =  gene_transcription['CDS_annotation']
-    
-    # Create list of objects that will be added to the database
-    to_be_added_sql_rows = []
-    
-    # add gene entry in database if it does not already exists
-    gene_translation_was_present_in_db = True
-    gene_translation = Gene.query.filter_by(
-        gencode_transcription_id = matching_coding_translation['transcription-id']).first()
-    if gene_translation is None:
-        # No matching gene translation present in database, creating...
-        gene_translation_was_present_in_db = False
-        gene_translation = Gene(
-            _strand=gene_transcription['strand'],
-            _gene_name = matching_coding_translation['gene-name'],
-            _gencode_transcription_id = matching_coding_translation['transcription-id'],
-            _gencode_translation_name = matching_coding_translation['translation-name'],
-            _gencode_gene_id = matching_coding_translation['gene_name-id'],
-            _havana_gene_id = matching_coding_translation['Havana-gene_name-id'],
-            _havana_translation_id = matching_coding_translation['Havana-translation-id'],
-            _sequence_length = matching_coding_translation['sequence-length'])
-        to_be_added_sql_rows.append(gene_translation)
-    
-    # add protein entry in database if it does not already exists
-    matching_protein_was_present_in_db = True
-    matching_protein = Protein.query.filter_by(uniprot_ac = uniprot['uniprot_ac']).first()
-    if matching_protein is None:
-        # No matching protein present in database, creating...
-        matching_protein_was_present_in_db = False
-        matching_protein = Protein(
-            _uniprot_ac = uniprot['uniprot_ac'],
-            _uniprot_name = uniprot['uniprot_name'],
-            _source = uniprot['database'])
-        to_be_added_sql_rows.append(matching_protein)    
+    with db.session.no_autoflush as _session:
+        # Retrieve the amino acid sequence according to the translation
+        gene_protein_translation_sequence = matching_coding_translation['sequence']
+        # Retrieve the canonical uniprot sequence
+        canonical_protein_sequence = uniprot["sequence"]
+        # nucleotide sequence containing of the CDS
+        coding_sequence = gene_transcription['coding-sequence']
+        # CDS for nucleotide positions
+        cds =  gene_transcription['CDS_annotation']
         
-    # check if there are multiple chromosomal positions
-    chr_in_cds = list(set([cd.seqid for cd in cds]))
-    if len(chr_in_cds) > 1:
-        _log.warning('Found multiple chromosomes in coding sequence: '+str(chr_in_cds)+', using only '+str(chr_in_cds[0])+', this may indicate pseudoautosomal genes')
-    
-    # ensure we have the stop codon at the end of the translation sequence
-    gene_protein_translation_sequence+='*'
-    
-    # test if mapping is already present in database
-    if gene_translation_was_present_in_db and\
-        matching_protein_was_present_in_db and\
-        gene_translation.get_aa_sequence()==gene_protein_translation_sequence and\
-        gene_translation.get_cDNA_sequence()==coding_sequence and\
-        matching_protein.get_aa_sequence()==(canonical_protein_sequence+"*"):
-        _log.info("Gene transcription "+str(gene_translation.gencode_transcription_id)+" was already succesfully mapped to protein "+str(matching_protein.uniprot_ac)+". No Mapping was generated")
-        return 
-    
-    # align cDNA sequence with uniprot canonical sequence
-    translation_to_uniprot_mapping  = createMappingOfAASequenceToAASequence(gene_protein_translation_sequence, canonical_protein_sequence)
-    
-    # Retrieve the codons from the cDNA translation 
-    translationCodons = []
-    for i in range(0, len(gene_protein_translation_sequence)): translationCodons.append(coding_sequence[i * 3 : i * 3 + 3])
-    
-    # Create mapping between Gene and cDNA
-    cDNA_pos = 0
-    currentChr = ''
-    for cd in cds:
-        if currentChr == '': currentChr = cd.seqid # set it as the first
-        elif not(cd.seqid == currentChr):
-            _log.warning('Coding sequence with '+str(cd.seqid)+' does not match on chromosome '+str(currentChr)+', skipping this coding sequence...')
-            continue # skip this Chromosome
-        if cd.strand == '-':
-            custom_range = range(cd.end, cd.start-1, -1)
-        else:
-            custom_range = range(cd.start, cd.end+1)
-        for i in custom_range:
-            # create mapping object for this position
-            allele = coding_sequence[cDNA_pos]
+        # Retrieve gene translation from database...
+        gene_translation = Gene.query.filter_by(gencode_transcription_id = matching_coding_translation['transcription-id']).first()
+        
+        # Retrieve protein entry from database...
+        matching_protein = Protein.query.filter_by(uniprot_ac = uniprot['uniprot_ac']).first()
             
-            # increment cDNA position
-            cDNA_pos = cDNA_pos+1
-            aa_pos = int((cDNA_pos-1) / 3)
-            
-            # add chromosome entry in database if it does not already exists
-            chrom_pos = Chromosome.query.filter_by(chromosome=str(cd.seqid), position=i).first()
-            if chrom_pos is None:
-                chrom_pos = Chromosome(chromosome=str(cd.seqid), position=i)
-                to_be_added_sql_rows.append(chrom_pos) 
-#             genome_position = GenomeMapping['cDNA'][i]['Genome']
-#             aa_pos = int((i-1) / 3)
-            
-            # add codon to the mapping
-#             GenomeMapping['cDNA'][i]['translation_codon'] = translationCodons[aa_pos]
-            codon = translationCodons[aa_pos]
-            
-            # add codon allele number to the mapping
-#             GenomeMapping['cDNA'][i]['translation_codon_allele_pos'] = ((i-1)%3)
-            codon_allele_position = ((cDNA_pos-1)%3)
-            
-            # Add residue from translation
-#             GenomeMapping['cDNA'][i]['translation_residue'] = gene_protein_translation_sequence[aa_pos]
-            amino_acid_residue = gene_protein_translation_sequence[aa_pos]
-            
-            # Add information for uniprot
-#             GenomeMapping['cDNA'][i]['uniprot'], GenomeMapping['cDNA'][i]['uniprot_residue'] = map_single_residue(translation_to_uniprot_mapping, aa_pos)
-            if amino_acid_residue == '*':
-                uniprot_residue = '*'
-                uniprot_position = None
-                aa_pos = None
+        # check if there are multiple chromosomal positions
+        chr_in_cds = list(set([cd.seqid for cd in cds]))
+        if len(chr_in_cds) > 1:
+            _log.warning('Found multiple chromosomes in coding sequence: '+str(chr_in_cds)+', using only '+str(chr_in_cds[0])+', this may indicate pseudoautosomal genes')
+        
+        # ensure we have the stop codon at the end of the translation sequence
+        gene_protein_translation_sequence+='*'
+        
+        # test if mapping is already present in database
+        if gene_translation is None:
+            _log.error("Gene transcription "+matching_coding_translation['transcription-id']+" was not present in database. No Mapping was generated")
+            return
+        elif matching_protein is None:
+            _log.error("Protein "+uniprot['uniprot_ac']+" was not present in database. No Mapping was generated")
+            return
+        elif gene_translation.get_aa_sequence()==gene_protein_translation_sequence and\
+            gene_translation.get_cDNA_sequence()==coding_sequence and\
+            matching_protein.get_aa_sequence()==(canonical_protein_sequence+"*"):
+            _log.info("Gene transcription "+str(gene_translation.gencode_transcription_id)+" was already succesfully mapped to protein "+str(matching_protein.uniprot_ac)+". No Mapping was generated")
+            return 
+        
+        # align cDNA sequence with uniprot canonical sequence
+        translation_to_uniprot_mapping  = createMappingOfAASequenceToAASequence(gene_protein_translation_sequence, canonical_protein_sequence)
+        
+        # Retrieve the codons from the cDNA translation 
+        translationCodons = []
+        for i in range(0, len(gene_protein_translation_sequence)): translationCodons.append(coding_sequence[i * 3 : i * 3 + 3])
+        
+        # Create mapping between Gene and cDNA
+        cDNA_pos = 0
+        currentChr = ''
+        to_be_added_chrom_pos = []
+        for cd in cds:
+            if currentChr == '': currentChr = cd.seqid # set it as the first
+            elif not(cd.seqid == currentChr):
+                _log.warning('Coding sequence with '+str(cd.seqid)+' does not match on chromosome '+str(currentChr)+', skipping this coding sequence...')
+                continue # skip this Chromosome
+            if cd.strand == '-':
+                custom_range = range(cd.end, cd.start-1, -1)
             else:
-                uniprot_position, uniprot_residue = map_single_residue(translation_to_uniprot_mapping, aa_pos)
-            
-            with db.session.no_autoflush as _session:
+                custom_range = range(cd.start, cd.end+1)
+            for i in custom_range:
+                # create mapping object for this position
+                allele = coding_sequence[cDNA_pos]
+                
+                # increment cDNA position
+                cDNA_pos = cDNA_pos+1
+                aa_pos = int((cDNA_pos-1) / 3)
+                
+                # add chromosome entry in database if it does not already exists
+                chrom_pos = Chromosome.query.filter_by(chromosome=str(cd.seqid), position=i).first()
+                if chrom_pos is None:
+                    chrom_pos = Chromosome(chromosome=str(cd.seqid), position=i)
+                    to_be_added_chrom_pos.append(chrom_pos) 
+                
+                # add codon to the mapping
+                codon = translationCodons[aa_pos]                
+                # add codon allele number to the mapping
+                codon_allele_position = ((cDNA_pos-1)%3)
+                # Add residue from translation
+                amino_acid_residue = gene_protein_translation_sequence[aa_pos]
+                # Add information for uniprot
+                if amino_acid_residue == '*':
+                    uniprot_residue = '*'
+                    uniprot_position = None
+                    aa_pos = None
+                else:
+                    uniprot_position, uniprot_residue = map_single_residue(translation_to_uniprot_mapping, aa_pos)
+                
                 # create the mapping
                 mapping = Mapping(
                     allele = allele,
@@ -159,12 +128,15 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
                 gene_translation.mappings.append(mapping)
                 matching_protein.mappings.append(mapping)
     
+                # add mapping to the database
                 _session.add(mapping)
-                for x in to_be_added_sql_rows:
-                    _session.add(x)
-                           
-                _session.commit()
-            to_be_added_sql_rows = []
+            to_be_added_chrom_pos = []
+    
+        # add all other objects to the database
+        for x in to_be_added_chrom_pos:
+            _session.add(x)
+        
+        _session.commit()
 
 
 def extract_pdb_from_gene_region(gene_mapping, gene_region):
