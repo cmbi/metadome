@@ -3,6 +3,7 @@ from metadom.database import db
 class Chromosome(db.Model):
     """
     Table: chromosomes
+    Representation of a single chromosomal position
     
     Fields
     id                        identifier
