@@ -1,6 +1,7 @@
 import logging
 from metadom.database import db
 from metadom.domain.data_generation.mapping.mapping_generator import generate_gene_to_swissprot_mapping
+from metadom.domain.models.protein import Protein
 
 _log = logging.getLogger(__name__)
 
@@ -17,13 +18,13 @@ def test_connection():
 
 def create_db():
     # initialize custom logging framework
-    _log.info("Starting analysis")
+    _log.info("Starting creation of new database")
 #     # lists used for the analyses
 #     lists_of_genes = LoadDataFromJsonFile(GENE2PROTEIN_LOCATION_OF_GENE_LISTS)
 #     list_of_failing_genes = LoadDataFromJsonFile(GENE2PROTEIN_LOCATION_OF_FAILING_GENE_LISTS)
            
     # the genes that are to be checked
-    genes_of_interest = ['LMX1B'] #, 'LMX1A', 'USH2A', 'PACS1', 'PACS2']
+    genes_of_interest = ['LMX1A','LMX1B'] # 'LRTOMT', 'USH2A', 'PACS1', 'PACS2']
 #     genes_of_interest = lists_of_genes['all_gencode_genes']
 #     genes_of_interest = lists_of_genes['all_known_genes']
 #     genes_of_interest = lists_of_genes['longlist_of_well_structured_genes_that_have_swissprot']
@@ -38,4 +39,9 @@ def create_db():
  
     # (re-) construct the mapping database  => GENE2PROTEIN_MAPPING_DB
     for gene_name in genes_of_interest:
+        # generate all gene to swissprot mappings
         generate_gene_to_swissprot_mapping(gene_name)
+    
+#     for protein in Protein.query_all():
+#         # generate all pfam domain to swissprot mappings
+#         generate_pfam_domain_to_swissprot_mappings(protein)
