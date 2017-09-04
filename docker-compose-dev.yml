@@ -10,3 +10,5 @@ services:
         volumes:
             - .:/usr/src/app
             - ~/data:/usr/data
+            - /usr/bin/docker:/usr/bin/docker
+            - /var/run/docker.sock:/var/run/docker.sock
