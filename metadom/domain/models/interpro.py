@@ -10,7 +10,7 @@ class Interpro(db.Model):
     id                        identifier
     ext_db_id                 External domain database identifier code
     name                      Name of the Interpro domain
-    pfam_length               Length of the Interpro domain
+    domain_length               Length of the Interpro domain
     interpro_id               Interpro identifier
     uniprot_start             0 <= uniprot_start < uniprot_stop
     uniprot_stop              uniprot_stop <= uniprot_end
@@ -25,9 +25,8 @@ class Interpro(db.Model):
     
     # Fields
     id = db.Column(db.Integer, primary_key=True)
-    ext_db_id = db.Column(db.String(12), nullable=False)
-    name = db.Column(db.String)
-    pfam_length = db.Column(db.Integer, nullable=False)
+    ext_db_id = db.Column(db.String, nullable=False)
+    region_name = db.Column(db.String)
     interpro_id = db.Column(db.String(12))
     uniprot_start = db.Column(db.Integer, nullable=False)
     uniprot_stop = db.Column(db.Integer, nullable=False)
@@ -45,6 +44,13 @@ class Interpro(db.Model):
         # TODO: create this method
         pass
     
+    def __init__(self, _interpro_id, _ext_db_id, _region_name, _start_pos, _end_pos):
+        self.interpro_id = _interpro_id
+        self.ext_db_id = _ext_db_id
+        self.region_name = _region_name
+        self.uniprot_start = _start_pos
+        self.uniprot_stop = _end_pos
+    
     def __repr__(self):
-        return "<Interpro(pfam_id='%s', name='%s', pfam_length='%s', interpro_id='%s', uniprot_start='%s', uniprot_stop='%s')>" % (
-                            self.pfam_id, self.name, self.pfam_length, self.interpro_id, self.uniprot_start, self.uniprot_stop)
+        return "<Interpro(ext_db_id='%s', name='%s', pfam_length='%s', interpro_id='%s', uniprot_start='%s', uniprot_stop='%s')>" % (
+                            self.ext_db_id, self.name, self.pfam_length, self.interpro_id, self.uniprot_start, self.uniprot_stop)
