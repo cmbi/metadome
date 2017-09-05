@@ -14,3 +14,5 @@ services:
         environment:
            - POSTGRES_USER=metadom_user
            - POSTGRES_PASSWORD=example
+volumes:
+   interpro_temp:

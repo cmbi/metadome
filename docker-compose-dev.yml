@@ -9,6 +9,7 @@ services:
             - "5000:5000"
         volumes:
             - .:/usr/src/app
+            - interpro_temp:/usr/interpro_temp
             - ~/data:/usr/data
             - /usr/bin/docker:/usr/bin/docker
             - /var/run/docker.sock:/var/run/docker.sock
