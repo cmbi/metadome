@@ -1,12 +1,22 @@
 import logging
-from metadom.default_settings import INTERPROSCAN_EXECUTABLE, INTERPRO_PRO2IPR_DB
-import sqlite3
+from metadom.default_settings import INTERPROSCAN_EXECUTABLE,\
+    INTERPROSCAN_DOCKER_IMAGE, INTERPROSCAN_TEMP_DIR, INTERPROSCAN_DOCKER_VOLUME
 import urllib.request
 import tempfile
 import subprocess
 import os
 
 _log = logging.getLogger(__name__)
+
+def retrieve_interpro_entries(uniprot_ac, sequence):
+    # attempt a query to interproscan
+    interproscan_output = run_interproscan_query(uniprot_ac, sequence)
+    output = [interpro_entry for interpro_entry in interpret_output_of_interproscan_query(interproscan_output)]
+    
+    if len(output) == 0:
+        _log.info("Found no matching InterProScan hits on uniprot ac '"+uniprot_ac+"'")
+    
+    return output
 
 def run_interproscan_query(query_id, sequence):
     """Runs the interproscan service for a given sequence
@@ -28,11 +38,11 @@ def run_interproscan_query(query_id, sequence):
     14. (GO annotations (e.g. GO:0005515) - optional column; only displayed if --goterms option is switched on)
     15. (Pathways annotations (e.g. REACT_71) - optional column; only displayed if --pathways option is switched on)"""
     # create a temporary file
-    with tempfile.NamedTemporaryFile(suffix=".fasta", delete=False) as tmp_file:
+    with tempfile.NamedTemporaryFile(suffix=".fasta", delete=False, dir=INTERPROSCAN_TEMP_DIR) as tmp_file:
         tmp_file.write(('\n'.join(['>'+str(query_id), sequence])).encode(encoding='utf_8', errors='strict'))
     out_interproscan = tmp_file.name + '.iprscan'
-    
-    args = [INTERPROSCAN_EXECUTABLE, "--input", tmp_file.name, "--outfile", out_interproscan, "--iprlookup", "--formats", "TSV"]
+  
+    args = ["docker", "run", "--rm", "-v", INTERPROSCAN_DOCKER_VOLUME+":"+INTERPROSCAN_TEMP_DIR, INTERPROSCAN_DOCKER_IMAGE, INTERPROSCAN_EXECUTABLE, "--input", tmp_file.name, "--outfile", out_interproscan, "--iprlookup", "-dp", "--formats", "TSV"]
     
     try:
         subprocess.call(args)
@@ -53,20 +63,6 @@ def run_interproscan_query(query_id, sequence):
     # return interproscan results
     return output
 
-def retrieve_interpro_entries(uniprot_data):
-    output =  [interpro_entry for interpro_entry in retrieve_interpro_entries_from_db(uniprot_data['uniprot_ac'])]
-    if len(output) == 0:
-        _log.info("Found no matching InterPro hits on uniprot ac '"+uniprot_data['uniprot_ac']+"', attempting to query interproscan")
-    
-        # no results found, attempt a query to interproscan
-        interproscan_output = run_interproscan_query(uniprot_data['uniprot_ac'], uniprot_data['sequence'])
-        output = [interpro_entry for interpro_entry in interpret_output_of_interproscan_query(interproscan_output)]
-        
-        if len(output) == 0:
-            _log.info("Found no matching InterProScan hits on uniprot ac '"+uniprot_data['uniprot_ac']+"'")
-    
-    return output
-
 def interpret_output_of_interproscan_query(output):
     for output_entry in output:
         output_entry = output_entry.split('\t')
@@ -84,30 +80,3 @@ def interpret_output_of_interproscan_query(output):
             "end_pos": None if output_entry[7] == "NULL" else int(output_entry[7]),
         }
         yield interpro_entry
-
-def retrieve_interpro_entries_from_db(uniprot_id):
-    """Retrieves interpro entries based on the uniprot id and returns the entries as:
-    UniprotID | InterprotID | Region_name | ext_db_id | start_pos | end_pos"""
-    # connect to the database and retrieve the cursor
-    conn = sqlite3.connect(INTERPRO_PRO2IPR_DB)
-    cur = conn.cursor()
-    
-    # Constrct query
-    t = (uniprot_id,)
-    query = 'SELECT uniprot_ac, interpro_id, region_name, ext_db_id, start_pos, end_pos FROM interpro2prot WHERE uniprot_ac=?'
-    
-    # execute query
-    for row in cur.execute(query, t):
-        #format entry as UniprotID | InterprotID | Region_name | ext_db_id | start_pos | end_pos
-        interpro_entry = {
-            "uniprot_ac": urllib.request.unquote(row[0]),
-            "interpro_id": urllib.request.unquote(row[1]),
-            "region_name": None if row[2] == "NULL" else urllib.request.unquote(row[2]),
-            "ext_db_id": None if row[3] == "NULL" else urllib.request.unquote(row[3]),
-            "start_pos": None if row[4] == "NULL" else int(row[4]),
-            "end_pos": None if row[5] == "NULL" else int(row[5]),
-        }
-        # re
-        #Alternatively, you can emit the dictionary here, if you need mutability:
-        yield interpro_entry
-    conn.close()

@@ -57,10 +57,10 @@ GENCODE_SWISSPROT_FILE = DATA_DIR+"Gencode/gencode.v19.metadata.SwissProt"
 GENCODE_BASIC_FILE = DATA_DIR+"Gencode/ucsc.gencode.v19.wgEncodeGencodeBasic.txt"
 
 # InterPro Files
-INTERPRO_DIR = DATA_DIR+"InterPro/59.0/"
-INTERPROSCAN_EXECUTABLE = INTERPRO_DIR+"interproscan-5.20-59.0/interproscan.sh"
-INTERPRO_PRO2IPR_DB = INTERPRO_DIR+"protein2ipr.db"
-INTERPRO_PRO2IPR = INTERPRO_DIR+"protein2ipr.dat.gz"
+INTERPROSCAN_DOCKER_IMAGE = "blaxterlab/interproscan:5.22-61.0"
+INTERPROSCAN_DOCKER_VOLUME = 'metadom_interpro_temp'
+INTERPROSCAN_EXECUTABLE = "interproscan.sh"
+INTERPROSCAN_TEMP_DIR = '/usr/interpro_temp'
 
 # UNIPROT
 UNIPROT_MAX_BLAST_RESULTS = 10
