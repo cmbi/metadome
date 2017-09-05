@@ -8,7 +8,7 @@ from metadom.domain.models.mapping import Mapping
 from metadom.domain.models.chromosome import Chromosome
 from metadom.domain.models.gene import Gene
 from metadom.domain.models.protein import Protein
-from metadom.domain.models.pfam import Pfam
+from metadom.domain.models.interpro import Interpro
 from metadom.database import db
 
 _log = logging.getLogger(__name__)
