@@ -25,11 +25,11 @@ class PfamDomainAlignment(db.Model):
     uniprot_position = db.Column(db.Integer, nullable=False)
     pfam_position = db.Column(db.Integer)
     mapping_id = db.Column(db.Integer, db.ForeignKey('mappings.id'), nullable=True)
-    pfam_id = db.Column(db.Integer, db.ForeignKey('pfam_domains.id'), nullable=False)
+    pfam_id = db.Column(db.Integer, db.ForeignKey('interpro_domains.id'), nullable=False)
     
     # Relationships
     mappings = db.relationship('Mapping', back_populates="pfam_domain_alignment")
-    pfam_domain = db.relationship('Pfam', back_populates="pfam_domain_alignments")
+    pfam_domain = db.relationship('Interpro', back_populates="pfam_domain_alignments")
     
     # Constraints
     __table_args__ = (db.UniqueConstraint('pfam_id', 'uniprot_position', name='_unique_protein_domain_position'),

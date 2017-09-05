@@ -1,16 +1,16 @@
 from metadom.database import db
 
-class Pfam(db.Model):
+class Interpro(db.Model):
     """
-    Table: pfam_domains
-    Contains the representation of Pfam domain occurrences
+    Table: interpro_domains
+    Contains the representation of Interpro domain occurrences
     in uniprot sequences
     
     Fields
     id                        identifier
-    pfam_id                   Pfam identifier code 'PF#####'
-    name                      Name of the Pfam domain
-    pfam_length               Length of the Pfam domain
+    ext_db_id                 External domain database identifier code
+    name                      Name of the Interpro domain
+    pfam_length               Length of the Interpro domain
     interpro_id               Interpro identifier
     uniprot_start             0 <= uniprot_start < uniprot_stop
     uniprot_stop              uniprot_stop <= uniprot_end
@@ -18,13 +18,14 @@ class Pfam(db.Model):
     
     Relationships
     many to one               protein
+    one to many               pfam_domain_alignments
     """
     # Table configuration
-    __tablename__ = 'pfam_domains'
+    __tablename__ = 'interpro_domains'
     
     # Fields
     id = db.Column(db.Integer, primary_key=True)
-    pfam_id = db.Column(db.String(12), nullable=False)
+    ext_db_id = db.Column(db.String(12), nullable=False)
     name = db.Column(db.String)
     pfam_length = db.Column(db.Integer, nullable=False)
     interpro_id = db.Column(db.String(12))
@@ -33,11 +34,11 @@ class Pfam(db.Model):
     protein_id = db.Column(db.Integer, db.ForeignKey('proteins.id'), nullable=False)
     
     # Relationships
-    protein = db.relationship("Protein", back_populates="pfam_domains")
+    protein = db.relationship("Protein", back_populates="interpro_domains")
     pfam_domain_alignments = db.relationship("PfamDomainAlignment", back_populates="pfam_domain")
     
     # Constraints
-    __table_args__ = (db.UniqueConstraint('protein_id', 'pfam_id', 'uniprot_start', 'uniprot_stop', name='_unique_protein_region'),
+    __table_args__ = (db.UniqueConstraint('protein_id', 'ext_db_id', 'uniprot_start', 'uniprot_stop', name='_unique_protein_region'),
                      )
     
     def get_alignment(self):
@@ -45,5 +46,5 @@ class Pfam(db.Model):
         pass
     
     def __repr__(self):
-        return "<Pfam(pfam_id='%s', name='%s', pfam_length='%s', interpro_id='%s', uniprot_start='%s', uniprot_stop='%s')>" % (
+        return "<Interpro(pfam_id='%s', name='%s', pfam_length='%s', interpro_id='%s', uniprot_start='%s', uniprot_stop='%s')>" % (
                             self.pfam_id, self.name, self.pfam_length, self.interpro_id, self.uniprot_start, self.uniprot_stop)

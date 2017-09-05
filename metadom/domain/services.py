@@ -1,7 +1,9 @@
 import logging
 from metadom.database import db
-from metadom.domain.data_generation.mapping.mapping_generator import generate_gene_to_swissprot_mapping
+from metadom.domain.data_generation.mapping.mapping_generator import generate_gene_to_swissprot_mapping,\
+    generate_pfam_domain_to_swissprot_mappings
 from metadom.domain.models.protein import Protein
+from metadom.domain.models.interpro import Interpro
 
 _log = logging.getLogger(__name__)
 
@@ -42,6 +44,10 @@ def create_db():
         # generate all gene to swissprot mappings
         generate_gene_to_swissprot_mapping(gene_name)
     
-#     for protein in Protein.query_all():
-#         # generate all pfam domain to swissprot mappings
-#         generate_pfam_domain_to_swissprot_mappings(protein)
+    for protein in Protein.query.all():
+        # generate all pfam domain to swissprot mappings
+        generate_pfam_domain_to_swissprot_mappings(protein)
+    
+#     for pfam_domain_id in Interpro.get:
+    # generate alignments and mappings
+        

@@ -1,7 +1,7 @@
 import logging
 
 from flask import abort, Blueprint, jsonify, render_template
-from metadom.domain.models.pfam import Pfam
+from metadom.domain.models.interpro import Interpro
 from metadom.domain.models.chromosome import Chromosome
 from metadom.domain.models.mapping import Mapping
 
@@ -39,7 +39,7 @@ def get_mapping_via_protein_id(protein_id):
 # GET /api/pfam/:id
 @bp.route('/pfam/<string:pfam_id>', methods=['GET'])
 def get_mapping_via_pfam_id(pfam_id):
-#     for x in session.query(Mapping).join(Pfam).filter(Pfam.pfam_id == pfam_id):
+#     for x in session.query(Mapping).join(Interpro).filter(Interpro.pfam_id == pfam_id):
 #         for y in session.query(Chromosome).filter(Chromosome.id == x.chromosome_id):
 #             print(y,x)
     pass
@@ -47,7 +47,7 @@ def get_mapping_via_pfam_id(pfam_id):
 # GET /api/pfam/:id/:position
 @bp.route('/pfam/<string:pfam_id>/<int:position>', methods=['GET'])
 def get_mapping_via_pfam_position(pfam_id, position):
-#     for x in session.query(Mapping).join(Pfam).filter(and_(Mapping.pfam_consensus_position==position, Pfam.pfam_id == pfam_id)):
+#     for x in session.query(Mapping).join(Interpro).filter(and_(Mapping.pfam_consensus_position==position, Interpro.pfam_id == pfam_id)):
 #         for y in session.query(Chromosome).filter(Chromosome.id == x.chromosome_id):
 #             print(y,x)
     pass

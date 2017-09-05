@@ -5,7 +5,7 @@ from metadom.domain.models.mapping import Mapping
 from metadom.domain.models.chromosome import Chromosome
 from metadom.domain.models.gene import Gene
 from metadom.domain.models.protein import Protein
-from metadom.domain.models.pfam import Pfam
+from metadom.domain.models.interpro import Interpro
 from metadom.domain.models.pfam_domain_alignment import PfamDomainAlignment
 
 from metadom.domain.services import test_connection, list_tables
@@ -28,9 +28,9 @@ class MappingRepository:
         # TODO: make use of services
         
         # This is a pfam with position query
-        for x in db.session.query(Mapping).join(Pfam).filter(db.and_(
+        for x in db.session.query(Mapping).join(Interpro).filter(db.and_(
             Mapping.pfam_consensus_position==position,
-            Pfam.pfam_id==entry_id)):
+            Interpro.pfam_id==entry_id)):
             for y in db.session.query(Chromosome).filter(Chromosome.id ==
                                                        x.chromosome_id):
                 chr_key = str(y.chromosome)+":"+str(y.position)

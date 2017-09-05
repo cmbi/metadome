@@ -14,7 +14,7 @@ class Protein(db.Model):
     
     Relationships
     one to many               mappings
-    one to many               pfam_domains
+    one to many               interpro_domains
     """
     # Custom field declarations
     class ProteinSource(enum.Enum):
@@ -32,7 +32,7 @@ class Protein(db.Model):
     
     # Relationships
     mappings = db.relationship('Mapping', back_populates="protein")
-    pfam_domains = db.relationship("Pfam", back_populates="protein")
+    interpro_domains = db.relationship("Interpro", back_populates="protein")
     
     def get_aa_sequence(self, skip_asterix_at_end=False):
         _aa_sequence = ""
