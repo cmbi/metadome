@@ -52,5 +52,5 @@ class Interpro(db.Model):
         self.uniprot_stop = _end_pos
     
     def __repr__(self):
-        return "<Interpro(ext_db_id='%s', name='%s', pfam_length='%s', interpro_id='%s', uniprot_start='%s', uniprot_stop='%s')>" % (
-                            self.ext_db_id, self.name, self.pfam_length, self.interpro_id, self.uniprot_start, self.uniprot_stop)
+        return "<Interpro(ext_db_id='%s', region_name='%s', interpro_id='%s', uniprot_start='%s', uniprot_stop='%s')>" % (
+                            self.ext_db_id, self.region_name, self.interpro_id, self.uniprot_start, self.uniprot_stop)
