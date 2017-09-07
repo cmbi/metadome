@@ -1,9 +1,9 @@
 import logging
 from metadom.database import db
 from metadom.domain.data_generation.mapping.mapping_generator import generate_gene_to_swissprot_mapping,\
-    generate_pfam_domain_to_swissprot_mappings
+    annotate_interpro_domains_to_proteins, generate_pfam_alignment_mappings
 from metadom.domain.models.protein import Protein
-from metadom.domain.models.interpro import Interpro
+from metadom.domain.models.interpro import Interpro, get_all_Pfam_identifiers
 
 _log = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def create_db():
 #     list_of_failing_genes = LoadDataFromJsonFile(GENE2PROTEIN_LOCATION_OF_FAILING_GENE_LISTS)
            
     # the genes that are to be checked
-    genes_of_interest = ['LMX1A','LMX1B'] # 'LRTOMT', 'USH2A', 'PACS1', 'PACS2']
+    genes_of_interest = ['LMX1A','LMX1B', 'ZBTB18'] # 'LRTOMT', 'USH2A', 'PACS1', 'PACS2']
 #     genes_of_interest = lists_of_genes['all_gencode_genes']
 #     genes_of_interest = lists_of_genes['all_known_genes']
 #     genes_of_interest = lists_of_genes['longlist_of_well_structured_genes_that_have_swissprot']
@@ -46,8 +46,9 @@ def create_db():
     
     for protein in Protein.query.all():
         # generate all pfam domain to swissprot mappings
-        generate_pfam_domain_to_swissprot_mappings(protein)
+        annotate_interpro_domains_to_proteins(protein)
     
-#     for pfam_domain_id in Interpro.get:
-    # generate alignments and mappings
+    for pfam_domain_id in get_all_Pfam_identifiers():
+        # generate alignments and mappings based on protein domains
+        generate_pfam_alignment_mappings(pfam_domain_id)
         
