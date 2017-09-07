@@ -8,8 +8,6 @@ from metadom.domain.models.protein import Protein
 from metadom.domain.models.interpro import Interpro
 from metadom.domain.models.pfam_domain_alignment import PfamDomainAlignment
 
-from metadom.domain.services import test_connection, list_tables
-
 _log = logging.getLogger(__name__)
 
 class MappingRepository:
@@ -17,8 +15,6 @@ class MappingRepository:
     @staticmethod
     def get_mappings(entry_id, position):
         # TODO: remove when testing is done
-        _log.info("connection: "+str(test_connection()))
-        _log.info(list_tables())
         _log.info("got entry:" +str(entry_id)+" and position: "+str(position))
          
         # Default mapping

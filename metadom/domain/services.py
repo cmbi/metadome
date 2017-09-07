@@ -4,19 +4,20 @@ from metadom.domain.data_generation.mapping.mapping_generator import generate_ge
     annotate_interpro_domains_to_proteins, generate_pfam_alignment_mappings
 from metadom.domain.models.protein import Protein
 from metadom.domain.models.interpro import Interpro, get_all_Pfam_identifiers
+from sqlalchemy_schemadisplay import create_schema_graph
 
 _log = logging.getLogger(__name__)
 
-def list_tables():
-    return db.Model.metadata.tables.keys()
-  
-def test_connection():
-    try:
-        db.session.commit()
-        return True
-    except db.OperationalError as e:
-        _log.error(e)
-    return False
+## Save the schema of the database
+def write_db_schema_graph(schema_filename):
+    # create the pydot graph object by autoloading all tables via a bound metadata object
+    graph = create_schema_graph(metadata=db.Model.metadata,
+       show_datatypes=True, # The image would get nasty big if we'd show the datatypes
+       show_indexes=True, # ditto for indexes
+       rankdir='LR', # From left to right (instead of top to bottom)
+       concentrate=False # Don't try to join the relation lines together
+    )
+    graph.write_png(schema_filename) # write out the file
 
 def create_db():
     # initialize custom logging framework
