@@ -1,6 +1,7 @@
 from metadom.database import db
 import enum
 from metadom.domain.models.mapping import Mapping
+from metadom import _log
 
 class Protein(db.Model):
     """
@@ -42,6 +43,9 @@ class Protein(db.Model):
                 continue
             _aa_sequence+= mappings[key]
         return _aa_sequence
+    
+    def get_aa_region(self, region_start, region_stop, skip_asterix_at_end=False):
+        return self.get_aa_sequence(skip_asterix_at_end)[region_start-1:region_stop]
     
     def __init__(self, _uniprot_ac, _uniprot_name, _source):
         if _source == 'swissprot':
