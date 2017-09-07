@@ -1,4 +1,10 @@
 from metadom.database import db
+from metadom.domain.models.protein import Protein
+
+def get_all_Pfam_identifiers():
+    for domain_entry in Interpro.query.filter(Interpro.ext_db_id.like('PF%')).distinct(Interpro.ext_db_id):
+        yield domain_entry.ext_db_id
+
 
 class Interpro(db.Model):
     """
@@ -34,7 +40,7 @@ class Interpro(db.Model):
     
     # Relationships
     protein = db.relationship("Protein", back_populates="interpro_domains")
-    pfam_domain_alignments = db.relationship("PfamDomainAlignment", back_populates="pfam_domain")
+    pfam_domain_alignments = db.relationship("PfamDomainAlignment", back_populates="domain")
     
     # Constraints
     __table_args__ = (db.UniqueConstraint('protein_id', 'ext_db_id', 'uniprot_start', 'uniprot_stop', name='_unique_protein_region'),
@@ -43,6 +49,12 @@ class Interpro(db.Model):
     def get_alignment(self):
         # TODO: create this method
         pass
+    
+    def get_protein(self):
+        return Protein.query.filter_by(id = self.protein_id).first()
+    
+    def get_aa_sequence(self):
+        return self.get_protein().get_aa_region(region_start=self.uniprot_start, region_stop=self.uniprot_stop)
     
     def __init__(self, _interpro_id, _ext_db_id, _region_name, _start_pos, _end_pos):
         self.interpro_id = _interpro_id
