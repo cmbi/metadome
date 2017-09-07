@@ -12,6 +12,11 @@ RUN wget http://www.clustal.org/download/2.1/clustalw-2.1-linux-x86_64-libcppsta
 RUN tar -zxvf clustalw-2.1-linux-x86_64-libcppstatic.tar.gz
 RUN mv clustalw-2.1-linux-x86_64-libcppstatic /usr/externals/clustalw
 
+# Install HMMER Tools
+RUN wget http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2-linux-intel-x86_64.tar.gz
+RUN tar -zxvf hmmer-3.1b2-linux-intel-x86_64.tar.gz
+RUN mv hmmer-3.1b2-linux-intel-x86_64 /usr/externals/hmmer
+
 # Create directory for app
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app

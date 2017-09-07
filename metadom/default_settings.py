@@ -18,35 +18,11 @@ DATA_DIR = "/usr/data/"
 # local executables
 BLASTP_EXECUTABLE = "/usr/externals/blast/bin/blastp"
 CLUSTALW_EXECUTABLE = "/usr/externals/clustalw/clustalw2"
-HMMFETCH_EXECUTABLE = "/usr/bin/hmmfetch"
-HMMLOGO_EXECUTABLE = "/usr/bin/hmmlogo"
-HMMALIGN_EXECUTABLE = "/usr/bin/hmmalign"
-HMMEMIT_EXECUTABLE = "/usr/bin/hmmemit"
-HMMSTAT_EXECUTABLE = "/usr/bin/hmmstat"
-
-# Gene 2 Protein mapping database
-
-# Meta domain databases and datasets
-
-# location of gene lists
-
-# Configuration
-MINIMAL_BLASTPE_VALUE = 0.01
-MINIMAL_TRANSLATION_TO_STRUCTURE_PIDENT_VALUE = 95.0
-MINIMAL_XRAY_STRUCTURE_RESOLUTION = 4.0
-
-# Exac specific files
-EXAC_DIR = DATA_DIR + "Exac/release0.3.1/"
-EXAC_VCF_FILE = EXAC_DIR + "ExAC.r0.3.1.sites.vep.vcf.gz"
-EXAC_TBI_FILE = EXAC_VCF_FILE + ".tbi"
-EXAC_ACCEPTED_FILTERS = ['PASS']
-
-#HGMD specific files
-HGMD_DIR = DATA_DIR + 'HGMD/HGMD_PRO_2016.2/2016.2/'
-HGMD_VCF_FILE = HGMD_DIR + "HGMD_PRO_2016.2_hg19.vcf.gz"
-HGMD_TBI_FILE = HGMD_VCF_FILE + ".tbi"
-HGMD_CONSIDERED_CLASSES = ['DM']
-
+HMMFETCH_EXECUTABLE = "/usr/externals/hmmer/binaries/hmmfetch"
+HMMLOGO_EXECUTABLE = "/usr/externals/hmmer/binaries/hmmlogo"
+HMMALIGN_EXECUTABLE = "/usr/externals/hmmer/binaries/hmmalign"
+HMMEMIT_EXECUTABLE = "/usr/externals/hmmer/binaries/hmmemit"
+HMMSTAT_EXECUTABLE = "/usr/externals/hmmer/binaries/hmmstat"
 
 # Genome specific files
 GENCODE_HG_ANNOTATION_FILE_GTF = DATA_DIR+"Gencode/gencode.v19.annotation.gtf"
@@ -71,13 +47,32 @@ UNIPROT_SPROT_CANONICAL = UNIPROT_DIR+"uniprot_sprot.fasta"
 UNIPROT_SPROT_SPECIES_FILTER = "HUMAN"
 UNIPROT_TREMBL = UNIPROT_DIR+"uniprot_trembl.fasta"
 
-# PDB specific files
-PDB_DIR = DATA_DIR+"PDB"
-PDB_STRUCTURE_DIR = PDB_DIR+'/Structures/pdb/'
-PDB_SEQRES_FASTA = PDB_DIR+"/pdb_seqres_prot.txt"
-
 # PFAM specific files
 PFAM_DIR = DATA_DIR+"PFAM/Pfam30.0"
 PFAM_ALIGNMENT_DIR = PFAM_DIR+"/alignment/"
 PFAM_HMM_DAT = PFAM_DIR+"/Pfam-A.hmm.dat.gz"
 PFAM_HMM = PFAM_DIR+"/Pfam-A.hmm"
+
+
+
+# # Configuration
+# MINIMAL_BLASTPE_VALUE = 0.01
+# MINIMAL_TRANSLATION_TO_STRUCTURE_PIDENT_VALUE = 95.0
+# MINIMAL_XRAY_STRUCTURE_RESOLUTION = 4.0
+# 
+# # Exac specific files
+# EXAC_DIR = DATA_DIR + "Exac/release0.3.1/"
+# EXAC_VCF_FILE = EXAC_DIR + "ExAC.r0.3.1.sites.vep.vcf.gz"
+# EXAC_TBI_FILE = EXAC_VCF_FILE + ".tbi"
+# EXAC_ACCEPTED_FILTERS = ['PASS']
+# 
+# #HGMD specific files
+# HGMD_DIR = DATA_DIR + 'HGMD/HGMD_PRO_2016.2/2016.2/'
+# HGMD_VCF_FILE = HGMD_DIR + "HGMD_PRO_2016.2_hg19.vcf.gz"
+# HGMD_TBI_FILE = HGMD_VCF_FILE + ".tbi"
+# HGMD_CONSIDERED_CLASSES = ['DM']
+# 
+# # PDB specific files
+# PDB_DIR = DATA_DIR+"PDB"
+# PDB_STRUCTURE_DIR = PDB_DIR+'/Structures/pdb/'
+# PDB_SEQRES_FASTA = PDB_DIR+"/pdb_seqres_prot.txt"
