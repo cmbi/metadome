@@ -60,8 +60,8 @@ def generate_pfam_alignment_mappings(pfam_id):
         hmmeralign_output['consensus']['mapping_consensus_alignment_to_positions'] = map_sequence_to_aligned_sequence(hmmeralign_output['consensus']['sequence'], hmmeralign_output['consensus']['aligned_sequence'])
         
         # create mappings between domain occurrences and the domain consensus sequence
-        for index in range(len(hmmeralign_output['alignments'])):
-            with db.session.no_autoflush as _session:
+        with db.session.no_autoflush as _session:
+            for index in range(len(hmmeralign_output['alignments'])):
                 # retrieve current aligned domain
                 domain_occurrence = domain_of_interest_occurrences[index]
                 
@@ -75,12 +75,21 @@ def generate_pfam_alignment_mappings(pfam_id):
                 # create the mapping between the strict alignments and the original consensus sequence
                 mapping_aligned_domain_to_domain_consensus = createAlignedSequenceMapping(strict_aligned_sequence, hmmeralign_output['consensus']['aligned_sequence'], False)
                 
-                # go over each mapping seperatly
-                for mapping_pos in sorted(mapping_aligned_domain_to_domain_consensus.keys()):
-                    # retrieve the position in the domain consensus
-                    domain_consensus_pos = hmmeralign_output['consensus']['mapping_consensus_alignment_to_positions'][mapping_pos]
+                # create a list of mapping positions that includes insertions
+                mapping_positions = mapping_domain_alignment_to_sequence_positions.keys() + list(set(mapping_aligned_domain_to_domain_consensus.keys()) - set(mapping_domain_alignment_to_sequence_positions.keys()))
+                
+                # Second add each aligned residue mapping
+                for mapping_pos in sorted(mapping_positions):
                     # retrieve the residue at the consensus position and the residue at the domain position
                     consensus_domain_residue = hmmeralign_output['consensus']['aligned_sequence'][mapping_pos]
+                    
+                    if consensus_domain_residue == '-':
+                        # Set the default values for the insertion
+                        domain_consensus_pos = None
+                    else:
+                        # retrieve the position in the domain consensus
+                        domain_consensus_pos = hmmeralign_output['consensus']['mapping_consensus_alignment_to_positions'][mapping_pos]
+                    
                     # retrieve the aligned residue
                     aligned_residue = aligned_sequence[mapping_pos]
                     
@@ -127,8 +136,8 @@ def generate_pfam_alignment_mappings(pfam_id):
                     # add the alignment to the database
                     _session.add(domain_alignment)
                 
-                # commit the alignments to the database
-                _session.commit()
+            # commit the alignments to the database
+            _session.commit()
         
         time_step = time.clock()
         _log.info("Finished the mappings for '"+str(len(domain_of_interest_occurrences)) +"' '"+pfam_id+"' domain occurrences in "+str(time_step-start_time)+" seconds")
