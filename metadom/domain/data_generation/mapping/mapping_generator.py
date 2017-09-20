@@ -76,7 +76,7 @@ def generate_pfam_alignment_mappings(pfam_id):
                 mapping_aligned_domain_to_domain_consensus = createAlignedSequenceMapping(strict_aligned_sequence, hmmeralign_output['consensus']['aligned_sequence'], False)
                 
                 # create a list of mapping positions that includes insertions
-                mapping_positions = mapping_domain_alignment_to_sequence_positions.keys() + list(set(mapping_aligned_domain_to_domain_consensus.keys()) - set(mapping_domain_alignment_to_sequence_positions.keys()))
+                mapping_positions = list(mapping_domain_alignment_to_sequence_positions.keys()) + list(set(mapping_aligned_domain_to_domain_consensus.keys()) - set(mapping_domain_alignment_to_sequence_positions.keys()))
                 
                 # Second add each aligned residue mapping
                 for mapping_pos in sorted(mapping_positions):
