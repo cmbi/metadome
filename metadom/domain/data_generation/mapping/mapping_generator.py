@@ -127,7 +127,7 @@ def generate_pfam_alignment_mappings(pfam_id):
                         continue
                     
                     # create new domain_ alignment object
-                    domain_alignment = PfamDomainAlignment(domain_consensus_residue=consensus_domain_residue, domain_consensus_position=domain_consensus_pos)
+                    domain_alignment = PfamDomainAlignment(alignment_position=mapping_pos, domain_consensus_residue=consensus_domain_residue, domain_consensus_position=domain_consensus_pos)
                     
                     # Add the foreign keys
                     domain_occurrence.pfam_domain_alignments.append(domain_alignment)
