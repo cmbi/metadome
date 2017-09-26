@@ -4,7 +4,8 @@ from flask import Blueprint, redirect, g, render_template, url_for, request, ses
 
 from metadom import get_version
 from metadom.presentation.web.forms import MetaDomForm
-from metadom.domain.repositories import MappingRepository
+from metadom.domain.repositories import MappingRepository,\
+    PfamDomainAlignmentRepository
 
 _log = logging.getLogger(__name__)
 
@@ -23,10 +24,13 @@ def input():
         # get result
         mappings = MappingRepository.get_mappings(form.entry_id.data, 
                                                   form.position.data)
+        
+        alignments = PfamDomainAlignmentRepository.get_msa_alignment(form.entry_id.data)
 
         _log.debug("Redirecting to result page")
 
         session['mappings'] = mappings
+        session['alignments'] = alignments
         return redirect(url_for('web.result'))
 
     _log.debug("Rendering input page")
@@ -36,7 +40,8 @@ def input():
 @bp.route("/result", methods=["GET"])
 def result():
     mappings = session.get('mappings', None)
-    return render_template("result.html", mappings=mappings)
+    alignments = session.get('alignments', None)
+    return render_template("result.html", mappings=mappings, alignments=alignments)
 
 
 @bp.before_request
