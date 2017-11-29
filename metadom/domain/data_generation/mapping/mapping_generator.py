@@ -99,7 +99,7 @@ def generate_pfam_alignment_mappings(pfam_id):
                     uniprot_pos = domain_occurrence.uniprot_start + ref_pos -1
                     
                     # Retrieve the mapping for the corresponding uniprot_position
-                    mapping = Mapping.query.filter((Mapping.uniprot_position == uniprot_pos) & (Mapping.protein_id == domain_occurrence.protein_id)).first()
+                    mapping = Mapping.query.filter((Mapping.uniprot_position == uniprot_pos) & (Mapping.protein_id == domain_occurrence.protein_id) & (Mapping.codon_allele_position == 0)).first()
                     
                     # Double check for any possible errors at this point
                     if mapping is None:
@@ -173,7 +173,7 @@ def annotate_interpro_domains_to_proteins(protein):
             # Commit this session
             _session.commit()
             
-        _log.info("Protein "+str(protein.uniprot_ac)+" was annotated with '"+str(len(interpro_result))+"' interpro domains.")
+        _log.info("Protein "+str(protein.uniprot_ac)+" was annotated with '"+str(len(interpro_results))+"' interpro domains.")
         
 def generate_gene_to_swissprot_mapping(gene_name):
     """
