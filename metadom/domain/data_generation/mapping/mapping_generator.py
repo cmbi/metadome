@@ -157,6 +157,10 @@ def annotate_interpro_domains_to_proteins(protein):
         # save the results to the database
         with db.session.no_autoflush as _session:
             for interpro_result in interpro_results:
+                if interpro_result['interpro_id'] is None and interpro_result['region_name'] == '':
+                    # skip non-informative results
+                    continue
+                                
                 # create a new interpro domain
                 interpro_domain = Interpro(_interpro_id=interpro_result['interpro_id'],\
                                       _ext_db_id=interpro_result['ext_db_id'],\
