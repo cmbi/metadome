@@ -86,7 +86,7 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
                 custom_range = range(cd.start, cd.end+1)
             for i in custom_range:
                 # create mapping object for this position
-                allele = coding_sequence[cDNA_pos]
+                base_pair = coding_sequence[cDNA_pos]
                 
                 # increment cDNA position
                 cDNA_pos = cDNA_pos+1
@@ -100,8 +100,8 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
                 
                 # add codon to the mapping
                 codon = translationCodons[aa_pos]                
-                # add codon allele number to the mapping
-                codon_allele_position = ((cDNA_pos-1)%3)
+                # add codon base pair number to the mapping
+                codon_base_pair_position = ((cDNA_pos-1)%3)
                 # Add residue from translation
                 amino_acid_residue = gene_protein_translation_sequence[aa_pos]
                 # Add information for uniprot
@@ -114,10 +114,10 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
                 
                 # create the mapping
                 mapping = Mapping(
-                    allele = allele,
+                    base_pair = base_pair,
                     cDNA_position = cDNA_pos,
                     codon = codon,
-                    codon_allele_position = codon_allele_position,
+                    codon_base_pair_position = codon_base_pair_position,
                     amino_acid_residue = amino_acid_residue,
                     amino_acid_position = aa_pos,
                     uniprot_position = uniprot_position,

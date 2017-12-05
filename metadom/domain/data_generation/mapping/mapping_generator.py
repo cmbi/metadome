@@ -99,7 +99,7 @@ def generate_pfam_alignment_mappings(pfam_id):
                     uniprot_pos = domain_occurrence.uniprot_start + ref_pos -1
                     
                     # Retrieve the mapping for the corresponding uniprot_position
-                    mapping = Mapping.query.filter((Mapping.uniprot_position == uniprot_pos) & (Mapping.protein_id == domain_occurrence.protein_id) & (Mapping.codon_allele_position == 0)).first()
+                    mapping = Mapping.query.filter((Mapping.uniprot_position == uniprot_pos) & (Mapping.protein_id == domain_occurrence.protein_id) & (Mapping.codon_base_pair_position == 0)).first()
                     
                     # Double check for any possible errors at this point
                     if mapping is None:

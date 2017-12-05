@@ -45,7 +45,7 @@ class Gene(db.Model):
     
     def get_cDNA_sequence(self):
         _cDNA_sequence = ""
-        mappings = {x.cDNA_position:x.allele for x in Mapping.query.filter_by(gene_id = self.id).all()}
+        mappings = {x.cDNA_position:x.base_pair for x in Mapping.query.filter_by(gene_id = self.id).all()}
         for key in sorted(mappings.keys()):
             _cDNA_sequence+= mappings[key]
         return _cDNA_sequence

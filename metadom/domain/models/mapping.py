@@ -8,9 +8,9 @@ class Mapping(db.Model):
     
     Fields
     id                        identifier
-    allele                    'A', 'T', 'C', 'G'
+    base_pair                    'A', 'T', 'C', 'G'
     codon                     all triplet combinations of the alleles 
-    codon_allele_position     0, 1, 2, or None
+    codon_base_pair_position     0, 1, 2, or None
     amino_acid_residue        one of the 20 amino acids in the gene translation,
                               * or None
     amino_acid_position       the position in the amino acid sequence of the 
@@ -34,9 +34,9 @@ class Mapping(db.Model):
     
     # Fields
     id = db.Column(db.Integer, primary_key=True)
-    allele = db.Column(db.String(1))
+    base_pair = db.Column(db.String(1))
     codon = db.Column(db.String(3))
-    codon_allele_position = db.Column(db.Integer)
+    codon_base_pair_position = db.Column(db.Integer)
     amino_acid_residue = db.Column(db.String(1))
     amino_acid_position = db.Column(db.Integer)
     cDNA_position = db.Column(db.Integer)
@@ -53,6 +53,6 @@ class Mapping(db.Model):
     pfam_domain_alignment = db.relationship("PfamDomainAlignment", back_populates="mappings")
     
     def __repr__(self):
-        return "<Mapping(allele='%s', codon='%s', codon_allele_position='%s', amino_acid_residue='%s', cDNA_position='%s', uniprot_position='%s')>" % (
-                            self.allele, self.codon, self.codon_allele_position, self.amino_acid_residue, self.cDNA_position, self.uniprot_position)
+        return "<Mapping(base_pair='%s', codon='%s', codon_base_pair_position='%s', amino_acid_residue='%s', cDNA_position='%s', uniprot_position='%s')>" % (
+                            self.base_pair, self.codon, self.codon_base_pair_position, self.amino_acid_residue, self.cDNA_position, self.uniprot_position)
     
