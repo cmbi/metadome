@@ -1,6 +1,7 @@
 import logging
 from metadom.default_settings import INTERPROSCAN_EXECUTABLE,\
-    INTERPROSCAN_DOCKER_IMAGE, INTERPROSCAN_TEMP_DIR, INTERPROSCAN_DOCKER_VOLUME
+    INTERPROSCAN_DOCKER_IMAGE, INTERPROSCAN_TEMP_DIR,\
+    INTERPROSCAN_DOCKER_VOLUME, INTERPROSCAN_DOMAIN_DATABASES
 import urllib.request
 import tempfile
 import subprocess
@@ -42,7 +43,7 @@ def run_interproscan_query(query_id, sequence):
         tmp_file.write(('\n'.join(['>'+str(query_id), sequence])).encode(encoding='utf_8', errors='strict'))
     out_interproscan = tmp_file.name + '.iprscan'
   
-    args = ["docker", "run", "--rm", "-v", INTERPROSCAN_DOCKER_VOLUME+":"+INTERPROSCAN_TEMP_DIR, INTERPROSCAN_DOCKER_IMAGE, INTERPROSCAN_EXECUTABLE, "--input", tmp_file.name, "--outfile", out_interproscan, "--iprlookup", "-dp", "--formats", "TSV"]
+    args = ["docker", "run", "--rm", "-v", INTERPROSCAN_DOCKER_VOLUME+":"+INTERPROSCAN_TEMP_DIR, INTERPROSCAN_DOCKER_IMAGE, INTERPROSCAN_EXECUTABLE, "--input", tmp_file.name, "--outfile", out_interproscan, "-appl", INTERPROSCAN_DOMAIN_DATABASES, "--iprlookup", "-dp", "--formats", "TSV"]
     
     try:
         subprocess.call(args)
