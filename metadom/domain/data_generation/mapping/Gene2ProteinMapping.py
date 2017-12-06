@@ -74,7 +74,8 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
         # Create mapping between Gene and cDNA
         cDNA_pos = 0
         currentChr = ''
-        to_be_added_chrom_pos = []
+        to_be_added_chrom_pos = dict()
+        to_be_added_mapping = dict()
         for cd in cds:
             if currentChr == '': currentChr = cd.seqid # set it as the first
             elif not(cd.seqid == currentChr):
@@ -92,11 +93,9 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
                 cDNA_pos = cDNA_pos+1
                 aa_pos = int((cDNA_pos-1) / 3)
                 
-                # add chromosome entry in database if it does not already exists
-                chrom_pos = Chromosome.query.filter_by(chromosome=str(cd.seqid), position=i).first()
-                if chrom_pos is None:
-                    chrom_pos = Chromosome(chromosome=str(cd.seqid), position=i)
-                    to_be_added_chrom_pos.append(chrom_pos) 
+                # create chromosome entry
+                chrom_pos = Chromosome(chromosome=str(cd.seqid), position=i)
+                to_be_added_chrom_pos[chrom_pos.position] = chrom_pos
                 
                 # add codon to the mapping
                 codon = translationCodons[aa_pos]                
@@ -124,16 +123,27 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
                     uniprot_residue = uniprot_residue
                     )
                 
-                chrom_pos.mappings.append(mapping)
+                # add relationships to mapping from gene translation and protein
                 gene_translation.mappings.append(mapping)
                 matching_protein.mappings.append(mapping)
     
                 # add mapping to the database
-                db.session.add(mapping)
+                to_be_added_mapping[chrom_pos.position] = mapping
     
+        # merge all chromosomes that are already present in the database
+        for each in Chromosome.query.filter((Chromosome.chromosome == chrom_pos.chromosome) & (Chromosome.position.in_(to_be_added_chrom_pos.keys()))).all():
+            to_be_added_chrom_pos.pop(each.position)
+            each.mappings.append(to_be_added_mapping[each.position])
+        
+        # add each chromosomal postion not yet present in the database
+        for each in to_be_added_chrom_pos.keys():
+            to_be_added_chrom_pos[each].mappings.append(to_be_added_mapping[each])
+        
         # add all other objects to the database
-        for x in to_be_added_chrom_pos:
-            db.session.add(x)
+        db.session.add_all(to_be_added_mapping.values())
+        
+        # add the remaining chromosome positions
+        db.session.add_all(to_be_added_chrom_pos.values())    
         
     db.session.commit()
 
