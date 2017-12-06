@@ -25,6 +25,10 @@ class Chromosome(db.Model):
     # Relationships
     mappings = db.relationship('Mapping', back_populates="chromosome")
     
+    # Constraints
+    __table_args__ = (db.UniqueConstraint('chromosome', 'position', name='_unique_chromosome_position'),
+                     )
+    
     def __repr__(self):
         return "<Chromosome(chromosome='%s', position='%s')>" % (
                             self.chromosome, self.position)
