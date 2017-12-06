@@ -34,7 +34,7 @@ class Gene(db.Model):
     strand = db.Column(db.Enum(Strand), nullable=False)
     gene_name = db.Column(db.String(50))
     gencode_transcription_id = db.Column(db.String(50), unique=True, nullable=False)
-    gencode_translation_name = db.Column(db.String(50), unique=True, nullable=False)
+    gencode_translation_name = db.Column(db.String(50), nullable=False)
     gencode_gene_id = db.Column(db.String(50))
     havana_gene_id = db.Column(db.String(50))
     havana_translation_id = db.Column(db.String(50))
