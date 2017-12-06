@@ -60,7 +60,7 @@ def generate_pfam_alignment_mappings(pfam_id):
         hmmeralign_output['consensus']['mapping_consensus_alignment_to_positions'] = map_sequence_to_aligned_sequence(hmmeralign_output['consensus']['sequence'], hmmeralign_output['consensus']['aligned_sequence'])
         
         # create mappings between domain occurrences and the domain consensus sequence
-        with db.session.no_autoflush as _session:
+        with db.session.no_autoflush:
             for index in range(len(hmmeralign_output['alignments'])):
                 # retrieve current aligned domain
                 domain_occurrence = domain_of_interest_occurrences[index]
@@ -134,10 +134,10 @@ def generate_pfam_alignment_mappings(pfam_id):
                     mapping.pfam_domain_alignment.append(domain_alignment)
         
                     # add the alignment to the database
-                    _session.add(domain_alignment)
+                    db.session.add(domain_alignment)
                 
-            # commit the alignments to the database
-            _session.commit()
+        # commit the alignments to the database
+        db.session.commit()
         
         time_step = time.clock()
         _log.info("Finished the mappings for '"+str(len(domain_of_interest_occurrences)) +"' '"+pfam_id+"' domain occurrences in "+str(time_step-start_time)+" seconds")
@@ -155,7 +155,7 @@ def annotate_interpro_domains_to_proteins(protein):
         interpro_results = retrieve_interpro_entries(protein.uniprot_ac, aa_sequence)
         
         # save the results to the database
-        with db.session.no_autoflush as _session:
+        with db.session.no_autoflush:
             for interpro_result in interpro_results:
                 if interpro_result['interpro_id'] is None and interpro_result['region_name'] == '':
                     # skip non-informative results
@@ -172,11 +172,11 @@ def annotate_interpro_domains_to_proteins(protein):
                 protein.interpro_domains.append(interpro_domain)
                 
                 # Add the interpro_domain to the database
-                _session.add(interpro_domain)
-            
-            # Commit this session
-            _session.commit()
-            
+                db.session.add(interpro_domain)
+                
+        # Commit this session
+        db.session.commit()
+        
         _log.info("Protein "+str(protein.uniprot_ac)+" was annotated with '"+str(len(interpro_results))+"' interpro domains.")
         
 def generate_gene_to_swissprot_mapping(gene_name):
