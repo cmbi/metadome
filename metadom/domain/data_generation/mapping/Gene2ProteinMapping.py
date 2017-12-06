@@ -27,7 +27,7 @@ def convertListOfIntegerToRanges(p):
     yield (q[i], q[-1])
 
 def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, matching_coding_translation, uniprot):
-    with db.session.no_autoflush as _session:
+    with db.session.no_autoflush:
         # Retrieve the amino acid sequence according to the translation
         gene_protein_translation_sequence = matching_coding_translation['sequence']
         # Retrieve the canonical uniprot sequence
@@ -129,14 +129,13 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
                 matching_protein.mappings.append(mapping)
     
                 # add mapping to the database
-                _session.add(mapping)
-            to_be_added_chrom_pos = []
+                db.session.add(mapping)
     
         # add all other objects to the database
         for x in to_be_added_chrom_pos:
-            _session.add(x)
+            db.session.add(x)
         
-        _session.commit()
+    db.session.commit()
 
 
 def extract_pdb_from_gene_region(gene_mapping, gene_region):
