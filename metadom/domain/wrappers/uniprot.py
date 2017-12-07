@@ -39,7 +39,7 @@ def retrieveIdenticalUniprotMatch(geneTranslation, uniprot_database="sp", specie
     for result in sequence_results:
         _result_sequence = getUniprotSequence(result['accession_code'], blast_db)
         if _result_sequence == geneTranslation['sequence']:
-            _log.debug('input and blast resilt sequences are identical')
+            _log.debug('input and blast result sequences are identical')
             top_result = result
             break
     
