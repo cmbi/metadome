@@ -363,3 +363,25 @@ def retrieveGeneTranslations_gencode(gene_name):
                         matching_translations.append(translation)
                         
     return matching_translations
+
+def retrieve_all_protein_coding_gene_names():
+    """Retrieves the protein-coding gene names for the Gencode dataset"""
+    gene_names = set()
+    with open(GENCODE_HG_TRANSLATION_FILE) as hg_translation:
+        # read the lines in the file
+        lines = hg_translation.readlines()
+        for i in range(len(lines)):
+            # retrieve current line
+            line = lines[i]
+            
+            # check if the line is a fasta header, otherwise skip it
+            if not line.startswith('>'):
+                continue
+            
+            tokens = line.strip().split('|')
+            
+            if len(tokens) > 0:
+                # add the gene name to the set
+                gene_names.add(tokens[5])
+                
+    return gene_names
