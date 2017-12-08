@@ -1,15 +1,10 @@
-import logging
-
-from metadom.domain.data_generation.mapping.Protein2ProteinMapping import createMappingOfAASequenceToAASequence,\
-    map_single_residue
 import numpy as np
-
+from metadom.domain.data_generation.mapping.Protein2ProteinMapping import \
+    createMappingOfAASequenceToAASequence, map_single_residue
 from metadom.domain.models.mapping import Mapping
 from metadom.domain.models.chromosome import Chromosome
-from metadom.domain.models.gene import Gene
-from metadom.domain.models.protein import Protein
-from metadom.domain.models.interpro import Interpro
-from metadom.database import db
+
+import logging
 
 _log = logging.getLogger(__name__)
 
