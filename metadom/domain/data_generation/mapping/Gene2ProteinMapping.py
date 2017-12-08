@@ -36,12 +36,6 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
         coding_sequence = gene_transcription['coding-sequence']
         # CDS for nucleotide positions
         cds =  gene_transcription['CDS_annotation']
-        
-        # Retrieve gene translation from database...
-        gene_translation = Gene.query.filter_by(gencode_transcription_id = matching_coding_translation['transcription-id']).first()
-        
-        # Retrieve protein entry from database...
-        matching_protein = Protein.query.filter_by(uniprot_ac = uniprot['uniprot_ac']).first()
             
         # check if there are multiple chromosomal positions
         chr_in_cds = list(set([cd.seqid for cd in cds]))
@@ -50,19 +44,6 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
         
         # ensure we have the stop codon at the end of the translation sequence
         gene_protein_translation_sequence+='*'
-        
-        # test if mapping is already present in database
-        if gene_translation is None:
-            _log.error("Gene transcription "+matching_coding_translation['transcription-id']+" was not present in database. No Mapping was generated")
-            return
-        elif matching_protein is None:
-            _log.error("Protein "+uniprot['uniprot_ac']+" was not present in database. No Mapping was generated")
-            return
-        elif gene_translation.get_aa_sequence()==gene_protein_translation_sequence and\
-            gene_translation.get_cDNA_sequence()==coding_sequence and\
-            matching_protein.get_aa_sequence()==(canonical_protein_sequence+"*"):
-            _log.info("Gene transcription "+str(gene_translation.gencode_transcription_id)+" was already succesfully mapped to protein "+str(matching_protein.uniprot_ac)+". No Mapping was generated")
-            return 
         
         # align cDNA sequence with uniprot canonical sequence
         translation_to_uniprot_mapping  = createMappingOfAASequenceToAASequence(gene_protein_translation_sequence, canonical_protein_sequence)
@@ -111,8 +92,8 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
                 else:
                     uniprot_position, uniprot_residue = map_single_residue(translation_to_uniprot_mapping, aa_pos)
                 
-                # create the mapping
-                mapping = Mapping(
+                # create the mapping entry
+                to_be_added_mapping[chrom_pos.position] = Mapping(
                     base_pair = base_pair,
                     cDNA_position = cDNA_pos,
                     codon = codon,
@@ -123,30 +104,7 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
                     uniprot_residue = uniprot_residue
                     )
                 
-                # add relationships to mapping from gene translation and protein
-                gene_translation.mappings.append(mapping)
-                matching_protein.mappings.append(mapping)
-    
-                # add mapping to the database
-                to_be_added_mapping[chrom_pos.position] = mapping
-    
-        # merge all chromosomes that are already present in the database
-        for each in Chromosome.query.filter((Chromosome.chromosome == chrom_pos.chromosome) & (Chromosome.position.in_(to_be_added_chrom_pos.keys()))).all():
-            to_be_added_chrom_pos.pop(each.position)
-            each.mappings.append(to_be_added_mapping[each.position])
-        
-        # add each chromosomal postion not yet present in the database
-        for each in to_be_added_chrom_pos.keys():
-            to_be_added_chrom_pos[each].mappings.append(to_be_added_mapping[each])
-        
-        # add all other objects to the database
-        db.session.add_all(to_be_added_mapping.values())
-        
-        # add the remaining chromosome positions
-        db.session.add_all(to_be_added_chrom_pos.values())    
-        
-    db.session.commit()
-
+    return to_be_added_chrom_pos, to_be_added_mapping
 
 def extract_pdb_from_gene_region(gene_mapping, gene_region):
     """Expects a gene_region, as created by 'extract_gene_region' with 
