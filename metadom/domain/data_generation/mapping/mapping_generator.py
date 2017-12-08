@@ -184,8 +184,10 @@ def generate_gene_to_swissprot_mapping(gene_name):
     Given a gene_name, this method generates a mapping between swissprot and 
     every GENCODE Basic protein-coding translation for that gene
     """
-
     _log.info("Starting swissprot mapping for gene '"+gene_name+"'")
+
+    # The result of this method; a dictionary containing all items that will be added to the database
+    to_be_added_db_entries = {"genes":dict(), "proteins":dict(), "chromosome_positions":dict(), "mappings":dict()}    
     
     # retrieve all translations for the gene
     matching_translations = retrieveGeneTranslations_gencode(gene_name)
@@ -206,18 +208,18 @@ def generate_gene_to_swissprot_mapping(gene_name):
     
     # retrieve the lengths for the sequences
     sequences_lengths = [len(s['sequence']) for s in matching_coding_translations]
-
     _log.info("Found '"+str(len(matching_coding_translations))+"' matching protein coding translation(s) for gene "+gene_name+", with lengths: "+str(sequences_lengths))
-    
+
+    # start creation of the mapping between the gene and swissprot
     for matching_coding_translation in matching_coding_translations:
         # test if this translation does not already exists
         gene_translation = Gene.query.filter_by(
             gencode_transcription_id = matching_coding_translation['transcription-id']).first()
         if not gene_translation is None:
-            _log.info("gene transcription: "+matching_coding_translation['transcription-id']+" is already present in the database. Skipping mapping")
+            _log.info("gene transcription: "+matching_coding_translation['transcription-id']+" is already present in the database. Skipping mapping generation")
             continue
         
-        # retrieve the nucleotide sequence and coding sequence information
+        # retrieve the nucleotide and coding sequence information
         try:
             gene_transcription = retrieveNucleotideSequence_gencode(matching_coding_translation)
             gene_transcription['CDS_annotation'] = retrieveCodingGenomicLocations_gencode(matching_coding_translation)
@@ -228,36 +230,36 @@ def generate_gene_to_swissprot_mapping(gene_name):
             _log.error(e)
             continue
         
-        # Add the gene transcription to the database
-        db.session.add(Gene(_strand=matching_coding_translation['strand'],
+        # Create the gene transcription entry
+        to_be_added_db_entries["genes"][matching_coding_translation['transcription-id']] =  Gene(_strand=matching_coding_translation['strand'],
             _gene_name = matching_coding_translation['gene-name'],
             _gencode_transcription_id = matching_coding_translation['transcription-id'],
             _gencode_translation_name = matching_coding_translation['translation-name'],
             _gencode_gene_id = matching_coding_translation['gene_name-id'],
             _havana_gene_id = matching_coding_translation['Havana-gene_name-id'],
             _havana_translation_id = matching_coding_translation['Havana-translation-id'],
-            _sequence_length = matching_coding_translation['sequence-length']))
-        db.session.commit()
+            _sequence_length = matching_coding_translation['sequence-length'])
         
         # retrieve uniprot match
         try:
             uniprot = retrieveIdenticalUniprotMatch(matching_coding_translation, species_filter=UNIPROT_SPROT_SPECIES_FILTER)
         except (NoUniProtACFoundException) as e:
-            _log.error(e)
+            _log.error("For gene '"+str(gene_name)+
+                                    "' with translation '"+str(matching_coding_translation['translation-name'])+
+                                    "', no match could be made with uniprot due to: "+str(e))
             continue
         
-        # test if this protein already exists in the database
-        matching_protein = Protein.query.filter_by(uniprot_ac = uniprot['uniprot_ac']).first()
-        if matching_protein is None:
-            # Add the uniprot_result to the database
-            db.session.add(Protein(_uniprot_ac = uniprot['uniprot_ac'],
-                    _uniprot_name = uniprot['uniprot_name'],
-                    _source = uniprot['database']))
-            db.session.commit()
+        # Create the uniprot_result database entry
+        to_be_added_db_entries["proteins"][matching_coding_translation['transcription-id']] = Protein(_uniprot_ac = uniprot['uniprot_ac'],
+                _uniprot_name = uniprot['uniprot_name'],
+                _source = uniprot['database'])
         
         # create the mapping between both sequences
-        createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, matching_coding_translation, uniprot)
+        chromosome_positions, mappings = createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, matching_coding_translation, uniprot)
+        to_be_added_db_entries["chromosome_positions"][matching_coding_translation['transcription-id']] = chromosome_positions
+        to_be_added_db_entries["mappings"][matching_coding_translation['transcription-id']] = mappings
         
         _log.info("For gene '"+str(gene_name)+
-                                            "' used translation '"+str(matching_coding_translation['translation-name'])+
-                                            "', with translation length "+str(matching_coding_translation['sequence-length'])+"'")
+                                    "' the translation '"+str(matching_coding_translation['translation-name'])+
+                                    "' is matched and mapped with '"+str(uniprot['uniprot_ac'])+"'")
+    return to_be_added_db_entries
