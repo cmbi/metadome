@@ -213,7 +213,7 @@ def generate_gene_to_swissprot_mapping(gene_name):
     # start creation of the mapping between the gene and swissprot
     for matching_coding_translation in matching_coding_translations:
         # test if this translation does not already exists
-        gene_translation = Gene.query.filter_by(
+        gene_translation = db.session.query(Gene).filter_by(
             gencode_transcription_id = matching_coding_translation['transcription-id']).first()
         if not gene_translation is None:
             _log.info("gene transcription: "+matching_coding_translation['transcription-id']+" is already present in the database. Skipping mapping generation")
