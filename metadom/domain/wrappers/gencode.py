@@ -384,4 +384,4 @@ def retrieve_all_protein_coding_gene_names():
                 # add the gene name to the set
                 gene_names.add(tokens[5])
                 
-    return gene_names
+    return list(gene_names)
