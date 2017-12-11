@@ -1,6 +1,7 @@
 from metadom.domain.data_generation.mapping.mapping_generator import generate_gene_to_swissprot_mapping,\
     annotate_interpro_domains_to_proteins, generate_pfam_alignment_mappings
-from metadom.domain.infrastructure import add_gene_mapping_to_database
+from metadom.domain.infrastructure import add_gene_mapping_to_database,\
+    filter_gene_names_present_in_database
 from metadom.domain.models.protein import Protein
 from metadom.domain.models.interpro import get_all_Pfam_identifiers
 from metadom.domain.wrappers.gencode import retrieve_all_protein_coding_gene_names
@@ -36,6 +37,9 @@ def create_db():
         generate_pfam_alignment_mappings(pfam_domain_id)
 
 def generate_mappings_for_genes(genes_of_interest, batch_size, use_parallel):
+    # filter gene names alreay present in the database
+    genes_of_interest = filter_gene_names_present_in_database(genes_of_interest)
+    
     # Create batches
     genes_of_interest_batches = [genes_of_interest[i:i+batch_size] for i in range(0, len(genes_of_interest), batch_size)]
     n_batches = len(genes_of_interest_batches)
