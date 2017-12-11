@@ -185,7 +185,7 @@ def generate_gene_to_swissprot_mapping(gene_name):
     every GENCODE Basic protein-coding translation for that gene
     """
     _log.info("Starting swissprot mapping for gene '"+gene_name+"'")
-
+    
     # The result of this method; a dictionary containing all items that will be added to the database
     to_be_added_db_entries = {"genes":dict(), "proteins":dict(), "chromosome_positions":dict(), "mappings":dict()}    
     
@@ -212,13 +212,6 @@ def generate_gene_to_swissprot_mapping(gene_name):
 
     # start creation of the mapping between the gene and swissprot
     for matching_coding_translation in matching_coding_translations:
-        # test if this translation does not already exists
-        gene_translation = db.session.query(Gene).filter_by(
-            gencode_transcription_id = matching_coding_translation['transcription-id']).first()
-        if not gene_translation is None:
-            _log.info("gene transcription: "+matching_coding_translation['transcription-id']+" is already present in the database. Skipping mapping generation")
-            continue
-        
         # retrieve the nucleotide and coding sequence information
         try:
             gene_transcription = retrieveNucleotideSequence_gencode(matching_coding_translation)
@@ -262,4 +255,5 @@ def generate_gene_to_swissprot_mapping(gene_name):
         _log.info("For gene '"+str(gene_name)+
                                     "' the translation '"+str(matching_coding_translation['translation-name'])+
                                     "' is matched and mapped with '"+str(uniprot['uniprot_ac'])+"'")
+    
     return to_be_added_db_entries
