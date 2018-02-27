@@ -1,18 +1,215 @@
-/* Sticky footer styles
--------------------------------------------------- */
+div.tooltip1 {	
+	position: absolute;			
+	text-align: center;			
+	width: 150px;					
+	height: 50px;					
+	padding: 2px;				
+	font: 14px sans-serif;		
+	background: rgba(0, 0, 0, 0.8);
+	color: white;
+	border: 0px;		
+	border-radius: 3px;			
+	pointer-events: none;			
+}
+
+div.tooltip2 {	
+	position: absolute;			
+	text-align: center;			
+	width: 100px;					
+	height: 50px;					
+	padding: 2px;				
+	font: 14px sans-serif;		
+	background: rgba(0, 0, 0, 0.8);
+	color: white;
+	border: 0px;		
+	border-radius: 3px;			
+	pointer-events: none;			
+}
 html {
   position: relative;
   min-height: 100%;
 }
-body {
-  /* Margin bottom by footer height */
-  margin-bottom: 60px;
+.d3-tip {
+	line-height: 1;
+	font-weight: bold;
+	padding: 12px;
+	background: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	border-radius: 2px;
+	z-index: 10000;
 }
-.footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  /* Set the fixed height of the footer here */
-  height: 60px;
-  background-color: #ffffff;
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+	box-sizing: border-box;
+	display: inline;
+	font-size: 10px;
+	width: 100%;
+	line-height: 1;
+	color: rgba(0, 0, 0, 0.8);
+	content: "\25BC";
+	position: absolute;
+	text-align: center;
+	z-index: 10000;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+	margin: -1px 0 0 0;
+	top: 100%;
+	left: 0;
+	z-index: 10000;
+}
+
+.area {							
+	fill: url(#area-gradient);					
+	stroke-width: 0px;			
+}
+	
+.zoom {
+	cursor: move;
+	fill: none;
+	pointer-events: none;
+}
+/* The Modal (background) */
+.modal {
+	display: none; /* Hidden by default */
+	position: fixed; /* Stay in place */
+	z-index: 1; /* Sit on top */
+	padding-top: 75px; /* Location of the box */
+	padding-bottom: 75px;
+	left: 0;
+	top: 0;
+	width: 100%; /* Full width */
+	height: 100%; /* Full height */
+	overflow: auto; /* Enable scroll if needed */
+	background-color: rgb(0,0,0); /* Fallback color */
+	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+	position: relative;
+	background-color: #fefefe;
+	margin: auto;
+	padding: 0;
+	border: 1px solid #888;
+	width: 80%;
+	box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+	-webkit-animation-name: animatetop;
+	-webkit-animation-duration: 0.4s;
+	animation-name: animatetop;
+	animation-duration: 0.4s
+}
+
+/* Add Animation */
+@-webkit-keyframes animatetop {
+	from {top:-300px; opacity:0} 
+	to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+	from {top:-300px; opacity:0}
+	to {top:0; opacity:1}
+}
+
+/* The Close Button */
+.close {
+	color: white;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+	color: #000;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.modal-header {
+	padding: 10px 16px;
+	background-color: #00AFDC;
+	color: white;
+	height: 150px;
+}
+
+.modal-body {
+	/* Margin bottom by footer height */
+	margin-bottom: 60px;
+}
+
+.modal-footer {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	/* Set the fixed height of the footer here */
+	height: 60px;
+	background-color: #00AFDC;
+	color: white;
+}
+
+.modal-table {
+	font-family: arial, sans-serif;
+	border-collapse: collapse;
+	width: 100%;
+}
+
+.modal-td, .modal-th {
+	border: 1px solid #dddddd;
+	text-align: left;
+	padding: 8px;
+}
+
+.modal-tr:nth-child(even) {
+	background-color: #dddddd;
+}
+
+.d3-tip {
+	line-height: 1;
+	font-weight: bold;
+	padding: 12px;
+	background: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+	box-sizing: border-box;
+	display: inline;
+	font-size: 10px;
+	width: 100%;
+	line-height: 1;
+	color: rgba(0, 0, 0, 0.8);
+	content: "\25BC";
+	position: absolute;
+	text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+	margin: -1px 0 0 0;
+	top: 100%;
+	left: 0;
+}
+.area {							
+	fill: url(#area-gradient);					
+	stroke-width: 0px;
+	clip-path: url(#clip);
+}
+
+.zoom {
+	cursor: move;
+	fill: none;
+	pointer-events: none;
+}
+
+.bar {
+	fill: #c014e2;
+}
+
+.bar:hover{
+	fill: yellow;
 }
