@@ -16,6 +16,18 @@ def index():
     _log.info("Rendering index page")
     return render_template('index.html')
 
+@bp.route('/contact', methods=['GET'])
+def contact():
+    return render_template('contact.html')
+
+@bp.route('/help', methods=['GET'])
+def help():
+    return render_template('help.html')
+
+@bp.route('/about', methods=['GET'])
+def about():
+    return render_template('contact.html')
+
 
 @bp.route("/input", methods=['GET', 'POST'])
 def input():
