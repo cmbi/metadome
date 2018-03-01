@@ -1,16 +1,28 @@
 import logging
 
 from flask import abort, Blueprint, jsonify, render_template
-from metadom.domain.models.interpro import Interpro
-from metadom.domain.models.chromosome import Chromosome
-from metadom.domain.models.mapping import Mapping
 
-from sqlalchemy import and_
-
+from metadom.domain.repositories import GeneRepository
 _log = logging.getLogger(__name__)
 
-bp = Blueprint('api', __name__, url_prefix='/api', static_folder='static',
-               template_folder='templates')
+bp = Blueprint('api', __name__)
+
+@bp.route('/', methods=['GET'])
+def api_doc():
+    return render_template('api/docs.html')
+
+@bp.route('/gene/geneToTranscript', methods=['GET'])
+def get_default_transcript_ids():
+    """This endpoint is a stub, so the endpoint with the gene_name can be used"""
+    pass
+
+@bp.route('/gene/geneToTranscript/<string:gene_name>', methods=['GET'])
+def get_transcript_ids_for_gene(gene_name):
+    trancript_ids = []
+    for item in GeneRepository.retrieve_all_transcript_ids(gene_name):
+        trancript_ids.append(item)
+        
+    return jsonify(trancript_ids)
 
 # GET /api/chromosome/:id
 @bp.route('/chromosome/<string:chromosome_id>', methods=['GET'])
