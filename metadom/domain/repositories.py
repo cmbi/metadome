@@ -10,6 +10,12 @@ from metadom.domain.models.pfam_domain_alignment import PfamDomainAlignment
 
 _log = logging.getLogger(__name__)
 
+class GeneRepository:
+    
+    @staticmethod
+    def retrieve_all_transcript_ids(gene_name):
+        return db.session.query(Gene.gencode_transcription_id).filter(Gene.gene_name == gene_name).all()
+
 class PfamDomainAlignmentRepository:
     
     @staticmethod
