@@ -48,7 +48,7 @@ def create_app(settings=None):
     toolbar.init_app(app)
 
     
-    # Blueprints
+    # Specify the Blueprints
     from metadom.presentation.web.routes import bp as web_bp
     from metadom.presentation.api.routes import bp as api_bp
 
