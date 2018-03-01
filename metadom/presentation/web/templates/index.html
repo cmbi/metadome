@@ -171,68 +171,69 @@
 								}
 							}
 						};
-						// TODO: ensure proper link is retrieved here
-						xhttp.open("GET", "http://localhost:8080/ToleranceLandscape/exacServlet/?gtID="+gtID+"&startpos="+startPos+"&endpos="+endPos+"&slidingwindow="+slidingWindow+"&frequency="+frequency+"", false);
-						xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-						xhttp.send();
-						
-						if ($("#domain").is(":checked")&& go){
-							var xhttpD = new XMLHttpRequest();
-							xhttpD.onreadystatechange = function(){
-								if (this.readyState == 4 && this.status == 200) {
-									var domains = JSON.parse(xhttpD.responseText);
-									if (isEmpty(domains)){
-										console.log("domain array empty");	
-									}
-									else{
-										appendPfamDomains(domains);
-									}
-								}
-							}
-							// TODO: ensure proper link is retrieved here
-							xhttpD.open("GET", "http://localhost:8080/ToleranceLandscape/domainServlet/?gtID="+gtID+"&startpos="+startPos+"&endpos="+endPos+"&slidingwindow="+slidingWindow+"", true);
-							xhttpD.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-							xhttpD.send();
-						}
-						
-						if ($("#hgmd").is(":checked")&& go){
-							var xhttpH = new XMLHttpRequest();
-							xhttpH.onreadystatechange = function(){
-								if (this.readyState == 4 && this.status == 200) {
-									var hgmd = JSON.parse(xhttpH.responseText);
-									if (isEmpty(hgmd)){
-										console.log("hgmd array empty");
-									}
-									else{
-										appendHGMD(hgmd);
+						if (typeof gtID !== 'undefined' && gtID.length > 0) {
+						    // the variable is defined
+							xhttp.open("GET", "{{ url_for('api.get_default_tolerance') }}"+"/"+gtID+"/"+startPos+"/"+endPos+"/"+slidingWindow+"/"+frequency, true);
+							xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+							xhttp.send();
+							
+							if ($("#domain").is(":checked")&& go){
+								var xhttpD = new XMLHttpRequest();
+								xhttpD.onreadystatechange = function(){
+									if (this.readyState == 4 && this.status == 200) {
+										var domains = JSON.parse(xhttpD.responseText);
+										if (isEmpty(domains)){
+											console.log("domain array empty");	
+										}
+										else{
+											appendPfamDomains(domains);
+										}
 									}
 								}
+								// TODO: ensure proper link is retrieved here
+								xhttpD.open("GET", "http://localhost:8080/ToleranceLandscape/domainServlet/?gtID="+gtID+"&startpos="+startPos+"&endpos="+endPos+"&slidingwindow="+slidingWindow+"", true);
+								xhttpD.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+								xhttpD.send();
 							}
-							// TODO: ensure proper link is retrieved here
-							xhttpH.open("GET", "http://localhost:8080/ToleranceLandscape/hgmdServlet/?gtID="+gtID+"&startpos="+startPos+"&endpos="+endPos+"&slidingwindow="+slidingWindow+"", true);
-							xhttpH.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-							xhttpH.send();
-						}
-						
-						if ($("#clinvar").is(":checked")&& go){
-							var xhttpC = new XMLHttpRequest();
-							xhttpC.onreadystatechange = function(){
-								if (this.readyState == 4 && this.status == 200) {
-									var clinvar = JSON.parse(xhttpC.responseText);
-									if (isEmpty(clinvar)){
-										console.log("clinvar array empty");
-									}
-									else{
-										appendClinvar(clinvar);
+							
+							if ($("#hgmd").is(":checked")&& go){
+								var xhttpH = new XMLHttpRequest();
+								xhttpH.onreadystatechange = function(){
+									if (this.readyState == 4 && this.status == 200) {
+										var hgmd = JSON.parse(xhttpH.responseText);
+										if (isEmpty(hgmd)){
+											console.log("hgmd array empty");
+										}
+										else{
+											appendHGMD(hgmd);
+										}
 									}
 								}
+								// TODO: ensure proper link is retrieved here
+								xhttpH.open("GET", "http://localhost:8080/ToleranceLandscape/hgmdServlet/?gtID="+gtID+"&startpos="+startPos+"&endpos="+endPos+"&slidingwindow="+slidingWindow+"", true);
+								xhttpH.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+								xhttpH.send();
 							}
-							// TODO: ensure proper link is retrieved here
-							xhttpC.open("GET", "http://localhost:8080/ToleranceLandscape/clinvarServlet/?gtID="+gtID+"&startpos="+startPos+"&endpos="+endPos+"&slidingwindow="+slidingWindow+"", true);
-							xhttpC.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-							xhttpC.send();
+							
+							if ($("#clinvar").is(":checked")&& go){
+								var xhttpC = new XMLHttpRequest();
+								xhttpC.onreadystatechange = function(){
+									if (this.readyState == 4 && this.status == 200) {
+										var clinvar = JSON.parse(xhttpC.responseText);
+										if (isEmpty(clinvar)){
+											console.log("clinvar array empty");
+										}
+										else{
+											appendClinvar(clinvar);
+										}
+									}
+								}
+								// TODO: ensure proper link is retrieved here
+								xhttpC.open("GET", "http://localhost:8080/ToleranceLandscape/clinvarServlet/?gtID="+gtID+"&startpos="+startPos+"&endpos="+endPos+"&slidingwindow="+slidingWindow+"", true);
+								xhttpC.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+								xhttpC.send();
+							}
 						}
-						
 						
 					}
 				}
