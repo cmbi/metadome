@@ -109,11 +109,12 @@
 						}
 					}
 				};
-				// TODO: ensure proper link is retrieved here
-				xhttp.open("GET", "http://localhost:8080/ToleranceLandscape/genesToTranscriptServlet/?geneName="+geneName+"", true);
-				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				xhttp.send();
-
+				if (typeof geneName !== 'undefined' && geneName.length > 0) {
+				    // the variable is defined
+					xhttp.open("GET", "{{ url_for('api.get_default_transcript_ids') }}"+"/"+geneName, true);
+					xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+					xhttp.send();
+				}
 			}
 							
 			$('form').submit(false);
