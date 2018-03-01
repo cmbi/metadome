@@ -1,8 +1,8 @@
 import logging
 
 from flask import abort, Blueprint, jsonify, render_template
-
 from metadom.domain.repositories import GeneRepository
+
 _log = logging.getLogger(__name__)
 
 bp = Blueprint('api', __name__)
@@ -13,16 +13,68 @@ def api_doc():
 
 @bp.route('/gene/geneToTranscript', methods=['GET'])
 def get_default_transcript_ids():
-    """This endpoint is a stub, so the endpoint with the gene_name can be used"""
+    """This endpoint is a stub, to ensure deeper endpoints may be used"""
     pass
 
 @bp.route('/gene/geneToTranscript/<string:gene_name>', methods=['GET'])
 def get_transcript_ids_for_gene(gene_name):
-    trancript_ids = []
-    for item in GeneRepository.retrieve_all_transcript_ids(gene_name):
-        trancript_ids.append(item)
-        
+    trancript_ids = GeneRepository.retrieve_all_transcript_ids(gene_name)
+            
     return jsonify(trancript_ids)
+
+@bp.route('/gene/geneTolerance', methods=['GET'])
+def get_default_tolerance():
+    """This endpoint is a stub, to ensure deeper endpoints may be used"""
+    pass
+
+@bp.route('/gene/geneTolerance/<transcript_id>/<startpos>/<endPos>/<slidingWindow>/<frequency>', methods=['GET'])
+def get_gene_tolerance(transcript_id, startpos, endPos, slidingWindow, frequency):
+    gene = GeneRepository.retrieve_gene(transcript_id)
+    
+    if not gene is None:
+        #TODO: further implement annotateSNVs
+        #TODO: incorporate ExAC and gnoMAD
+        
+#         service.handleExacVariants();
+# ===
+#     /**
+#      * Adds exac variants to the gene object by calling on the repository class to read tabix vcf files
+#      * @throws IOException
+#      */
+#     public void handleExacVariants() throws IOException{
+#         if (tabixFileReader==null) {
+#             tabixFileReader = new TabixFileReader();
+#         }
+#         //TODO: check exac vs database
+#         try {
+#             int start = gene.getPositionList().get(0).getMappingsList().get(0).getChromosome().getPosition();
+#             int stop = gene.getPositionList().get(gene.getPositionList().size()-1).getMappingsList().get(2).getChromosome().getPosition();
+#             String chr = gene.getPositionList().get(0).getMappingsList().get(0).getChromosome().getChromosome().substring(3);
+#             Map<Integer, TabixParser> tabixMap;
+#             if (gene.getStrand().equals("minus")) {
+#                 tabixMap = tabixFileReader.readTabixFile(chr, stop, start, exacTabixFile);
+#             } else {
+#                 tabixMap = tabixFileReader.readTabixFile(chr, start, stop, exacTabixFile);
+#             }
+#             gene = tabixFileReader.addExacVariants(gene, tabixMap);
+#             
+#         } catch(IOException e) {
+#             LOG.error("Error with exac file" + e.getMessage());
+#         }
+#     }
+# ===
+#         if (endPosInt==0 ||endPosInt<startPosInt||endPosInt>service.getGene().getPositionList().size()){
+#             endPosInt=service.getGene().getPositionList().size();
+#         }
+#         if (startPosInt>=endPosInt || startPosInt>= service.getGene().getPositionList().size()) {
+#             startPosInt=0;
+#         }
+#         toleranceArray = service.calculateTolerance(service.getGene(), startPosInt, endPosInt, slidingWindowInt, frequencyDouble);
+        
+        return jsonify(str(gene))
+    else:
+        abort(777)
+
 
 # GET /api/chromosome/:id
 @bp.route('/chromosome/<string:chromosome_id>', methods=['GET'])
