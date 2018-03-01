@@ -42,16 +42,19 @@ def create_app(settings=None):
         else:
             metadom_logger.setLevel(logging.INFO)
     
-    
-    # Initialise extensions
+
+    # Initialize extensions
     from metadom import toolbar
     toolbar.init_app(app)
-        
+
+    
     # Blueprints
     from metadom.presentation.web.routes import bp as web_bp
     from metadom.presentation.api.routes import bp as api_bp
+
+    # Register the Blueprints
+    app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(web_bp)
-    app.register_blueprint(api_bp)
     
     # Database
     from metadom.database import db
