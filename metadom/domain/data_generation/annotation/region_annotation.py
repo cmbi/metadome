@@ -1,10 +1,10 @@
 import logging
 
-from metadom.controller.mapping.annotation.GenomeTranscriptionAnnotation import annotateTranscriptWithExacData,\
+from metadom.domain.data_generation.annotation.GenomeTranscriptionAnnotation import annotateTranscriptWithExacData,\
     annotateTranscriptWithHGMDData, annotateSNVs,\
     annotateTranscriptWithClinvarData
-from metadom.controller.metrics.codon_statistics import calculate_CDS_background_rate
-from metadom.controller.mapping.Gene2ProteinMapping import extract_gene_region
+from metadom.domain.metrics.codon_statistics import calculate_CDS_background_rate
+from metadom.domain.data_generation.mapping.Gene2ProteinMapping import extract_gene_region
 from Bio.Seq import translate
 
 _log = logging.getLogger(__name__)

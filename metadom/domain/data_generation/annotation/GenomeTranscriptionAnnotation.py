@@ -2,8 +2,8 @@ import logging
 from metadom.default_settings import EXAC_VCF_FILE, HGMD_VCF_FILE,\
     HGMD_CONSIDERED_CLASSES, EXAC_ACCEPTED_FILTERS, CLINVAR_CONSIDERED_CLINSIG,\
     CLINVAR_VCF_FILE
-from metadom.controller.parsers.tabix import tabix_query, variant_coordinate_system
-from metadom.controller.mapping.Gene2ProteinMapping import extract_gene_region,\
+from metadom.domain.parsers.tabix import tabix_query, variant_coordinate_system
+from metadom.domain.data_generation.mapping.Gene2ProteinMapping import extract_gene_region,\
     RegioncDNALengthDoesNotEqualProteinLengthException
 _log = logging.getLogger(__name__)
 
