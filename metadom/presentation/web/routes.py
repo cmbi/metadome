@@ -34,7 +34,7 @@ def input():
     form = MetaDomForm()
     if form.validate_on_submit():
         # get result
-        mappings = MappingRepository.get_mappings(form.entry_id.data, 
+        mappings = MappingRepository.get_mapping_position(form.entry_id.data, 
                                                   form.position.data)
         
         alignments = PfamDomainAlignmentRepository.get_msa_alignment(form.entry_id.data)
