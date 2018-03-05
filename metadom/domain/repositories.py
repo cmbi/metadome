@@ -28,6 +28,7 @@ class GeneRepository:
         except NoResultFound as  e:
             _log.error("GeneRepository.retrieve_gene(transcription_id): Expected results but found none for transcription_id '"+str(transcription_id)+"'. "+e)
         return None
+    
 class PfamDomainAlignmentRepository:
     
     @staticmethod
@@ -60,9 +61,13 @@ class PfamDomainAlignmentRepository:
         return domain_alignments
 
 class MappingRepository:
+    
+    @staticmethod
+    def get_mappings_and_chromosomes_from_gene(_gene):
+        return {x.Mapping.cDNA_position:x for x in Mapping.query.join(Chromosome).add_columns(Chromosome.chromosome, Chromosome.position).filter(Mapping.gene_id == _gene.id).all()}
 
     @staticmethod
-    def get_mappings(entry_id, position):
+    def get_mappings_position(entry_id, position):
         # TODO: remove when testing is done
         _log.info("got entry:" +str(entry_id)+" and position: "+str(position))
          
