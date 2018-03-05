@@ -2,6 +2,10 @@ import logging
 
 from flask import abort, Blueprint, jsonify, render_template
 from metadom.domain.repositories import GeneRepository
+from builtins import Exception
+from metadom.domain.models.entities.gene_region import GeneRegion
+from flask.globals import request
+import traceback
 
 _log = logging.getLogger(__name__)
 
@@ -27,13 +31,36 @@ def get_default_tolerance():
     """This endpoint is a stub, to ensure deeper endpoints may be used"""
     pass
 
-@bp.route('/gene/geneTolerance/<transcript_id>/<startpos>/<endPos>/<slidingWindow>/<frequency>', methods=['GET'])
-def get_gene_tolerance(transcript_id, startpos, endPos, slidingWindow, frequency):
+@bp.route('/gene/geneTolerance/<transcript_id>/', methods=['GET'])
+def get_gene_tolerance_no_end(transcript_id):
+    if 'slidingWindow' in request.args:
+        sliding_window = float(request.args['slidingWindow'])
+    
+    if 'frequency' in request.args:
+        frequency = float(request.args['frequency'])
+    
+    if 'startpos' in request.args:
+        start_pos = int(request.args['startpos'])
+    else:
+        start_pos = None
+        
+    if 'endpos' in request.args:
+        end_pos = int(request.args['endpos'])
+    else:
+        end_pos = None
+    
+    # Retrieve the gene from the database
     gene = GeneRepository.retrieve_gene(transcript_id)
     
     if not gene is None:
+        # build the gene region
+        gene_region = GeneRegion(gene, start_pos, end_pos)
+        
+        return jsonify(str(gene_region))
+        
         #TODO: further implement annotateSNVs
         #TODO: incorporate ExAC and gnoMAD
+        # annotate HGMD
         
 #         service.handleExacVariants();
 # ===
@@ -71,9 +98,10 @@ def get_gene_tolerance(transcript_id, startpos, endPos, slidingWindow, frequency
 #         }
 #         toleranceArray = service.calculateTolerance(service.getGene(), startPosInt, endPosInt, slidingWindowInt, frequencyDouble);
         
-        return jsonify(str(gene))
     else:
-        abort(777)
+        abort(501)
+
+    return jsonify(str())
 
 
 # GET /api/chromosome/:id
@@ -118,6 +146,6 @@ def get_mapping_via_pfam_position(pfam_id, position):
 
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover
-    import traceback
-    _log.error("Unhandled exception:\n{}".format(traceback.format_exc(error)))
-    return render_template('', msg=error), 500
+    _log.error("Unhandled exception:\n{}".format(error))
+    _log.error(traceback.print_exc())
+    return render_template('error.html', msg=error), 500
