@@ -2,6 +2,10 @@ from metadom.database import db
 import enum
 from metadom.domain.models.mapping import Mapping
 
+class Strand(enum.Enum):
+    plus = '+'
+    minus = '-'
+
 class Gene(db.Model):
     """
     Table: genes
@@ -16,15 +20,11 @@ class Gene(db.Model):
     gencode_gene_id           e.g. ENSG####...
     havana_gene_id            e.g. OTTHUMG#####....
     havana_translation_id     e.g. OTTHUMT#####....
-    sequence_length           length of cDNA sequence
+    sequence_length           length of amino acid sequence
     
     Relationships
     one to many               mappings
     """
-    # Custom field declarations
-    class Strand(enum.Enum):
-        plus = '+'
-        minus = '-'
     
     # Table configuration
     __tablename__ = 'genes'
