@@ -1,24 +1,11 @@
-import numpy as np
 from metadom.domain.data_generation.mapping.Protein2ProteinMapping import \
     createMappingOfAASequenceToAASequence, map_single_residue
 from metadom.domain.models.mapping import Mapping
 from metadom.domain.models.chromosome import Chromosome
 
 import logging
-from metadom.domain.models.entities.gene_region import RegioncDNALengthDoesNotEqualProteinLengthException
 
 _log = logging.getLogger(__name__)
-
-# Source: http://stackoverflow.com/questions/4628333/converting-a-list-of-integers-into-range-in-python 
-def convertListOfIntegerToRanges(p):
-    if len(p) > 0:
-        q = sorted(p)
-        i = 0
-        for j in range(1,len(q)):
-            if q[j] > 1+q[j-1]:
-                yield (q[i],q[j-1])
-                i = j
-        yield (q[i], q[-1])
 
 def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, matching_coding_translation, uniprot):
     # Retrieve the amino acid sequence according to the translation
@@ -148,30 +135,3 @@ def extract_pdb_from_gene_region(gene_mapping, gene_region):
                         pdb_structures[pdb_id][chain_id][uniprot_pos]['pos']= gene_mapping['GenomeMapping']['Genome'][chr_pos][key]
                         
     return pdb_structures
- 
-def extract_gene_region(gene_mapping, region_start, region_stop):    
-    cdna_positions = []
-    chromosome_positions = []
-    uniprot_positions = []
-    chromosome = ""
-    for mapping_key in sorted(gene_mapping['GenomeMapping']['cDNA'].keys(), key=lambda x: int(x)):
-        mapping_element = gene_mapping['GenomeMapping']['cDNA'][mapping_key]
-         
-        if chromosome == "":
-            chromosome = mapping_element['Genome'].split(':')[0]
-        if mapping_element['uniprot'] != '-':
-            if region_start <= mapping_element['uniprot'] < region_stop:
-                cdna_positions.append(mapping_key)
-                chromosome_positions.append(int(mapping_element['Genome'].split(':')[1]))
-                uniprot_positions.append(mapping_element['uniprot'])
-             
-    # check if thet domains are fully mapped
-    protein_region_length = len(gene_mapping['uniprot']['sequence'][region_start:region_stop])
-    if(protein_region_length != len(np.unique(uniprot_positions))):
-        raise RegioncDNALengthDoesNotEqualProteinLengthException("analysis of protein region could not be made due to: protein_region_length != len(uniprot_positions)")
-         
-    # convert the chromosome to ranges
-    chromosome_ranges = list(convertListOfIntegerToRanges(sorted(chromosome_positions)))
-     
-    return {'chr':chromosome, 'regions':chromosome_ranges, 'cdna_positions':cdna_positions, 'uniprot_positions':uniprot_positions, 'protein_region_length':protein_region_length}
-
