@@ -27,6 +27,7 @@ class GeneRegion(object):
     protein_region_length     int representing the region length based on the amino acid sequence
     cDNA_region_length        int representing the region length based on the cDNA sequence
     regions                   list of regions
+    mappings_per_chromosome   dictionary of mappings per chromosome positions; {POS: models.mapping.Mapping}
     """
     chr = str()
     gene_name = str()
@@ -37,6 +38,7 @@ class GeneRegion(object):
     protein_region_length = int()
     cDNA_region_length = int()
     regions = []
+    mappings_per_chromosome = dict()
     
     # Source: http://stackoverflow.com/questions/4628333/converting-a-list-of-integers-into-range-in-python 
     def convertListOfIntegerToRanges(self, p):
@@ -104,6 +106,9 @@ class GeneRegion(object):
             
             # test if this position falls within the region
             if self.protein_region_start <= _mapping.Mapping.uniprot_position < self.protein_region_stop:
+                # Add to the mapping to the mappings_per_chromosome
+                self.mappings_per_chromosome[_mapping.position] = _mapping.Mapping
+                
                 # Add the chromosomal position to the list
                 _chromosome_positions_in_region.append(_mapping.position)
                 _uniprot_positions.append(_mapping.Mapping.uniprot_position)
