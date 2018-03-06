@@ -55,8 +55,8 @@ PFAM_HMM_DAT = PFAM_DIR+"/Pfam-A.hmm.dat.gz"
 PFAM_HMM = PFAM_DIR+"/Pfam-A.hmm"
 
 # Exac specific files
-EXAC_DIR = DATA_DIR + "Exac/release0.3.1/"
-EXAC_VCF_FILE = EXAC_DIR + "ExAC.r0.3.1.sites.vep.vcf.gz"
+EXAC_DIR = DATA_DIR + "ExAC/release1.0/"
+EXAC_VCF_FILE = EXAC_DIR + "ExAC.r1.sites.vep.vcf.gz"
 EXAC_ACCEPTED_FILTERS = ['PASS']
 
 ## TODO: create filter based on ExAC r1.0
