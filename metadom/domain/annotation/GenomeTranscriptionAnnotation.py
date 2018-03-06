@@ -1,10 +1,11 @@
-import logging
 from metadom.default_settings import EXAC_VCF_FILE, HGMD_VCF_FILE,\
     HGMD_CONSIDERED_CLASSES, EXAC_ACCEPTED_FILTERS, CLINVAR_CONSIDERED_CLINSIG,\
     CLINVAR_VCF_FILE
 from metadom.domain.parsers.tabix import tabix_query, variant_coordinate_system
-from metadom.domain.data_generation.mapping.Gene2ProteinMapping import extract_gene_region,\
-    RegioncDNALengthDoesNotEqualProteinLengthException
+from metadom.domain.models.gene import Strand
+
+import logging
+
 _log = logging.getLogger(__name__)
 
 class NucleotideConversionException(Exception):
@@ -42,8 +43,8 @@ def annotateTranscriptWithClinvarData(gene_region):
     RS                  dbSNP ID (i.e. rs number)
     SSR                 Variant Suspect Reason Codes. One or more of the following values may be added: 0 - unspecified, 1 - Paralog, 2 - byEST, 4 - oldAlign, 8 - Para_EST, 16 - 1kg_failed, 1024 - other
     """
-    for gene_sub_region in gene_region['regions']:
-        for tabix_record in tabix_query(CLINVAR_VCF_FILE, gene_region['chr'][3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based):
+    for gene_sub_region in gene_region.regions:
+        for tabix_record in tabix_query(CLINVAR_VCF_FILE, gene_region.chr[3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based):
             for i, item in enumerate(tabix_record.ALT):
                 clinvar_info = {"AF_ESP": None if "AF_ESP" not in tabix_record.INFO.keys() else tabix_record.INFO["AF_ESP"],
                             "AF_EXAC": None if "AF_EXAC" not in tabix_record.INFO.keys() else tabix_record.INFO["AF_EXAC"],
@@ -77,8 +78,8 @@ def annotateTranscriptWithExacData(gene_region):
     Annotates variants found within the ExAC dataset with specific FILTER settings.
         PASS : passed all variant filters imposed by ExAC, all such variants are considered real variants.
     """
-    for gene_sub_region in gene_region['regions']:
-        for tabix_record in tabix_query(EXAC_VCF_FILE, gene_region['chr'][3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based):
+    for gene_sub_region in gene_region.regions:
+        for tabix_record in tabix_query(EXAC_VCF_FILE, gene_region.chr[3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based):
             for i, item in enumerate(tabix_record.ALT):
                 exac_filter = ''
                 if len(tabix_record.FILTER) == 0:
@@ -100,15 +101,16 @@ def annotateTranscriptWithHGMDData(gene_region):
         DFP: Disease-associated polymorphisms with supporting functional evidence meet both of the criteria in FP and DP that the polymorphism should not only be reported to be significantly associated with disease but should also display evidence of being of direct functional relevance.
         R: An entry retired from HGMD due to being found to have been erroneously included ab initio, or subject to correction in the literature resulting in the record becoming obsolete, merged or otherwise invalid.
     """
-    for gene_sub_region in gene_region['regions']:
-        for tabix_record in tabix_query(HGMD_VCF_FILE, gene_region['chr'][3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based, encoding='utf-8'):
+    for gene_sub_region in gene_region.regions:
+        for tabix_record in tabix_query(HGMD_VCF_FILE, gene_region.chr[3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based, encoding='utf-8'):
             for i, item in enumerate(tabix_record.ALT): 
                 if tabix_record.INFO['CLASS'] in HGMD_CONSIDERED_CLASSES:
                     hgmd_info = {'CLASS':tabix_record.INFO['CLASS'], 'PHEN':tabix_record.INFO['PHEN'], 
                                   'PROT': None if 'PROT' not in tabix_record.INFO.keys() else tabix_record.INFO['PROT'], 
                                   'DNA': None if 'DNA' not in tabix_record.INFO.keys() else tabix_record.INFO['DNA'],
                                   'MUT': None if 'MUT' not in tabix_record.INFO.keys() else tabix_record.INFO['MUT'], 
-                                  'GENE':tabix_record.INFO['GENE'], 'STRAND':tabix_record.INFO['STRAND']}
+                                  'GENE':tabix_record.INFO['GENE'], 'STRAND':tabix_record.INFO['STRAND'], 
+                                  'ID':tabix_record.ID}
                     hgmd_record = {'CHROM': tabix_record.CHROM, 'POS': tabix_record.POS, 'REF':tabix_record.REF, 'ALT':item, 'INFO':hgmd_info}
                     yield hgmd_record      
 
@@ -119,23 +121,13 @@ def convertNucleotide(nucleotide):
     elif nucleotide == 'G': return 'C'
     else: raise NucleotideConversionException("Received nucleotide '"+str(nucleotide)+"', which could not be converted")
 
-def annotateSNVs(annotateTranscriptFunction, gene_mapping, region=None):
+def annotateSNVs(annotateTranscriptFunction, gene_region):
     SNV_correct = 0
     SNV_incorrect = 0
     
     Annotation_mapping = {}
-    # Add annotation_data
-    if region is None:
-        try:
-            # use the full transcript as region
-            region_start = 0
-            region_stop = len(gene_mapping['uniprot']['sequence'])
-            region = extract_gene_region(gene_mapping, region_start, region_stop)
-        except (RegioncDNALengthDoesNotEqualProteinLengthException) as e:
-            _log.error(e)
-            return
 
-    annotation_data = annotateTranscriptFunction(region)
+    annotation_data = annotateTranscriptFunction(gene_region)
     
     for annotation in annotation_data:
         # Check if we are dealing with a SNV
@@ -145,13 +137,10 @@ def annotateSNVs(annotateTranscriptFunction, gene_mapping, region=None):
         # retrieve the reference
         ref = str(annotation['REF'])
         # ensure we have correct strand, otherwise convert
-        if gene_mapping['gene_transcription']['strand'] == '-': ref = convertNucleotide(annotation['REF'])
-        
-        # Genome key
-        genomic_pos = 'chr'+annotation['CHROM']+':'+str(annotation['POS'])
+        if gene_region.strand == Strand.minus: ref = convertNucleotide(annotation['REF'])
         
         # Check if the reference in the annotation_date is correct, compared to our transcript
-        if gene_mapping['GenomeMapping']['Genome'][genomic_pos]['allele'] == ref:
+        if gene_region.mappings_per_chromosome[annotation['POS']].base_pair == ref:
             SNV_correct = SNV_correct + 1
         else:
             SNV_incorrect = SNV_incorrect + 1
@@ -163,12 +152,15 @@ def annotateSNVs(annotateTranscriptFunction, gene_mapping, region=None):
         alt = str(alt)
         
         # ensure we have correct strand, otherwise convert
-        if gene_mapping['gene_transcription']['strand'] == '-': alt = convertNucleotide(alt)
+        if gene_region.strand == Strand.minus: alt = convertNucleotide(alt)
         
         # construct SNV entry
         SNV_entry = {key:annotation['INFO'][key] for key in annotation['INFO'].keys()}
         SNV_entry['REF'] = ref
         SNV_entry['ALT'] = alt
+        
+        # Genome key
+        genomic_pos = 'chr'+annotation['CHROM']+':'+str(annotation['POS'])
         
         # Annotate
         if genomic_pos not in Annotation_mapping.keys():
