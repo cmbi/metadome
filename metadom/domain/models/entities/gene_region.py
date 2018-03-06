@@ -1,6 +1,7 @@
 from metadom.domain.repositories import MappingRepository
-from metadom.domain.data_generation.mapping.Gene2ProteinMapping import convertListOfIntegerToRanges
+
 import numpy as np
+
 
 class FailedToConstructGeneRegion(Exception):
     pass
@@ -37,6 +38,18 @@ class GeneRegion(object):
     protein_region_length = int()
     cDNA_region_length = int()
     regions = []
+    
+    # Source: http://stackoverflow.com/questions/4628333/converting-a-list-of-integers-into-range-in-python 
+    def convertListOfIntegerToRanges(self, p):
+        if len(p) > 0:
+            q = sorted(p)
+            i = 0
+            for j in range(1,len(q)):
+                if q[j] > 1+q[j-1]:
+                    yield (q[i],q[j-1])
+                    i = j
+            yield (q[i], q[-1])
+
     
     def __init__(self, _gene, _region_start=None, _region_stop=None):
         if _region_start is None:
@@ -103,7 +116,7 @@ class GeneRegion(object):
         self.cDNA_region_length = len(_cDNA_positions)
 
         # convert the chromosome to ranges
-        self.regions = list(convertListOfIntegerToRanges(sorted(_chromosome_positions_in_region)))
+        self.regions = list(self.convertListOfIntegerToRanges(sorted(_chromosome_positions_in_region)))
 
     def __repr__(self):
         return "<GeneRegion(chr='%s', gene_name='%s', gencode_transcription_id='%s', protein_region_length='%s', cDNA_region_length='%s', strand='%s', number of chromosomal regions='%s')>" % (
