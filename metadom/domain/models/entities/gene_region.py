@@ -2,7 +2,6 @@ from metadom.domain.repositories import MappingRepository
 
 import numpy as np
 
-
 class FailedToConstructGeneRegion(Exception):
     pass
 
@@ -52,30 +51,31 @@ class GeneRegion(object):
 
     
     def __init__(self, _gene, _region_start=None, _region_stop=None):
-        if _region_start is None:
+        if _region_start is None or _region_start < 0:
             self.protein_region_start = 0
             
-        if _region_stop is None:
+        if _region_stop is None or _region_stop > _gene.sequence_length:
             self.protein_region_stop = _gene.sequence_length
             
         # perform additional type checking
-        if _region_stop < _region_start:
-            raise MalformedGeneRegionException('_region_stop > _region_start')
-        if _region_start < 0:
-            raise MalformedGeneRegionException('_region_start < 0')
+        if self.protein_region_stop < self.protein_region_start:
+            raise MalformedGeneRegionException("For transcript '"+str(self.gencode_transcription_id)+
+                                              "': attempted to build a gene region where_region_stop < _region_start")
             
         # First set the fields that can directly be set from the _gene
         self.gene_name = _gene.gene_name
         self.gencode_transcription_id = _gene.gencode_transcription_id
-        self.protein_region_length = _region_stop - _region_start
+        self.protein_region_length = self.protein_region_stop - self.protein_region_start
         self.strand = _gene.strand
-
+        
         # Retrieve mappings from the database
         _mappings = MappingRepository.get_mappings_and_chromosomes_from_gene(_gene)
 
         # Check f everything went fine so far
         if len(_mappings) == 0:
-            raise FailedToConstructGeneRegion("No proper mapping was found in the database, failed to initialize GeneRegion object")
+            raise FailedToConstructGeneRegion("For transcript '"+str(self.gencode_transcription_id)+
+                                              "': No proper mapping was found in the database,"+
+                                              " failed to initialize GeneRegion object")
         
         # Now generate the regions
         # create list that will be filled with all chromosomal positons of this region
@@ -95,10 +95,11 @@ class GeneRegion(object):
             else:
                 # type check chromosome
                 if self.chr !=  _mapping.chromosome:
-                    raise MalformedGeneRegionException('Multiple chromosomes found for this gene')
+                    raise MalformedGeneRegionException("For transcript '"+str(self.gencode_transcription_id)+
+                                                       "': Found alignments to multiple chromosomes")
             
             # ensure we have alignment here
-            if _mapping.Mapping.uniprot_residue != '-':
+            if _mapping.Mapping.uniprot_residue == '-' or _mapping.Mapping.uniprot_residue == '*':
                 continue
             
             # test if this position falls within the region
@@ -110,7 +111,10 @@ class GeneRegion(object):
         
         # ensure that the region is fully covered
         if(self.protein_region_length != len(np.unique(_uniprot_positions))):
-            raise RegioncDNALengthDoesNotEqualProteinLengthException("Attempted to recover chromosomal region, but the region was not perfectly aligned")
+            raise RegioncDNALengthDoesNotEqualProteinLengthException("For transcript '"+str(self.gencode_transcription_id)+
+                                                                     "': Attempted to recover chromosomal region, but the region was not"+
+                                                                     " perfectly aligned, expected AA sequence length to be '"+str(self.protein_region_length)+"'"+
+                                                                     ", but was '"+str(len(np.unique(_uniprot_positions)))+"'")
         
         # now add the cDNA region length
         self.cDNA_region_length = len(_cDNA_positions)
