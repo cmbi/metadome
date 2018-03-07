@@ -158,9 +158,11 @@ def annotateSNVs(annotateTranscriptFunction, gene_region):
         SNV_entry = {key:annotation['INFO'][key] for key in annotation['INFO'].keys()}
         SNV_entry['REF'] = ref
         SNV_entry['ALT'] = alt
+        SNV_entry['CHROM'] = annotation['CHROM']
+        SNV_entry['POS'] = annotation['POS']
         
         # Genome key
-        genomic_pos = 'chr'+annotation['CHROM']+':'+str(annotation['POS'])
+        genomic_pos = int(annotation['POS'])
         
         # Annotate
         if genomic_pos not in Annotation_mapping.keys():
