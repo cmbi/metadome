@@ -1,7 +1,7 @@
 import logging
 
 from flask import Flask
-from metadom.domain.services import create_db
+from metadom.domain.services.database_creation import create_db
 
 _log = logging.getLogger(__name__)
 
