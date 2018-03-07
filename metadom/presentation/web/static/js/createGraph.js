@@ -1,6 +1,6 @@
 // creating the tolerance graph and setting the main elements of the graph
 function createGraph(obj){	
-	$("#geneName").html(obj[0][0].geneName);
+	$("#geneName").html(obj[0].geneName);
 	
 	svg.selectAll("*").remove();
 	svg = d3.select("svg");
