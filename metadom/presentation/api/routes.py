@@ -6,6 +6,7 @@ from builtins import Exception
 from metadom.domain.models.entities.gene_region import GeneRegion
 from flask.globals import request
 import traceback
+from metadom.domain.services.computation.gene_region_computations import compute_tolerance_landscape
 
 _log = logging.getLogger(__name__)
 
@@ -35,9 +36,13 @@ def get_default_tolerance():
 def get_gene_tolerance_no_end(transcript_id):
     if 'slidingWindow' in request.args:
         sliding_window = float(request.args['slidingWindow'])
+    else:
+        sliding_window = 0.0
     
     if 'frequency' in request.args:
         frequency = float(request.args['frequency'])
+    else:
+        frequency = 0.0
     
     if 'startpos' in request.args:
         start_pos = int(request.args['startpos'])
@@ -46,6 +51,10 @@ def get_gene_tolerance_no_end(transcript_id):
         
     if 'endpos' in request.args:
         end_pos = int(request.args['endpos'])
+        
+        # type check end pos
+        if end_pos <= 0:
+            end_pos = None
     else:
         end_pos = None
     
@@ -56,50 +65,11 @@ def get_gene_tolerance_no_end(transcript_id):
         # build the gene region
         gene_region = GeneRegion(gene, start_pos, end_pos)
         
-        return jsonify(str(gene_region))
+        region_sliding_window = compute_tolerance_landscape(gene_region, sliding_window, frequency)
         
-        #TODO: further implement annotateSNVs
-        #TODO: incorporate ExAC and gnoMAD
-        # annotate HGMD
-        
-#         service.handleExacVariants();
-# ===
-#     /**
-#      * Adds exac variants to the gene object by calling on the repository class to read tabix vcf files
-#      * @throws IOException
-#      */
-#     public void handleExacVariants() throws IOException{
-#         if (tabixFileReader==null) {
-#             tabixFileReader = new TabixFileReader();
-#         }
-#         //TODO: check exac vs database
-#         try {
-#             int start = gene.getPositionList().get(0).getMappingsList().get(0).getChromosome().getPosition();
-#             int stop = gene.getPositionList().get(gene.getPositionList().size()-1).getMappingsList().get(2).getChromosome().getPosition();
-#             String chr = gene.getPositionList().get(0).getMappingsList().get(0).getChromosome().getChromosome().substring(3);
-#             Map<Integer, TabixParser> tabixMap;
-#             if (gene.getStrand().equals("minus")) {
-#                 tabixMap = tabixFileReader.readTabixFile(chr, stop, start, exacTabixFile);
-#             } else {
-#                 tabixMap = tabixFileReader.readTabixFile(chr, start, stop, exacTabixFile);
-#             }
-#             gene = tabixFileReader.addExacVariants(gene, tabixMap);
-#             
-#         } catch(IOException e) {
-#             LOG.error("Error with exac file" + e.getMessage());
-#         }
-#     }
-# ===
-#         if (endPosInt==0 ||endPosInt<startPosInt||endPosInt>service.getGene().getPositionList().size()){
-#             endPosInt=service.getGene().getPositionList().size();
-#         }
-#         if (startPosInt>=endPosInt || startPosInt>= service.getGene().getPositionList().size()) {
-#             startPosInt=0;
-#         }
-#         toleranceArray = service.calculateTolerance(service.getGene(), startPosInt, endPosInt, slidingWindowInt, frequencyDouble);
-        
+        return jsonify([{"geneName":gene_region.gene_name}, region_sliding_window])
     else:
-        abort(501)
+        abort(500)
 
     return jsonify(str())
 
