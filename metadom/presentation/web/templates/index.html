@@ -7,28 +7,51 @@
 <script src="{{ url_for('static', filename='js/graphAdditions.js') }}"></script>
 <script src="{{ url_for('static', filename='js/downloadmethods.js') }}"></script>
 
-
 <section class="section">
 	<div class="container">
-	<div id="loading_overlay" style="display: none; position: absolute; width: 100%; height: 100%; background: rgba(255,255,255,0.4);"><img src="{{ url_for('static', filename='img/loading.gif') }}" style="display: block; margin: auto;"></div>		
 		<h1 class="title" style="color: #00AFDC;">Gene input</h1>
 		<hr>
 		<div id="content">
+			<div class="modal" id="loading_overlay">
+			  <div class="modal-content is-shadowless" style="position: absolute; width: 100%; height: 50%; background: rgba(255,255,255,0.0);"><img src="{{ url_for('static', filename='img/loading.gif') }}" style="display: block; margin: auto;"></div>		
+			  </div>
+			  <button class="modal-close is-large" aria-label="close"></button>
+			</div>
+			<div class="field">
+				<div class="field has-addons">
+				  <p class="control is-expanded">
+				    <input class="input is-fullwidth" type="text" name="geneName" id="geneName" size="20" placeholder="Type here your gene name of interest" required />
+				  </p>
+				  <p class="control">
+				    <a class="button is-info" onclick="getTranscript()">
+				      Get transcripts
+				    </a>
+				  </p>
+				</div>
+				<p id="geneNameHelpMessage" class="help"></p>
+				
+				 <div class="field has-addons">
+				  <div class="control is-expanded">
+				    <div class="select is-fullwidth">
+				      <select name="gtID" id="gtID" required>
+				      </select>
+				    </div>
+				  </div>
+				  <div class="control">
+				    <button id='getToleranceButton' type="submit" class="button is-static" onclick="loadDoc()">Get tolerance</button>
+				  </div>
+				</div>
+				<p id="transcriptHelpMessage" class="help"></p>
+			</div>
+			
 			<form action="">
 				<table style="width:100%">
 					<tbody>
 						<tr>
-							<td class="label">Gene name</td>
-							<td class="dataField">
-								<input type="text" name="geneName" id="geneName" size="20" required />
-								<input type="submit" value="Get transcript" onclick="getTranscript()"/>
-							</td>
 						</tr>
 						<tr>
 							<td class="label">Transcript id</td>
 							<td class="dataField">
-								<select id="gtID" required />
-								<input type="submit" value="Get tolerance" onclick="loadDoc()"/>
 								<input type="reset" value="Reset" onclick="clearDropdown()"/>
 							</td>
 							<td>
@@ -93,17 +116,30 @@
 				var xhttp = new XMLHttpRequest();
 				xhttp.onreadystatechange = function(){
 					if (this.readyState == 4 && this.status == 200) {
-						var transcripts = JSON.parse(xhttp.responseText);
-						if (isEmpty(transcripts)){
-							alert("Error wrong gene name, please try again");
+						var transcript_id_results = JSON.parse(xhttp.responseText);
+						document.getElementById("geneNameHelpMessage").innerHTML = transcript_id_results.message;
+						
+						if (isEmpty(transcript_id_results.trancript_ids)){
+							$("#geneName").addClass('is-danger');
+							$("#geneName").removeClass('is-success');
+							$("#geneNameHelpMessage").addClass('is-danger');
+							$("#geneNameHelpMessage").removeClass('is-success');
+							$("#getToleranceButton").addClass('is-static');
+							$("#getToleranceButton").removeClass('is-info');
 						}
 						else{
+							$("#geneName").addClass('is-success');
+							$("#geneName").removeClass('is-danger');
+							$("#geneNameHelpMessage").addClass('is-success');
+							$("#geneNameHelpMessage").removeClass('is-danger');
+							$("#getToleranceButton").addClass('is-info');
+							$("#getToleranceButton").removeClass('is-static');
 							var dropdown = document.getElementById("gtID");
 							dropdown.setAttribute('class', 'dropdown');
-							for (var i=0; i<transcripts.length;i++){
+							for (var i=0; i<transcript_id_results.trancript_ids.length;i++){
 								var opt = new Option();
 								opt.value = i;
-								opt.text = transcripts[i];
+								opt.text = transcript_id_results.trancript_ids[i];
 								dropdown.options.add(opt);
 							}
 							
@@ -142,7 +178,7 @@
 					alert("Select a transcript id");
 				}
 				else{
-					document.getElementById('loading_overlay').style.display ='block';
+					$("#loading_overlay").addClass('is-active');
 					var input = selection.options[selection.selectedIndex].text;
 					var gtID = input.toUpperCase();
 					var startPos = document.getElementById("startPos").value;
@@ -163,7 +199,7 @@
 						xhttp.onreadystatechange = function(){
 							if (this.readyState == 4 && this.status == 200) {
 								var obj = JSON.parse(xhttp.responseText);
-								document.getElementById('loading_overlay').style.display ='none';
+								$("#loading_overlay").removeClass('is-active');
 								if (isEmpty(obj)){
 									alert("Error wrong gencode transcription id, please try again");
 									d3.select("svg").selectAll("*").remove();
