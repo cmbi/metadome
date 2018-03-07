@@ -39,13 +39,13 @@
 						<tr>
 							<td class="label">Start position</td>
 							<td class="dataField">
-								<input type="number" name="startPos" id="startPos" value="0"  required />
+								<input type="number" name="startPos" id="startPos" value="0" min="0" required />
 							</td>
 						</tr>
 						<tr>
 							<td class="label">End position</td>
 							<td class="dataField">
-								<input type="number" name="endPos" id="endPos" value="99999" required />
+								<input type="number" name="endPos" id="endPos" value="0" min="0" required />
 							</td>
 						</tr>
 						<tr>
@@ -172,8 +172,16 @@
 							}
 						};
 						if (typeof gtID !== 'undefined' && gtID.length > 0) {
+							var _tolerance_api_call = "/"+gtID+"/?slidingwindow="+slidingWindow+"&frequency="+frequency
+							if (typeof startPos !== 'undefined' && startPos.length > 0) {
+								_tolerance_api_call += "&startpos="+startPos;
+							}
+							if (typeof endPos !== 'undefined' && endPos.length > 0) {
+								_tolerance_api_call += "&endpos="+endPos;
+							}
+							
 						    // the variable is defined
-							xhttp.open("GET", "{{ url_for('api.get_default_tolerance') }}"+"/"+gtID+"/"+startPos+"/"+endPos+"/"+slidingWindow+"/"+frequency, true);
+							xhttp.open("GET", "{{ url_for('api.get_default_tolerance') }}"+_tolerance_api_call, true);
 							xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 							xhttp.send();
 							
