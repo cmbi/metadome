@@ -9,8 +9,7 @@
 
 <section class="section">
 	<div class="container">
-		<h1 class="title" style="color: #00AFDC;">Gene input</h1>
-		<hr>
+		<h1 class="title" style="color: #00AFDC;">Generate a gene tolerance landscape</h1>
 		<div id="content">
 			<!-- Loading screen -->
 			<div class="modal" id="loading_overlay">
@@ -52,62 +51,54 @@
 				<div class="field">
 				  <div class="control">
 				    <label class="checkbox">
-				      <input id="advanced_checkbox" type="checkbox" disabled onclick="showAdvanced()">
+				      <input id="advanced_checkbox" type="checkbox" disabled onclick="toggleAdvancedOpions(this)">
 				      Advanced mode
 				    </label>
 				  </div>
 				</div>
 				
 				
-				<div class="field">
-				  <div class="control">
-				      HIDDEN TABLE
-				  </div>
+				<div id="advanced_options" class="field is-hidden">
+					<div class="field has-addons">
+					  <div class="control">
+						<div class="label">Start position</div>
+					    <input class="input" type="number" name="startPos" id="startPos" value="0" min="0" required oninput="this.value = Math.abs(this.value)" />
+					  </div>
+					  <div class="control">
+						<div class="label">End position</div>
+					    <input class="input" type="number" name="endPos" id="endPos" value="0" min="0" required oninput="this.value = Math.abs(this.value)" />
+					  </div>
+					</div>
+					  <div class="control">
+						<div class="label">ExAC frequency filter</div>
+						<input type="range" name="frequency" id="frequency" value="0.0" min="0.0" max="1.0" step="0.0001" required/>
+					  </div>
+					  <div class="control">
+						<div class="label">Sliding window (<span id="swPer"></span> of protein length)</div>
+					    <input type="range" name="slidingWindow" id="slidingWindow" value="0.05" min="0" max="0.2" step="0.01" required />
+					  </div>
+					  <div class="control">
+					    <label class="checkbox">
+					      <input id="clinvar" type="checkbox" checked>
+					      Annotate <a href="https://www.ncbi.nlm.nih.gov/clinvar/">ClinVar</a> SNVs in Tolerance Landscape
+					    </label>
+					  </div>
+					  <div class="control">
+					    <label class="checkbox">
+					      <input id="hgmd" type="checkbox" checked>
+					      Annotate <a href="http://www.hgmd.cf.ac.uk/ac/index.php">HGMD</a> SNVs in Tolerance Landscape
+					    </label>					  
+					  </div>
+   					  <div class="control">
+					    <label class="checkbox">
+					      <input id="domain" type="checkbox" checked>
+					      Annotate <a href="https://pfam.xfam.org/">PFAM</a>  domains below the Tolerance Landscape
+					    </label>					  
+					   </div>
+					   
 				</div>
 			</div>
 			
-			<form action="">
-				<table style="width:100%">
-					</tbody>
-					<tbody class = "hiddenTables" style="display:none;">
-						<tr>
-							<td class="label">Start position</td>
-							<td class="dataField">
-								<input type="number" name="startPos" id="startPos" value="0" min="0" required />
-							</td>
-						</tr>
-						<tr>
-							<td class="label">End position</td>
-							<td class="dataField">
-								<input type="number" name="endPos" id="endPos" value="0" min="0" required />
-							</td>
-						</tr>
-						<tr>
-							<td class="label">Sliding Window</td>
-							<td class="dataField">
-								<input type="range" name="slidingWindow" id="slidingWindow" value="0.05" min="0" max="0.2" step="0.01" required />
-								<p>Percentage: <span id="swPer"></span></p>
-							</td>
-						</tr>
-						<tr>
-							<td class="label">Clinvar</td>
-							<td><input type="checkbox" name="clinar" id="clinvar" checked /></td>
-						</tr>
-						<tr>
-							<td class="label">Domains</td>
-							<td><input type="checkbox" name="domain" id="domain" checked /></td>
-						</tr>
-						<tr>
-							<td class="label">HGMD</td>
-							<td><input type="checkbox" name="hgmd" id="hgmd" checked /></td>
-						</tr>
-						<tr>
-							<td class="label">With frequency cut-off</td>
-							<td><input type="number" step="0.00000001" max="1" min="0" name="frequency" id="frequency" value="0" required/></td>
-						</tr>
-					</tbody>
-				</table>
-			</form>
 		</div>
 		<script>
 			var slider = document.getElementById("slidingWindow");
@@ -196,7 +187,7 @@
 				$("#getToleranceButton").addClass('is-static');
 				$("#getToleranceButton").removeClass('is-info');
 				$("#geneName").removeClass('is-success');
-				$(".hiddenTables").hide();
+				$("#advanced_options").addClass("is-hidden");
 				document.getElementById("geneNameHelpMessage").innerHTML = "";
 				document.getElementById("advanced_checkbox").disabled = true;
 				document.getElementById("advanced_checkbox").checked = false;
@@ -204,9 +195,16 @@
 		</script>
 		<script>
 		
-			function showAdvanced(){
-				$(".hiddenTables").toggle();// toggle between showing and hidding the advanced section				
+			function toggleAdvancedOpions(checkbox){
+				// toggle between showing and hidding the advanced section
+				if (checkbox.checked == true){
+					$("#advanced_options").removeClass("is-hidden");
+				}
+				else{
+					$("#advanced_options").addClass("is-hidden");
+				}
 			}
+			
 			//Function to get the data from the inputfield and send AJAX requests to the webserver, returning arrays with json objects.
 			function loadDoc(){
 				var go = false;
