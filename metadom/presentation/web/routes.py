@@ -16,6 +16,11 @@ def index():
     _log.info("Rendering index page")
     return render_template('index.html')
 
+@bp.route('/index_js')
+def index_js():
+    # Renders the javascript used on the index page
+    return render_template('/js/index.js')
+
 @bp.route('/contact', methods=['GET'])
 def contact():
     return render_template('contact.html')
