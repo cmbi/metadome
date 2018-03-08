@@ -37,6 +37,7 @@ function getTranscript() {
 				$("#getToleranceButton").addClass('is-info');
 				$("#getToleranceButton").removeClass('is-static');
 				document.getElementById("advanced_checkbox").disabled = false;
+				$("#advanced_checkbox_control").removeClass('is-hidden');
 				var dropdown = document.getElementById("gtID");
 				dropdown.setAttribute('class', 'dropdown');
 				for (var i = 0; i < transcript_id_results.trancript_ids.length; i++) {
@@ -89,9 +90,11 @@ function clearTranscripts() {
 	$("#getToleranceButton").removeClass('is-info');
 	$("#geneName").removeClass('is-success');
 	$("#advanced_options").addClass("is-hidden");
+	$("#toleranceGraphContainer").addClass('is-hidden');
 	document.getElementById("geneNameHelpMessage").innerHTML = "";
 	document.getElementById("advanced_checkbox").disabled = true;
 	document.getElementById("advanced_checkbox").checked = false;
+	$("#advanced_checkbox_control").addClass('is-hidden');
 }
 
 function toggleAdvancedOpions(checkbox) {
@@ -109,7 +112,6 @@ function loadDoc() {
 	var go = false;
 	var selection = document.getElementsByClassName("dropdown")[0];
 	if (isEmpty(selection)) {
-		alert("Select a transcript id");
 	} else {
 		$("#loading_overlay").addClass('is-active');
 		var input = selection.options[selection.selectedIndex].text;
@@ -136,7 +138,9 @@ function loadDoc() {
 					if (isEmpty(obj)) {
 						alert("Error wrong gencode transcription id, please try again");
 						d3.select("svg").selectAll("*").remove();
+						$("#toleranceGraphContainer").addClass('is-hidden');
 					} else {
+						$("#toleranceGraphContainer").removeClass('is-hidden');
 						createGraph(obj);
 						go = true;
 					}
