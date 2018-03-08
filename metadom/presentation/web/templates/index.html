@@ -37,7 +37,7 @@
 				 <div class="field has-addons">
 				  <div class="control is-expanded">
 				    <div class="select is-fullwidth">
-				      <select name="gtID" id="gtID" required>
+				      <select name="gtID" id="gtID" required disabled>
 				      	<option value="" disabled selected hidden>Please first retrieve the transcripts</option>
 				      </select>
 				    </div>
@@ -136,6 +136,7 @@
 							$("#geneNameHelpMessage").removeClass('is-success');
 							$("#getToleranceButton").addClass('is-static');
 							$("#getToleranceButton").removeClass('is-info');
+							resetDropdown()
 						}
 						else{
 							$("#geneName").addClass('is-success');
@@ -171,13 +172,13 @@
 				for (var i=dropdown.options.length - 1 ; i >= 0 ; i--){
 					dropdown.remove(i);
 				}
+				dropdown.disabled = false;
 			}
-			function clearTranscripts(){
-				clearDropdown();
-				$("#getToleranceButton").addClass('is-static');
-				$("#getToleranceButton").removeClass('is-info');
-				$("#geneName").removeClass('is-success');
-				document.getElementById("geneNameHelpMessage").innerHTML = "";
+			
+			function resetDropdown(){
+				clearDropdown()
+				var dropdown = document.getElementById("gtID");
+				dropdown.disabled = true;
 				
 				var opt = new Option();
 				opt.value = "";
@@ -185,7 +186,16 @@
 		      	opt.selected = true;
 		      	opt.hidden = true;
 		      	opt.text = "Please first retrieve the transcripts";
-				document.getElementById("gtID").options.add(opt);
+				dropdown.options.add(opt);
+			}
+			
+			function clearTranscripts(){
+				resetDropdown();
+				$("#getToleranceButton").addClass('is-static');
+				$("#getToleranceButton").removeClass('is-info');
+				$("#geneName").removeClass('is-success');
+				document.getElementById("geneNameHelpMessage").innerHTML = "";
+				
 			}
 		</script>
 		<script>
