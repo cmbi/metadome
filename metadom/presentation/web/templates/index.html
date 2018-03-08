@@ -8,119 +8,154 @@
 <script src="{{ url_for('static', filename='js/downloadmethods.js') }}"></script>
 
 <section class="section">
-	<div class="container">
-		<h1 class="title" style="color: #00AFDC;">Generate a gene tolerance landscape</h1>
-		<div id="content">
-			<!-- Loading screen -->
-			<div class="modal" id="loading_overlay">
-			  <div class="modal-content is-shadowless" style="position: absolute; width: 100%; height: 50%; background: rgba(255,255,255,0.0);"><img src="{{ url_for('static', filename='img/loading.gif') }}" style="display: block; margin: auto;"></div>		
-			  </div>
-			  <button class="modal-close is-large" aria-label="close"></button>
-			</div>
-			<!-- Tolerance landscape form -->
-			<div class="field">
-				<!-- Gene name input -->
-				<div class="field has-addons">
-				  <div class="control is-expanded">
-				    <input class="input is-fullwidth" type="text" name="geneName" id="geneName" size="20" placeholder="Type here your gene name of interest" required />
-				  </div>
-				  <div class="control">
-				    <button class="button is-info" onclick="getTranscript()">
-				      Get transcripts
-				    </button>
-				  </div>
-				</div>
-				<div id="geneNameHelpMessage" class="help"></div>
-				
-				<!-- Transcript selection -->
-				 <div class="field has-addons">
-				  <div class="control is-expanded">
-				    <div class="select is-fullwidth">
-				      <select name="gtID" id="gtID" required disabled>
-				      	<option value="" disabled selected hidden>Please first retrieve the transcripts</option>
-				      </select>
-				    </div>
-				  </div>
-				  <div class="control">
-				    <button id='getToleranceButton' type="submit" class="button is-static" onclick="loadDoc()">Get tolerance</button>
-				    <button class="button" onclick="clearTranscripts()">Reset</button>
-				  </div>
-				</div>
-				
-				<!-- Toggling advanced mode -->
-				<div class="field">
-				  <div class="control">
-				    <label class="checkbox">
-				      <input id="advanced_checkbox" type="checkbox" disabled onclick="toggleAdvancedOpions(this)">
-				      Advanced mode
-				    </label>
-				  </div>
-				</div>
-				
-				
-				<div id="advanced_options" class="field is-hidden">
-					<div class="field has-addons">
-					  <div class="control">
-						<div class="label">Start position</div>
-					    <input class="input" type="number" name="startPos" id="startPos" value="0" min="0" required oninput="this.value = Math.abs(this.value)" />
-					  </div>
-					  <div class="control">
-						<div class="label">End position</div>
-					    <input class="input" type="number" name="endPos" id="endPos" value="0" min="0" required oninput="this.value = Math.abs(this.value)" />
-					  </div>
-					</div>
-					  <div class="control">
-						<div class="label">ExAC frequency filter</div>
-						<input type="range" name="frequency" id="frequency" value="0.0" min="0.0" max="1.0" step="0.0001" required/>
-					  </div>
-					  <div class="control">
-						<div class="label">Sliding window (<span id="swPer"></span> of protein length)</div>
-					    <input type="range" name="slidingWindow" id="slidingWindow" value="0.05" min="0" max="0.2" step="0.01" required />
-					  </div>
-					  <div class="control">
-					    <label class="checkbox">
-					      <input id="clinvar" type="checkbox" checked>
-					      Annotate <a href="https://www.ncbi.nlm.nih.gov/clinvar/">ClinVar</a> SNVs in Tolerance Landscape
-					    </label>
-					  </div>
-					  <div class="control">
-					    <label class="checkbox">
-					      <input id="hgmd" type="checkbox" checked>
-					      Annotate <a href="http://www.hgmd.cf.ac.uk/ac/index.php">HGMD</a> SNVs in Tolerance Landscape
-					    </label>					  
-					  </div>
-   					  <div class="control">
-					    <label class="checkbox">
-					      <input id="domain" type="checkbox" checked>
-					      Annotate <a href="https://pfam.xfam.org/">PFAM</a>  domains below the Tolerance Landscape
-					    </label>					  
-					   </div>
-					   
-				</div>
-			</div>
-			
-		</div>
-		<script>
+  <div class="container">
+    <h1 class="title" style="color: #00AFDC;">Generate a gene
+      tolerance landscape</h1>
+    <div id="content">
+      <!-- Loading screen -->
+      <div class="modal" id="loading_overlay">
+        <div class="modal-content is-shadowless"
+          style="position: absolute; width: 100%; height: 50%; background: rgba(255, 255, 255, 0.0);">
+          <img src="{{ url_for('static', filename='img/loading.gif') }}"
+            style="display: block; margin: auto;">
+        </div>
+      </div>
+      <button class="modal-close is-large" aria-label="close"></button>
+    </div>
+    
+    <!-- Tolerance landscape form -->
+    <div class="field">
+      
+      <!-- Gene name input -->
+      <div class="field has-addons">
+        <div class="control is-expanded">
+          <input class="input is-fullwidth" type="text" name="geneName"
+            id="geneName" size="20"
+            placeholder="Type here your gene name of interest" required />
+        </div>
+        <div class="control">
+          <button class="button is-info" onclick="getTranscript()">
+            Get transcripts</button>
+        </div>
+      </div>
+      <div id="geneNameHelpMessage" class="help"></div>
+
+      <!-- Transcript selection -->
+      <div class="field has-addons">
+        <div class="control is-expanded">
+          <div class="select is-fullwidth">
+            <select name="gtID" id="gtID" required disabled>
+              <option value="" disabled selected hidden>Please
+                first retrieve the transcripts</option>
+            </select>
+          </div>
+        </div>
+        <div class="control">
+          <button id='getToleranceButton' type="submit"
+            class="button is-static" onclick="loadDoc()">Get
+            tolerance</button>
+          <button class="button" onclick="clearTranscripts()">Reset</button>
+        </div>
+      </div>
+
+      <!-- Toggling advanced mode -->
+      <div class="field">
+        <div class="control">
+          <label class="checkbox"> <input id="advanced_checkbox"
+            type="checkbox" disabled
+            onclick="toggleAdvancedOpions(this)"> Advanced mode
+          </label>
+        </div>
+      </div>
+
+      <!-- Advanced options -->
+      <div id="advanced_options" class="field is-hidden">
+      
+        <!-- Changing start/stop of the gene -->
+        <div class="field has-addons">
+          <div class="control">
+            <div class="label">Start position</div>
+            <input class="input" type="number" name="startPos"
+              id="startPos" value="0" min="0" required
+              oninput="this.value = Math.abs(this.value)" />
+          </div>
+          <div class="control">
+            <div class="label">End position</div>
+            <input class="input" type="number" name="endPos" id="endPos"
+              value="0" min="0" required
+              oninput="this.value = Math.abs(this.value)" />
+          </div>
+        </div>
+        
+        <!-- Implement ExAC frequency filter -->
+        <div class="control">
+          <div class="label">ExAC frequency filter</div>
+          <input type="range" name="frequency" id="frequency"
+            value="0.0" min="0.0" max="1.0" step="0.0001" required />
+        </div>
+        
+        <!-- Change the sliding window size -->
+        <div class="control">
+          <div class="label">
+            Sliding window (<span id="swPer"></span> of protein length)
+          </div>
+          <input type="range" name="slidingWindow" id="slidingWindow"
+            value="0.05" min="0" max="0.2" step="0.01" required />
+        </div>
+        
+        <!-- Toggle ClinVar variant annotation -->
+        <div class="control">
+          <label class="checkbox"> <input id="clinvar"
+            type="checkbox" checked> Annotate <a
+            href="https://www.ncbi.nlm.nih.gov/clinvar/">ClinVar</a>
+            SNVs in Tolerance Landscape
+          </label>
+        </div>
+        
+        <!-- Toggle HGMD variant annotation -->
+        <div class="control">
+          <label class="checkbox"> <input id="hgmd"
+            type="checkbox" checked> Annotate <a
+            href="http://www.hgmd.cf.ac.uk/ac/index.php">HGMD</a> SNVs
+            in Tolerance Landscape
+          </label>
+        </div>
+        
+        <!-- Toggle PFAM domain annotation -->
+        <div class="control">
+          <label class="checkbox"> <input id="domain"
+            type="checkbox" checked> Annotate <a
+            href="https://pfam.xfam.org/">PFAM</a> domains below the
+            Tolerance Landscape
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  <script>
 			var slider = document.getElementById("slidingWindow");
 			var swpercentage = document.getElementById("swPer");
-			swpercentage.innerHTML = (slider.value)*100+"%";
-			
-			slider.oninput = function(){
-				swpercentage.innerHTML = (this.value)*100+"%";
+			swpercentage.innerHTML = (slider.value) * 100 + "%";
+
+			slider.oninput = function() {
+				swpercentage.innerHTML = (this.value) * 100 + "%";
 			}
-		
+
 			//Function to send AJAX request to the webserver to get all transcripts belonging to a gene name
-			function getTranscript(){
+			function getTranscript() {
 				clearDropdown();
 				var geneName = document.getElementById("geneName").value;
-				
+
 				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function(){
+				xhttp.onreadystatechange = function() {
 					if (this.readyState == 4 && this.status == 200) {
-						var transcript_id_results = JSON.parse(xhttp.responseText);
+						var transcript_id_results = JSON
+								.parse(xhttp.responseText);
 						document.getElementById("geneNameHelpMessage").innerHTML = transcript_id_results.message;
-						
-						if (isEmpty(transcript_id_results.trancript_ids)){
+
+						if (isEmpty(transcript_id_results.trancript_ids)) {
 							$("#geneName").addClass('is-danger');
 							$("#geneName").removeClass('is-success');
 							$("#geneNameHelpMessage").addClass('is-danger');
@@ -128,8 +163,7 @@
 							$("#getToleranceButton").addClass('is-static');
 							$("#getToleranceButton").removeClass('is-info');
 							resetDropdown()
-						}
-						else{
+						} else {
 							$("#geneName").addClass('is-success');
 							$("#geneName").removeClass('is-danger');
 							$("#geneNameHelpMessage").addClass('is-success');
@@ -139,50 +173,52 @@
 							document.getElementById("advanced_checkbox").disabled = false;
 							var dropdown = document.getElementById("gtID");
 							dropdown.setAttribute('class', 'dropdown');
-							for (var i=0; i<transcript_id_results.trancript_ids.length;i++){
+							for (var i = 0; i < transcript_id_results.trancript_ids.length; i++) {
 								var opt = new Option();
 								opt.value = i;
 								opt.text = transcript_id_results.trancript_ids[i];
 								dropdown.options.add(opt);
 							}
-							
+
 						}
 					}
 				};
 				if (typeof geneName !== 'undefined' && geneName.length > 0) {
-				    // the variable is defined
-					xhttp.open("GET", "{{ url_for('api.get_default_transcript_ids') }}"+"/"+geneName, true);
-					xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+					// the variable is defined
+					xhttp.open("GET",
+							"{{ url_for('api.get_default_transcript_ids') }}"
+									+ "/" + geneName, true);
+					xhttp.setRequestHeader("Content-type",
+							"application/x-www-form-urlencoded");
 					xhttp.send();
 				}
 			}
-			
-			
+
 			// function to clear all items in the transcript dropdown
-			function clearDropdown(){
+			function clearDropdown() {
 				var dropdown = document.getElementById("gtID");
-				for (var i=dropdown.options.length - 1 ; i >= 0 ; i--){
+				for (var i = dropdown.options.length - 1; i >= 0; i--) {
 					dropdown.remove(i);
 				}
 				dropdown.disabled = false;
 			}
-			
-			function resetDropdown(){
+
+			function resetDropdown() {
 				clearDropdown()
-				
+
 				var dropdown = document.getElementById("gtID");
 				dropdown.disabled = true;
-				
+
 				var opt = new Option();
 				opt.value = "";
 				opt.disabled = true;
-		      	opt.selected = true;
-		      	opt.hidden = true;
-		      	opt.text = "Please first retrieve the transcripts";
+				opt.selected = true;
+				opt.hidden = true;
+				opt.text = "Please first retrieve the transcripts";
 				dropdown.options.add(opt);
 			}
-			
-			function clearTranscripts(){
+
+			function clearTranscripts() {
 				resetDropdown();
 				$("#getToleranceButton").addClass('is-static');
 				$("#getToleranceButton").removeClass('is-info');
@@ -193,240 +229,295 @@
 				document.getElementById("advanced_checkbox").checked = false;
 			}
 		</script>
-		<script>
-		
-			function toggleAdvancedOpions(checkbox){
+  <script>
+			function toggleAdvancedOpions(checkbox) {
 				// toggle between showing and hidding the advanced section
-				if (checkbox.checked == true){
+				if (checkbox.checked == true) {
 					$("#advanced_options").removeClass("is-hidden");
-				}
-				else{
+				} else {
 					$("#advanced_options").addClass("is-hidden");
 				}
 			}
-			
+
 			//Function to get the data from the inputfield and send AJAX requests to the webserver, returning arrays with json objects.
-			function loadDoc(){
+			function loadDoc() {
 				var go = false;
 				var selection = document.getElementsByClassName("dropdown")[0];
-				if (isEmpty(selection)){
+				if (isEmpty(selection)) {
 					alert("Select a transcript id");
-				}
-				else{
+				} else {
 					$("#loading_overlay").addClass('is-active');
 					var input = selection.options[selection.selectedIndex].text;
 					var gtID = input.toUpperCase();
 					var startPos = document.getElementById("startPos").value;
 					var endPos = document.getElementById("endPos").value;
-					var slidingWindow = document.getElementById("slidingWindow").value;
+					var slidingWindow = document
+							.getElementById("slidingWindow").value;
 					var frequency = document.getElementById("frequency").value;
-					
+
 					var status = true;
-					if (gtID=="" || startPos=="" || endPos=="" || frequency==""){
+					if (gtID == "" || startPos == "" || endPos == ""
+							|| frequency == "") {
 						status = false
 					}
-					if (parseInt(startPos) > parseInt(endPos)){
+					if (parseInt(startPos) > parseInt(endPos)) {
 						status = false;
 					}
-					if (status){
-						
+					if (status) {
+
 						var xhttp = new XMLHttpRequest();
-						xhttp.onreadystatechange = function(){
+						xhttp.onreadystatechange = function() {
 							if (this.readyState == 4 && this.status == 200) {
 								var obj = JSON.parse(xhttp.responseText);
 								$("#loading_overlay").removeClass('is-active');
-								if (isEmpty(obj)){
+								if (isEmpty(obj)) {
 									alert("Error wrong gencode transcription id, please try again");
 									d3.select("svg").selectAll("*").remove();
-								}
-								else{
+								} else {
 									createGraph(obj);
 									go = true;
 								}
 							}
 						};
 						if (typeof gtID !== 'undefined' && gtID.length > 0) {
-							var _tolerance_api_call = "/"+gtID+"/?slidingwindow="+slidingWindow+"&frequency="+frequency
-							if (typeof startPos !== 'undefined' && startPos.length > 0) {
-								_tolerance_api_call += "&startpos="+startPos;
+							var _tolerance_api_call = "/" + gtID
+									+ "/?slidingwindow=" + slidingWindow
+									+ "&frequency=" + frequency
+							if (typeof startPos !== 'undefined'
+									&& startPos.length > 0) {
+								_tolerance_api_call += "&startpos=" + startPos;
 							}
-							if (typeof endPos !== 'undefined' && endPos.length > 0) {
-								_tolerance_api_call += "&endpos="+endPos;
+							if (typeof endPos !== 'undefined'
+									&& endPos.length > 0) {
+								_tolerance_api_call += "&endpos=" + endPos;
 							}
-							
-						    // the variable is defined
-							xhttp.open("GET", "{{ url_for('api.get_default_tolerance') }}"+_tolerance_api_call, true);
-							xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+							// the variable is defined
+							xhttp.open("GET",
+									"{{ url_for('api.get_default_tolerance') }}"
+											+ _tolerance_api_call, true);
+							xhttp.setRequestHeader("Content-type",
+									"application/x-www-form-urlencoded");
 							xhttp.send();
-							
-							if ($("#domain").is(":checked")&& go){
+
+							if ($("#domain").is(":checked") && go) {
 								var xhttpD = new XMLHttpRequest();
-								xhttpD.onreadystatechange = function(){
-									if (this.readyState == 4 && this.status == 200) {
-										var domains = JSON.parse(xhttpD.responseText);
-										if (isEmpty(domains)){
-											console.log("domain array empty");	
-										}
-										else{
+								xhttpD.onreadystatechange = function() {
+									if (this.readyState == 4
+											&& this.status == 200) {
+										var domains = JSON
+												.parse(xhttpD.responseText);
+										if (isEmpty(domains)) {
+											console.log("domain array empty");
+										} else {
 											appendPfamDomains(domains);
 										}
 									}
 								}
 								// TODO: ensure proper link is retrieved here
-								xhttpD.open("GET", "http://localhost:8080/ToleranceLandscape/domainServlet/?gtID="+gtID+"&startpos="+startPos+"&endpos="+endPos+"&slidingwindow="+slidingWindow+"", true);
-								xhttpD.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+								xhttpD.open("GET",
+										"http://localhost:8080/ToleranceLandscape/domainServlet/?gtID="
+												+ gtID + "&startpos="
+												+ startPos + "&endpos="
+												+ endPos + "&slidingwindow="
+												+ slidingWindow + "", true);
+								xhttpD.setRequestHeader("Content-type",
+										"application/x-www-form-urlencoded");
 								xhttpD.send();
 							}
-							
-							if ($("#hgmd").is(":checked")&& go){
+
+							if ($("#hgmd").is(":checked") && go) {
 								var xhttpH = new XMLHttpRequest();
-								xhttpH.onreadystatechange = function(){
-									if (this.readyState == 4 && this.status == 200) {
-										var hgmd = JSON.parse(xhttpH.responseText);
-										if (isEmpty(hgmd)){
+								xhttpH.onreadystatechange = function() {
+									if (this.readyState == 4
+											&& this.status == 200) {
+										var hgmd = JSON
+												.parse(xhttpH.responseText);
+										if (isEmpty(hgmd)) {
 											console.log("hgmd array empty");
-										}
-										else{
+										} else {
 											appendHGMD(hgmd);
 										}
 									}
 								}
 								// TODO: ensure proper link is retrieved here
-								xhttpH.open("GET", "http://localhost:8080/ToleranceLandscape/hgmdServlet/?gtID="+gtID+"&startpos="+startPos+"&endpos="+endPos+"&slidingwindow="+slidingWindow+"", true);
-								xhttpH.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+								xhttpH.open("GET",
+										"http://localhost:8080/ToleranceLandscape/hgmdServlet/?gtID="
+												+ gtID + "&startpos="
+												+ startPos + "&endpos="
+												+ endPos + "&slidingwindow="
+												+ slidingWindow + "", true);
+								xhttpH.setRequestHeader("Content-type",
+										"application/x-www-form-urlencoded");
 								xhttpH.send();
 							}
-							
-							if ($("#clinvar").is(":checked")&& go){
+
+							if ($("#clinvar").is(":checked") && go) {
 								var xhttpC = new XMLHttpRequest();
-								xhttpC.onreadystatechange = function(){
-									if (this.readyState == 4 && this.status == 200) {
-										var clinvar = JSON.parse(xhttpC.responseText);
-										if (isEmpty(clinvar)){
+								xhttpC.onreadystatechange = function() {
+									if (this.readyState == 4
+											&& this.status == 200) {
+										var clinvar = JSON
+												.parse(xhttpC.responseText);
+										if (isEmpty(clinvar)) {
 											console.log("clinvar array empty");
-										}
-										else{
+										} else {
 											appendClinvar(clinvar);
 										}
 									}
 								}
 								// TODO: ensure proper link is retrieved here
-								xhttpC.open("GET", "http://localhost:8080/ToleranceLandscape/clinvarServlet/?gtID="+gtID+"&startpos="+startPos+"&endpos="+endPos+"&slidingwindow="+slidingWindow+"", true);
-								xhttpC.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+								xhttpC.open("GET",
+										"http://localhost:8080/ToleranceLandscape/clinvarServlet/?gtID="
+												+ gtID + "&startpos="
+												+ startPos + "&endpos="
+												+ endPos + "&slidingwindow="
+												+ slidingWindow + "", true);
+								xhttpC.setRequestHeader("Content-type",
+										"application/x-www-form-urlencoded");
 								xhttpC.send();
 							}
 						}
-						
+
 					}
 				}
-				
+
 			}
-			function isEmpty(value){
-				return (value== null || value.length ===0);
+			function isEmpty(value) {
+				return (value == null || value.length === 0);
 			}
 		</script>
-		<p id="geneName"></p>
-		<svg xmlns="http://www.w3.org/2000/svg" id="svg" width="1300" height="700"></svg>
-		<div id="graph">
-			<script>
-				var svg = d3.select("svg");
-				// setting basic variables
-				margin = {top: 20, right: 20, bottom: 210, left: 100},
-				margin2 = {top: 530, right: 20, bottom: 100, left: 100},
-				margin3 = {top: 530, right: 20, bottom: 30, left: 100},
-				width = +svg.attr("width") - margin.left - margin.right,
-				height = +svg.attr("height") - margin.top - margin.bottom,
-				height2 = +svg.attr("height") - margin2.top - margin2.bottom,
-				height3 = +svg.attr("height") - margin3.top - margin3.bottom;
-		
-				// Scaling axis
-				var x = d3.scaleLinear().range([0, width]),
-					x2 = d3.scaleLinear().range([0, width]),
-					y = d3.scaleLinear().range([height, 0]),
-					y2 = d3.scaleLinear().range([height2, 0]);
-				
-				// define tooltip for clinvar
-				var clinvarTip = d3.tip()
-				.attr('class', 'd3-tip')
-				.offset([-10, 0])
-				.html(function(d) {
-					var variantString = "Clinvar<br>";
-						var i=0;
-						while (i<d.alt.length){
-							variantString = variantString+("p."+d.pos+d.ref+">"+d.alt[i]+"<br>");
-							i++;
-						}
-					return "<span style='color:red'>" + variantString + "</span>";
-				});
-				// define tooltip for hgmd
-				var hgmdTip = d3.tip()
-				.attr('class', 'd3-tip')
-				.offset([-10, 0])
-				.html(function(d) {
-					var variantString = "HGMD<br>";
-						var i=0;
-						while (i<d.alt.length){
-							variantString = variantString+("p."+d.pos+d.ref+">"+d.alt[i]+"<br>");
-							i++;
-						}
-					return "<span style='color:red'>" + variantString + "</span>";
-				});
-				
-				// define tooltip for pfamdomains
-				var domainTip = d3.tip()
-					.attr('class', 'd3-tip')
-					.offset([-10, 0])
-					.html(function(d) {
+  <p id="geneName"></p>
+  <svg xmlns="http://www.w3.org/2000/svg" id="svg" width="1300"
+    height="700"></svg>
+  <div id="graph">
+    <script>
+					var svg = d3.select("svg");
+					// setting basic variables
+					margin = {
+						top : 20,
+						right : 20,
+						bottom : 210,
+						left : 100
+					}, margin2 = {
+						top : 530,
+						right : 20,
+						bottom : 100,
+						left : 100
+					}, margin3 = {
+						top : 530,
+						right : 20,
+						bottom : 30,
+						left : 100
+					}, width = +svg.attr("width") - margin.left - margin.right,
+							height = +svg.attr("height") - margin.top
+									- margin.bottom, height2 = +svg
+									.attr("height")
+									- margin2.top - margin2.bottom,
+							height3 = +svg.attr("height") - margin3.top
+									- margin3.bottom;
+
+					// Scaling axis
+					var x = d3.scaleLinear().range([ 0, width ]), x2 = d3
+							.scaleLinear().range([ 0, width ]), y = d3
+							.scaleLinear().range([ height, 0 ]), y2 = d3
+							.scaleLinear().range([ height2, 0 ]);
+
+					// define tooltip for clinvar
+					var clinvarTip = d3.tip().attr('class', 'd3-tip').offset(
+							[ -10, 0 ]).html(
+							function(d) {
+								var variantString = "Clinvar<br>";
+								var i = 0;
+								while (i < d.alt.length) {
+									variantString = variantString
+											+ ("p." + d.pos + d.ref + ">"
+													+ d.alt[i] + "<br>");
+									i++;
+								}
+								return "<span style='color:red'>"
+										+ variantString + "</span>";
+							});
+					// define tooltip for hgmd
+					var hgmdTip = d3.tip().attr('class', 'd3-tip').offset(
+							[ -10, 0 ]).html(
+							function(d) {
+								var variantString = "HGMD<br>";
+								var i = 0;
+								while (i < d.alt.length) {
+									variantString = variantString
+											+ ("p." + d.pos + d.ref + ">"
+													+ d.alt[i] + "<br>");
+									i++;
+								}
+								return "<span style='color:red'>"
+										+ variantString + "</span>";
+							});
+
+					// define tooltip for pfamdomains
+					var domainTip = d3.tip().attr('class', 'd3-tip').offset(
+							[ -10, 0 ]).html(function(d) {
 						return "<span style='color:red'>" + d.Name + "</span>";
 					});
-				
-				var metadomTip = d3.tip()
-					.attr('class', 'd3-tip')
-					.offset([-10, 0])
-					.html(function(d){
-						return "<span style='color:red'> Frequency:<br>" + d.freq + "</span>";
-					});
-				
-				var metadomPosTip = d3.tip()
-					.attr('class', 'd3-tip')
-					.offset([-10, 0])
-					.html(function(d, start, score){
-						if (d.pos != "gene doesn't contain this position"){
-							return "<span style='color:red'> DCP*: " + d.dcp + "<br> Gene pos: "+ (d.pos+start)+ "<br> Score: "+score+"</span>";
-						}
-						else{
-							return "<span style='color:red'> DCP*: " + d.dcp + "<br> Gene pos: "+ d.pos+ "<br> Score: "+score+"</span>";
-						}
-					});
-			</script>
-			
-			<div id="myModal" class="modal">
-				<div class="modal-content">
-					<div class="modal-header">
-						<span class="close">&times;</span>
-						<h1 id="pfamID">pfam id</h1>
-					</div>
-					<div class="modal-body">
-						<p id="modalText">Click on a position to get the metadomain position information</p>
-					</div>
-					<div class="modal-footer">
-						<h3> *Domain consensus position</h3>
-						<input id="dlmetadom" class="dlmetadom" type="button" value="Download metadomain" />
-					</div>
-				</div>
-			</div>
-			
-			<input id="dlSVG"
-				name="downloadButton"
-				type="button"
-				value="Download SVG" />
-			<input id="dlJSON"
-				name="downloadButton"
-				type="button"
-				value="Download TSV" />
 
-		</div>
-	</div>
+					var metadomTip = d3
+							.tip()
+							.attr('class', 'd3-tip')
+							.offset([ -10, 0 ])
+							.html(
+									function(d) {
+										return "<span style='color:red'> Frequency:<br>"
+												+ d.freq + "</span>";
+									});
+
+					var metadomPosTip = d3
+							.tip()
+							.attr('class', 'd3-tip')
+							.offset([ -10, 0 ])
+							.html(
+									function(d, start, score) {
+										if (d.pos != "gene doesn't contain this position") {
+											return "<span style='color:red'> DCP*: "
+													+ d.dcp
+													+ "<br> Gene pos: "
+													+ (d.pos + start)
+													+ "<br> Score: "
+													+ score
+													+ "</span>";
+										} else {
+											return "<span style='color:red'> DCP*: "
+													+ d.dcp
+													+ "<br> Gene pos: "
+													+ d.pos
+													+ "<br> Score: "
+													+ score + "</span>";
+										}
+									});
+				</script>
+
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="close">&times;</span>
+          <h1 id="pfamID">pfam id</h1>
+        </div>
+        <div class="modal-body">
+          <p id="modalText">Click on a position to get the
+            metadomain position information</p>
+        </div>
+        <div class="modal-footer">
+          <h3>*Domain consensus position</h3>
+          <input id="dlmetadom" class="dlmetadom" type="button"
+            value="Download metadomain" />
+        </div>
+      </div>
+    </div>
+
+    <input id="dlSVG" name="downloadButton" type="button"
+      value="Download SVG" /> <input id="dlJSON" name="downloadButton"
+      type="button" value="Download TSV" />
+
+  </div>
 </section>
 
 {% endblock %} {% block js %} {% endblock %}
