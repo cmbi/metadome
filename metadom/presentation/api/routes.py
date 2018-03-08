@@ -22,10 +22,27 @@ def get_default_transcript_ids():
     pass
 
 @bp.route('/gene/geneToTranscript/<string:gene_name>', methods=['GET'])
-def get_transcript_ids_for_gene(gene_name):
+def get_transcript_ids_for_gene(gene_name):  
+    # retrieve the transcript ids for this gene
     trancript_ids = GeneRepository.retrieve_all_transcript_ids(gene_name)
+    
+    # check if there was any return value
+    if len(trancript_ids) > 0:
+        message = "Retrieved transcripts for gene '"+gene_name+"'"
+    elif len(trancript_ids) == 0 and gene_name.upper() != gene_name:
+        # retrieve the transcript ids for this capitalized form of this gene
+        trancript_ids  = GeneRepository.retrieve_all_transcript_ids(gene_name.upper())
             
-    return jsonify(trancript_ids)
+        # again check if there was any return value
+        if len(trancript_ids) == 0:
+            message = "Gene '"+str(gene_name)+"' was not present in the database, nor was '"+str(gene_name.upper())+"'"
+        else:
+            message = "Retrieved transcripts for gene '"+gene_name.upper()+"'"
+    else:
+        message = "No transcripts available for gene '"+gene_name+"'"
+    
+    return jsonify(trancript_ids=trancript_ids, message=message)
+
 
 @bp.route('/gene/geneTolerance', methods=['GET'])
 def get_default_tolerance():
