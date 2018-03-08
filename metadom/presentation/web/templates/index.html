@@ -5,6 +5,7 @@
 <script src="{{ url_for('static', filename='js/d3-tip.js') }}"></script>
 <script src="{{ url_for('static', filename='js/graphAdditions.js') }}"></script>
 <script src="{{ url_for('static', filename='js/downloadmethods.js') }}"></script>
+<script src="{{ url_for('static', filename='js/createGraph.js') }}"></script>
 <script src="{{ url_for('web.index_js') }}"></script>
 
 <section class="section">
@@ -59,104 +60,110 @@
       </div>
     </div>
   </div>
-  <p id="geneName"></p>
-  <svg xmlns="http://www.w3.org/2000/svg" id="svg" width="1300"
-    height="700"></svg>
-  <div id="graph">
-    <script
-      src="{{ url_for('static', filename='js/toleranceLandscape/toleranceLandscapeGraph.js') }}"></script>
-    <div id="myModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <span class="close">&times;</span>
-          <h1 id="pfamID">pfam id</h1>
-        </div>
-        <div class="modal-body">
-          <p id="modalText">Click on a position to get the
-            metadomain position information</p>
-        </div>
-        <div class="modal-footer">
-          <h3>*Domain consensus position</h3>
-          <input id="dlmetadom" class="dlmetadom" type="button"
-            value="Download metadomain" />
+
+  <div id='toleranceGraphContainer' class="container is-hidden">
+    <p id="geneName">TODO: here an interactive text is dispayed for
+      gene name, transcript and protein id</p>
+    <svg xmlns="http://www.w3.org/2000/svg" id="svg" width="1300"
+      height="700"></svg>
+    <div id="graph">
+      <script
+        src="{{ url_for('static', filename='js/toleranceLandscape/toleranceLandscapeGraph.js') }}"></script>
+      <div id="myModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <span class="close">&times;</span>
+            <h1 id="pfamID">pfam id</h1>
+          </div>
+          <div class="modal-body">
+            <p id="modalText">Click on a position to get the
+              metadomain position information</p>
+          </div>
+          <div class="modal-footer">
+            <h3>*Domain consensus position</h3>
+            <input id="dlmetadom" class="dlmetadom" type="button"
+              value="Download metadomain" />
+          </div>
         </div>
       </div>
+
+      <input id="dlSVG" name="downloadButton" type="button"
+        value="Download SVG" /> <input id="dlJSON"
+        name="downloadButton" type="button" value="Download TSV" />
+
     </div>
-
-    <input id="dlSVG" name="downloadButton" type="button"
-      value="Download SVG" /> <input id="dlJSON" name="downloadButton"
-      type="button" value="Download TSV" />
-
   </div>
 
-  <!-- Toggling advanced mode -->
-  <div class="field">
-    <div class="control">
-      <label class="checkbox"> <input id="advanced_checkbox"
-        type="checkbox" disabled onclick="toggleAdvancedOpions(this)">
-        Advanced mode
-      </label>
-    </div>
-    <!-- Advanced options -->
-    <div id="advanced_options" class="field is-hidden">
+  <div class="container">
+    <!-- Toggling advanced mode -->
+    <div class="field">
+      <div class="control is-hidden" id="advanced_checkbox_control">
+        <label class="checkbox"> <input id="advanced_checkbox"
+          type="checkbox" disabled onclick="toggleAdvancedOpions(this)">
+          Advanced mode
+        </label>
+      </div>
+      <!-- Advanced options -->
+      <div id="advanced_options" class="field is-hidden">
 
-      <!-- Changing start/stop of the gene -->
-      <div class="field has-addons">
+        <!-- Changing start/stop of the gene -->
+        <div class="field has-addons">
+          <div class="control">
+            <div class="label">Start position</div>
+            <input class="input" type="number" name="startPos"
+              id="startPos" value="0" min="0" required
+              oninput="this.value = Math.abs(this.value)" />
+          </div>
+          <div class="control">
+            <div class="label">End position</div>
+            <input class="input" type="number" name="endPos" id="endPos"
+              value="0" min="0" required
+              oninput="this.value = Math.abs(this.value)" />
+          </div>
+        </div>
+
+        <!-- Implement ExAC frequency filter -->
         <div class="control">
-          <div class="label">Start position</div>
-          <input class="input" type="number" name="startPos"
-            id="startPos" value="0" min="0" required
-            oninput="this.value = Math.abs(this.value)" />
+          <div class="label">ExAC frequency filter</div>
+          <input type="range" name="frequency" id="frequency"
+            value="0.0" min="0.0" max="1.0" step="0.0001" required />
         </div>
+
+        <!-- Change the sliding window size -->
         <div class="control">
-          <div class="label">End position</div>
-          <input class="input" type="number" name="endPos" id="endPos"
-            value="0" min="0" required
-            oninput="this.value = Math.abs(this.value)" />
+          <div class="label">
+            Sliding window (<span id="swPer"></span> of protein length)
+          </div>
+          <input type="range" name="slidingWindow" id="slidingWindow"
+            value="0.05" min="0" max="0.2" step="0.01" required />
         </div>
-      </div>
 
-      <!-- Implement ExAC frequency filter -->
-      <div class="control">
-        <div class="label">ExAC frequency filter</div>
-        <input type="range" name="frequency" id="frequency" value="0.0"
-          min="0.0" max="1.0" step="0.0001" required />
-      </div>
-
-      <!-- Change the sliding window size -->
-      <div class="control">
-        <div class="label">
-          Sliding window (<span id="swPer"></span> of protein length)
+        <!-- Toggle ClinVar variant annotation -->
+        <div class="control">
+          <label class="checkbox"> <input id="clinvar"
+            type="checkbox" checked> Annotate <a
+            href="https://www.ncbi.nlm.nih.gov/clinvar/">ClinVar</a>
+            SNVs in Tolerance Landscape
+          </label>
         </div>
-        <input type="range" name="slidingWindow" id="slidingWindow"
-          value="0.05" min="0" max="0.2" step="0.01" required />
-      </div>
 
-      <!-- Toggle ClinVar variant annotation -->
-      <div class="control">
-        <label class="checkbox"> <input id="clinvar"
-          type="checkbox" checked> Annotate <a
-          href="https://www.ncbi.nlm.nih.gov/clinvar/">ClinVar</a> SNVs
-          in Tolerance Landscape
-        </label>
-      </div>
+        <!-- Toggle HGMD variant annotation -->
+        <div class="control">
+          <label class="checkbox"> <input id="hgmd"
+            type="checkbox" checked> Annotate <a
+            href="http://www.hgmd.cf.ac.uk/ac/index.php">HGMD</a> SNVs
+            in Tolerance Landscape
+          </label>
+        </div>
 
-      <!-- Toggle HGMD variant annotation -->
-      <div class="control">
-        <label class="checkbox"> <input id="hgmd"
-          type="checkbox" checked> Annotate <a
-          href="http://www.hgmd.cf.ac.uk/ac/index.php">HGMD</a> SNVs in
-          Tolerance Landscape
-        </label>
-      </div>
-
-      <!-- Toggle PFAM domain annotation -->
-      <div class="control">
-        <label class="checkbox"> <input id="domain"
-          type="checkbox" checked> Annotate <a
-          href="https://pfam.xfam.org/">PFAM</a> domains below the
-          Tolerance Landscape
-        </label>
+        <!-- Toggle PFAM domain annotation -->
+        <div class="control">
+          <label class="checkbox"> <input id="domain"
+            type="checkbox" checked> Annotate <a
+            href="https://pfam.xfam.org/">PFAM</a> domains below the
+            Tolerance Landscape
+          </label>
+        </div>
       </div>
     </div>
   </div>
