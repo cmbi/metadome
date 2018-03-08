@@ -12,7 +12,7 @@
 	
 <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
 <link rel="stylesheet"
-	href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.5.1/css/bulma.min.css">
+	href="{{ url_for('static', filename='css/bulma/0.6.2/bulma.min.css') }}">
 <link rel="stylesheet"
 	href="{{ url_for('static', filename='css/site.css') }}">
 		
@@ -100,8 +100,8 @@
 					website content is licensed <a
 						href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC
 						ANS 4.0</a>.
-				</p>
-				<p>
+					<a href="https://bulma.io">
+  						<img src="{{ url_for('static', filename='img/made-with-bulma.png') }}" alt="Made with Bulma" width="128" height="24"></a>
 					<strong>Tolerance Landscape</strong> by Daan Gilissen. Any question? mail: <a href="mailto:Daan.Gilissen@radbouducm.nl" style="color: #00AFDC;">Daan Gilissen</a> 
 				</p>
 			</div>
