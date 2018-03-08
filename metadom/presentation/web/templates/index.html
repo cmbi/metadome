@@ -6,6 +6,7 @@
 <script src="{{ url_for('static', filename='js/createGraph.js') }}"></script>
 <script src="{{ url_for('static', filename='js/graphAdditions.js') }}"></script>
 <script src="{{ url_for('static', filename='js/downloadmethods.js') }}"></script>
+<script src="{{ url_for('static', filename='js/toleranceLandscape/drawToleranceLandscape.js') }}"></script>
 
 <section class="section">
   <div class="container">
@@ -145,9 +146,7 @@
 
 			//Function to send AJAX request to the webserver to get all transcripts belonging to a gene name
 			function getTranscript() {
-				clearDropdown();
 				var geneName = document.getElementById("geneName").value;
-
 				var xhttp = new XMLHttpRequest();
 				xhttp.onreadystatechange = function() {
 					if (this.readyState == 4 && this.status == 200) {
@@ -164,6 +163,7 @@
 							$("#getToleranceButton").removeClass('is-info');
 							resetDropdown()
 						} else {
+							clearDropdown();
 							$("#geneName").addClass('is-success');
 							$("#geneName").removeClass('is-danger');
 							$("#geneNameHelpMessage").addClass('is-success');
@@ -228,8 +228,7 @@
 				document.getElementById("advanced_checkbox").disabled = true;
 				document.getElementById("advanced_checkbox").checked = false;
 			}
-		</script>
-  <script>
+			
 			function toggleAdvancedOpions(checkbox) {
 				// toggle between showing and hidding the advanced section
 				if (checkbox.checked == true) {
@@ -391,110 +390,7 @@
   <svg xmlns="http://www.w3.org/2000/svg" id="svg" width="1300"
     height="700"></svg>
   <div id="graph">
-    <script>
-					var svg = d3.select("svg");
-					// setting basic variables
-					margin = {
-						top : 20,
-						right : 20,
-						bottom : 210,
-						left : 100
-					}, margin2 = {
-						top : 530,
-						right : 20,
-						bottom : 100,
-						left : 100
-					}, margin3 = {
-						top : 530,
-						right : 20,
-						bottom : 30,
-						left : 100
-					}, width = +svg.attr("width") - margin.left - margin.right,
-							height = +svg.attr("height") - margin.top
-									- margin.bottom, height2 = +svg
-									.attr("height")
-									- margin2.top - margin2.bottom,
-							height3 = +svg.attr("height") - margin3.top
-									- margin3.bottom;
-
-					// Scaling axis
-					var x = d3.scaleLinear().range([ 0, width ]), x2 = d3
-							.scaleLinear().range([ 0, width ]), y = d3
-							.scaleLinear().range([ height, 0 ]), y2 = d3
-							.scaleLinear().range([ height2, 0 ]);
-
-					// define tooltip for clinvar
-					var clinvarTip = d3.tip().attr('class', 'd3-tip').offset(
-							[ -10, 0 ]).html(
-							function(d) {
-								var variantString = "Clinvar<br>";
-								var i = 0;
-								while (i < d.alt.length) {
-									variantString = variantString
-											+ ("p." + d.pos + d.ref + ">"
-													+ d.alt[i] + "<br>");
-									i++;
-								}
-								return "<span style='color:red'>"
-										+ variantString + "</span>";
-							});
-					// define tooltip for hgmd
-					var hgmdTip = d3.tip().attr('class', 'd3-tip').offset(
-							[ -10, 0 ]).html(
-							function(d) {
-								var variantString = "HGMD<br>";
-								var i = 0;
-								while (i < d.alt.length) {
-									variantString = variantString
-											+ ("p." + d.pos + d.ref + ">"
-													+ d.alt[i] + "<br>");
-									i++;
-								}
-								return "<span style='color:red'>"
-										+ variantString + "</span>";
-							});
-
-					// define tooltip for pfamdomains
-					var domainTip = d3.tip().attr('class', 'd3-tip').offset(
-							[ -10, 0 ]).html(function(d) {
-						return "<span style='color:red'>" + d.Name + "</span>";
-					});
-
-					var metadomTip = d3
-							.tip()
-							.attr('class', 'd3-tip')
-							.offset([ -10, 0 ])
-							.html(
-									function(d) {
-										return "<span style='color:red'> Frequency:<br>"
-												+ d.freq + "</span>";
-									});
-
-					var metadomPosTip = d3
-							.tip()
-							.attr('class', 'd3-tip')
-							.offset([ -10, 0 ])
-							.html(
-									function(d, start, score) {
-										if (d.pos != "gene doesn't contain this position") {
-											return "<span style='color:red'> DCP*: "
-													+ d.dcp
-													+ "<br> Gene pos: "
-													+ (d.pos + start)
-													+ "<br> Score: "
-													+ score
-													+ "</span>";
-										} else {
-											return "<span style='color:red'> DCP*: "
-													+ d.dcp
-													+ "<br> Gene pos: "
-													+ d.pos
-													+ "<br> Score: "
-													+ score + "</span>";
-										}
-									});
-				</script>
-
+    <script src="{{ url_for('static', filename='js/toleranceLandscape/drawToleranceLandscape.js') }}"></script>
     <div id="myModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
