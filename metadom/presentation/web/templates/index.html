@@ -52,7 +52,7 @@
 				<div class="field">
 				  <div class="control">
 				    <label class="checkbox">
-				      <input type="checkbox" onclick="showAdvanced()">
+				      <input id="advanced_checkbox" type="checkbox" disabled onclick="showAdvanced()">
 				      Advanced mode
 				    </label>
 				  </div>
@@ -145,6 +145,7 @@
 							$("#geneNameHelpMessage").removeClass('is-danger');
 							$("#getToleranceButton").addClass('is-info');
 							$("#getToleranceButton").removeClass('is-static');
+							document.getElementById("advanced_checkbox").disabled = false;
 							var dropdown = document.getElementById("gtID");
 							dropdown.setAttribute('class', 'dropdown');
 							for (var i=0; i<transcript_id_results.trancript_ids.length;i++){
@@ -177,6 +178,7 @@
 			
 			function resetDropdown(){
 				clearDropdown()
+				
 				var dropdown = document.getElementById("gtID");
 				dropdown.disabled = true;
 				
@@ -194,8 +196,9 @@
 				$("#getToleranceButton").addClass('is-static');
 				$("#getToleranceButton").removeClass('is-info');
 				$("#geneName").removeClass('is-success');
+				$(".hiddenTables").hide();
 				document.getElementById("geneNameHelpMessage").innerHTML = "";
-				
+				document.getElementById("advanced_checkbox").disabled = true;
 			}
 		</script>
 		<script>
