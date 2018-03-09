@@ -173,7 +173,6 @@ function loadDoc() {
 							}
 						}
 					}
-					// TODO: ensure proper link is retrieved here
 					xhttpD.open("GET", "{{ url_for('api.get_default_domains') }}" + "/" + gtID, true);
 					xhttpD.setRequestHeader("Content-type",
 							"application/x-www-form-urlencoded");
