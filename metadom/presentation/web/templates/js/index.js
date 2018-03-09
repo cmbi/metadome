@@ -96,6 +96,8 @@ function clearTranscripts() {
 	document.getElementById("advanced_checkbox").disabled = true;
 	document.getElementById("advanced_checkbox").checked = false;
 	$("#advanced_checkbox_control").addClass('is-hidden');
+	$("#download_tsv_button").addClass('is-hidden');
+	$("#download_svg_button").addClass('is-hidden');
 }
 
 function toggleAdvancedOpions(checkbox) {
@@ -138,9 +140,13 @@ function loadDoc() {
 					if (isEmpty(obj)) {
 						alert("Error wrong gencode transcription id, please try again");
 						d3.select("svg").selectAll("*").remove();
+						$("#download_tsv_button").addClass('is-hidden');
+						$("#download_svg_button").addClass('is-hidden');
 						$("#toleranceGraphContainer").addClass('is-hidden');
 					} else {
 						$("#toleranceGraphContainer").removeClass('is-hidden');
+						$("#download_tsv_button").removeClass('is-hidden');
+						$("#download_svg_button").removeClass('is-hidden');
 						createGraph(obj);
 					}
 				}
