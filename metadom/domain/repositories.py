@@ -29,6 +29,13 @@ class GeneRepository:
             _log.error("GeneRepository.retrieve_gene(transcription_id): Expected results but found none for transcription_id '"+str(transcription_id)+"'. "+e)
         return None
     
+class InterproRepository:
+    
+    @staticmethod
+    def get_pfam_domains_for_transcript(transcript_id):
+        # TODO: retrieve the domains for this transcript
+        pass
+    
 class PfamDomainAlignmentRepository:
     
     @staticmethod
