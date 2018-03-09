@@ -103,7 +103,7 @@ def compute_tolerance_landscape(gene_region, slidingWindow, min_frequency=0.0):
             total_synonymous_region_i = 0
             total_synonymous_background_region_i = 0
             
-            for j in range(int(region_i_start)-1, int(region_i_stop)):
+            for j in range(int(region_i_start), int(region_i_stop)):
                 total_missense_region_i += variant_type_counts[j]['missense']
                 total_missense_background_region_i += variant_type_counts[j]['background_missense']
                 total_synonymous_region_i += variant_type_counts[j]['synonymous']
