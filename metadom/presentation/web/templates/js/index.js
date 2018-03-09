@@ -118,17 +118,12 @@ function loadDoc() {
 		$("#loading_overlay").addClass('is-active');
 		var input = selection.options[selection.selectedIndex].text;
 		var gtID = input.toUpperCase();
-		var startPos = document.getElementById("startPos").value;
-		var endPos = document.getElementById("endPos").value;
 		var slidingWindow = document.getElementById("slidingWindow").value;
 		var frequency = document.getElementById("frequency").value;
 
 		var status = true;
-		if (gtID == "" || startPos == "" || endPos == "" || frequency == "") {
+		if (gtID == "" || frequency == "") {
 			status = false
-		}
-		if (parseInt(startPos) > parseInt(endPos)) {
-			status = false;
 		}
 		if (status) {
 
@@ -152,18 +147,11 @@ function loadDoc() {
 				}
 			};
 			if (typeof gtID !== 'undefined' && gtID.length > 0) {
-				var _tolerance_api_call = "/" + gtID + "/?slidingwindow="
-						+ slidingWindow + "&frequency=" + frequency
-				if (typeof startPos !== 'undefined' && startPos.length > 0) {
-					_tolerance_api_call += "&startpos=" + startPos;
-				}
-				if (typeof endPos !== 'undefined' && endPos.length > 0) {
-					_tolerance_api_call += "&endpos=" + endPos;
-				}
-
 				// the variable is defined
-				xhttp.open("GET", "{{ url_for('api.get_tolerance_landscape') }}"
-						+ _tolerance_api_call, true);
+				xhttp.open("GET",
+						"{{ url_for('api.get_tolerance_landscape') }}" + "/"
+								+ gtID + "/?slidingwindow=" + slidingWindow
+								+ "&frequency=" + frequency, true);
 				xhttp.setRequestHeader("Content-type",
 						"application/x-www-form-urlencoded");
 				xhttp.send();
@@ -180,7 +168,8 @@ function loadDoc() {
 							}
 						}
 					}
-					xhttpD.open("GET", "{{ url_for('api.get_pfam_domains') }}" + "/" + gtID, true);
+					xhttpD.open("GET", "{{ url_for('api.get_pfam_domains') }}"
+							+ "/" + gtID, true);
 					xhttpD.setRequestHeader("Content-type",
 							"application/x-www-form-urlencoded");
 					xhttpD.send();
@@ -198,7 +187,9 @@ function loadDoc() {
 							}
 						}
 					}
-					xhttpH.open("GET", "{{ url_for('api.get_HGMD_annotation') }}" + "/" + gtID, true);
+					xhttpH.open("GET",
+							"{{ url_for('api.get_HGMD_annotation') }}" + "/"
+									+ gtID, true);
 					xhttpH.setRequestHeader("Content-type",
 							"application/x-www-form-urlencoded");
 					xhttpH.send();
@@ -216,7 +207,9 @@ function loadDoc() {
 							}
 						}
 					}
-					xhttpC.open("GET", "{{ url_for('api.get_ClinVar_annotation') }}" + "/" + gtID, true);
+					xhttpC.open("GET",
+							"{{ url_for('api.get_ClinVar_annotation') }}" + "/"
+									+ gtID, true);
 					xhttpC.setRequestHeader("Content-type",
 							"application/x-www-form-urlencoded");
 					xhttpC.send();
