@@ -85,16 +85,14 @@ def get_gene_tolerance_no_end(transcript_id):
         
         return jsonify([{"geneName":gene_region.gene_name}, region_sliding_window])
     else:
-        abort(500)
+        return jsonify(str())
 
-    return jsonify(str())
-
-@bp.route('/pfam/domainsInGene', methods=['GET'])
+@bp.route('/gene/domainsInGene', methods=['GET'])
 def get_default_domains():
     """This endpoint is a stub, to ensure deeper endpoints may be used"""
     pass
 
-@bp.route('/pfam/domainsInGene/<transcript_id>', methods=['GET'])
+@bp.route('/gene/domainsInGene/<transcript_id>', methods=['GET'])
 def get_domains_for_transcript(transcript_id):
     # TODO: return as:
 #     return jsonify(InterproRepository.get_pfam_domains_for_transcript(transcript_id))
