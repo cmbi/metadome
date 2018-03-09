@@ -91,70 +91,72 @@
 
   <div class="container">
     <!-- Toggling advanced mode -->
-      <div class="field is-grouped">
-        <div class="control is-hidden" id="advanced_checkbox_control">
-          <label class="checkbox"> <input id="advanced_checkbox"
-            type="checkbox" disabled onclick="toggleAdvancedOpions(this)">
-            Advanced mode
-          </label>
-        </div>
-        <div class="control is-hidden" id="download_svg_button">
-          <button id='dlSVG'  name="downloadButton" type="button"
-            class="button is-info is-outlined"">Download Graph as SVG</button>
-        </div>
-        <div class="control is-hidden" id="download_tsv_button">
-          <button id='dlJSON'  name="downloadButton" type="button"
-            class="button is-info is-outlined"">Download data for Graph as TSV</button>
-        </div>
+    <div class="field is-grouped">
+      <div class="control is-hidden" id="advanced_checkbox_control">
+        <label class="checkbox"> <input id="advanced_checkbox"
+          type="checkbox" disabled onclick="toggleAdvancedOpions(this)">
+          Advanced mode
+        </label>
       </div>
-      
-      <!-- Advanced options -->
-      <div id="advanced_options" class="field is-hidden">
-      
-        <!-- Implement ExAC frequency filter -->
-        <div class="control">
-          <div class="label">ExAC frequency filter</div>
-          <input type="range" name="frequency" id="frequency"
-            value="0.0" min="0.0" max="1.0" step="0.0001" required />
-        </div>
-
-        <!-- Change the sliding window size -->
-        <div class="control">
-          <div class="label">
-            Sliding window (<span id="swPer"></span> of protein length)
-          </div>
-          <input type="range" name="slidingWindow" id="slidingWindow"
-            value="0.05" min="0" max="0.2" step="0.01" required />
-        </div>
-
-        <!-- Toggle ClinVar variant annotation -->
-        <div class="control">
-          <label class="checkbox"> <input id="clinvar"
-            type="checkbox" checked> Annotate <a
-            href="https://www.ncbi.nlm.nih.gov/clinvar/">ClinVar</a>
-            SNVs in Tolerance Landscape
-          </label>
-        </div>
-
-        <!-- Toggle HGMD variant annotation -->
-        <div class="control">
-          <label class="checkbox"> <input id="hgmd"
-            type="checkbox" checked> Annotate <a
-            href="http://www.hgmd.cf.ac.uk/ac/index.php">HGMD</a> SNVs
-            in Tolerance Landscape
-          </label>
-        </div>
-
-        <!-- Toggle PFAM domain annotation -->
-        <div class="control">
-          <label class="checkbox"> <input id="domain"
-            type="checkbox" checked> Annotate <a
-            href="https://pfam.xfam.org/">PFAM</a> domains below the
-            Tolerance Landscape
-          </label>
-        </div>
+      <div class="control is-hidden" id="download_svg_button">
+        <button id='dlSVG' name="downloadButton" type="button"
+          class="button is-info is-outlined"">Download Graph as
+          SVG</button>
+      </div>
+      <div class="control is-hidden" id="download_tsv_button">
+        <button id='dlJSON' name="downloadButton" type="button"
+          class="button is-info is-outlined"">Download data for
+          Graph as TSV</button>
       </div>
     </div>
+
+    <!-- Advanced options -->
+    <div id="advanced_options" class="field is-hidden">
+
+      <!-- Implement ExAC frequency filter -->
+      <div class="control">
+        <div class="label">ExAC frequency filter</div>
+        <input type="range" name="frequency" id="frequency" value="0.0"
+          min="0.0" max="1.0" step="0.0001" required />
+      </div>
+
+      <!-- Change the sliding window size -->
+      <div class="control">
+        <div class="label">
+          Sliding window (<span id="swPer"></span> of protein length)
+        </div>
+        <input type="range" name="slidingWindow" id="slidingWindow"
+          value="0.05" min="0" max="0.2" step="0.01" required />
+      </div>
+
+      <!-- Toggle ClinVar variant annotation -->
+      <div class="control">
+        <label class="checkbox"> <input id="clinvar"
+          type="checkbox" checked> Annotate <a
+          href="https://www.ncbi.nlm.nih.gov/clinvar/">ClinVar</a> SNVs
+          in Tolerance Landscape
+        </label>
+      </div>
+
+      <!-- Toggle HGMD variant annotation -->
+      <div class="control">
+        <label class="checkbox"> <input id="hgmd"
+          type="checkbox" checked> Annotate <a
+          href="http://www.hgmd.cf.ac.uk/ac/index.php">HGMD</a> SNVs in
+          Tolerance Landscape
+        </label>
+      </div>
+
+      <!-- Toggle PFAM domain annotation -->
+      <div class="control">
+        <label class="checkbox"> <input id="domain"
+          type="checkbox" checked> Annotate <a
+          href="https://pfam.xfam.org/">PFAM</a> domains below the
+          Tolerance Landscape
+        </label>
+      </div>
+    </div>
+  </div>
   </div>
 </section>
 
