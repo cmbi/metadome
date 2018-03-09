@@ -13,6 +13,7 @@ slider.oninput = function() {
 // Function to send AJAX request to the webserver to get all transcripts
 // belonging to a gene name
 function getTranscript() {
+	clearTranscripts();
 	var geneName = document.getElementById("geneName").value;
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function() {
@@ -155,7 +156,7 @@ function loadDoc() {
 				}
 
 				// the variable is defined
-				xhttp.open("GET", "{{ url_for('api.get_default_tolerance') }}"
+				xhttp.open("GET", "{{ url_for('api.get_tolerance_landscape') }}"
 						+ _tolerance_api_call, true);
 				xhttp.setRequestHeader("Content-type",
 						"application/x-www-form-urlencoded");
@@ -173,7 +174,7 @@ function loadDoc() {
 							}
 						}
 					}
-					xhttpD.open("GET", "{{ url_for('api.get_default_domains') }}" + "/" + gtID, true);
+					xhttpD.open("GET", "{{ url_for('api.get_pfam_domains') }}" + "/" + gtID, true);
 					xhttpD.setRequestHeader("Content-type",
 							"application/x-www-form-urlencoded");
 					xhttpD.send();
@@ -191,12 +192,7 @@ function loadDoc() {
 							}
 						}
 					}
-					// TODO: ensure proper link is retrieved here
-					xhttpH.open("GET",
-							"http://localhost:8080/ToleranceLandscape/hgmdServlet/?gtID="
-									+ gtID + "&startpos=" + startPos
-									+ "&endpos=" + endPos + "&slidingwindow="
-									+ slidingWindow + "", true);
+					xhttpH.open("GET", "{{ url_for('api.get_HGMD_annotation') }}" + "/" + gtID, true);
 					xhttpH.setRequestHeader("Content-type",
 							"application/x-www-form-urlencoded");
 					xhttpH.send();
