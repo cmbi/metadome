@@ -1,7 +1,7 @@
 import logging
 
 from flask import abort, Blueprint, jsonify, render_template
-from metadom.domain.repositories import GeneRepository, InterproRepository
+from metadom.domain.repositories import GeneRepository
 from builtins import Exception
 from metadom.domain.models.entities.gene_region import GeneRegion
 from flask.globals import request
@@ -84,9 +84,27 @@ def get_pfam_domains():
 
 @bp.route('/gene/getPfamDomains/<transcript_id>', methods=['GET'])
 def get_pfam_domains_for_transcript(transcript_id):
-    # TODO: return as:
-#     return jsonify(InterproRepository.get_pfam_domains_for_transcript(transcript_id))
-    return jsonify([{"ID": "PF00001", "Name": "test", "start":30, "stop":50, "domID":123}])
+    # Retrieve the gene from the database
+    gene = GeneRepository.retrieve_gene(transcript_id)
+     
+    Pfam_domains = []
+    if not gene is None:
+        # build the gene region
+        gene_region = GeneRegion(gene)
+        
+        for domain in gene_region.interpro_domains:
+            if domain.ext_db_id.startswith('PF'):
+                # we have a Pfam domain
+                pfam_domain = {}
+                pfam_domain["ID"] = domain.ext_db_id
+                pfam_domain["Name"] = domain.region_name
+                pfam_domain["start"] = domain.uniprot_start
+                pfam_domain["stop"] = domain.uniprot_stop
+                pfam_domain["domID"] = domain.id
+                
+                Pfam_domains.append(pfam_domain)
+
+    return jsonify(Pfam_domains)
 
 @bp.route('/gene/annotateHGMD', methods=['GET'])
 def get_HGMD_annotation():
