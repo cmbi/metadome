@@ -52,36 +52,24 @@ def get_tolerance_landscape():
 
 @bp.route('/gene/getToleranceLandscape/<transcript_id>/', methods=['GET'])
 def get_tolerance_landscape_for_transcript(transcript_id):
-    if 'slidingWindow' in request.args:
-        sliding_window = float(request.args['slidingWindow'])
-    else:
+    sliding_window = request.args.get('slidingwindow')
+    if sliding_window is None:
         sliding_window = 0.0
-    
-    if 'frequency' in request.args:
-        frequency = float(request.args['frequency'])
     else:
+        sliding_window = float(sliding_window)
+    
+    frequency = request.args.get('frequency')
+    if frequency is None:
         frequency = 0.0
-    
-    if 'startpos' in request.args:
-        start_pos = int(request.args['startpos'])
     else:
-        start_pos = None
-        
-    if 'endpos' in request.args:
-        end_pos = int(request.args['endpos'])
-        
-        # type check end pos
-        if end_pos <= 0:
-            end_pos = None
-    else:
-        end_pos = None
+        frequency = float(frequency)
     
     # Retrieve the gene from the database
     gene = GeneRepository.retrieve_gene(transcript_id)
     
     if not gene is None:
         # build the gene region
-        gene_region = GeneRegion(gene, start_pos, end_pos)
+        gene_region = GeneRegion(gene)
         
         region_sliding_window = compute_tolerance_landscape(gene_region, sliding_window, frequency)
         
