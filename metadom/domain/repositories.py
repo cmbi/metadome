@@ -32,10 +32,23 @@ class GeneRepository:
 class InterproRepository:
     
     @staticmethod
-    def get_pfam_domains_for_transcript(transcript_id):
-        # TODO: retrieve the domains for this transcript
-        pass
+    def get_domains_for_protein(protein_id):
+        return [interpro_domain for interpro_domain in db.session.query(Interpro).filter(Interpro.protein_id == protein_id).all()]
     
+class ProteinRepository:
+    
+    @staticmethod
+    def retrieve_protein(protein_id):
+        try:
+            protein = db.session.query(Protein).filter(Protein.id == protein_id).one()
+            return protein
+        except MultipleResultsFound as e:
+            _log.error("ProteinRepository.retrieve_protein(protein_id): Multiple results found while expecting uniqueness for protein_id '"+str(protein_id)+"'. "+e)
+        except NoResultFound as  e:
+            _log.error("ProteinRepository.retrieve_protein(protein_id): Expected results but found none for protein_id '"+str(protein_id)+"'. "+e)
+        return None
+        return 
+
 class PfamDomainAlignmentRepository:
     
     @staticmethod

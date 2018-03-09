@@ -1,4 +1,4 @@
-from metadom.domain.repositories import MappingRepository
+from metadom.domain.repositories import MappingRepository, ProteinRepository, InterproRepository
 
 import numpy as np
 
@@ -26,6 +26,10 @@ class GeneRegion(object):
     protein_region_stop       int of stop of the region
     protein_region_length     int representing the region length based on the amino acid sequence
     cDNA_region_length        int representing the region length based on the cDNA sequence
+    protein_id                int identifier corresponding to the protein id in the database
+    uniprot_ac                str representing the region's uniprot accession code
+    uniprot_name              str representing the region's uniprot name
+    interpro_domains          list containing interpro domains (models.interpro.Interpro)
     regions                   list of regions
     mappings_per_chromosome   dictionary of mappings per chromosome positions; {POS: models.mapping.Mapping}
     """
@@ -37,6 +41,10 @@ class GeneRegion(object):
     protein_region_stop = int()
     protein_region_length = int()
     cDNA_region_length = int()
+    protein_id = int()
+    uniprot_ac = str()
+    uniprot_name = str()
+    interpro_domains = []
     regions = []
     mappings_per_chromosome = dict()
     
@@ -91,6 +99,25 @@ class GeneRegion(object):
         for cDNA_position in sorted( _mappings.keys(), key=lambda x: int(x) ):
             _mapping = _mappings[cDNA_position]
             
+            # retrieve the protein id and set the uniprot ac and name  
+            if self.uniprot_ac == str():
+                # retrieve the protein id
+                _protein = ProteinRepository.retrieve_protein(_mapping.Mapping.protein_id)
+                
+                # set the uniprot ac and name
+                self.protein_id = _protein.id
+                self.uniprot_ac = _protein.uniprot_ac
+                self.uniprot_name = _protein.uniprot_name
+                self.interpro_domains = InterproRepository.get_domains_for_protein(self.protein_id)
+                
+                
+            else:
+                # type check protein id
+                if self.protein_id !=  _mapping.Mapping.protein_id:
+                    raise MalformedGeneRegionException("For transcript '"+str(self.gencode_transcription_id)+
+                                                       "': Found mappings for a single transcript aligned to multiple different proteins")
+
+
             # test if we already set the chromosome
             if self.chr == str():
                 self.chr = _mapping.chromosome
