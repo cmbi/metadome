@@ -109,7 +109,6 @@ function toggleAdvancedOpions(checkbox) {
 // Function to get the data from the inputfield and send AJAX requests to the
 // webserver, returning arrays with json objects.
 function loadDoc() {
-	var go = false;
 	var selection = document.getElementsByClassName("dropdown")[0];
 	if (isEmpty(selection)) {
 	} else {
@@ -142,7 +141,6 @@ function loadDoc() {
 					} else {
 						$("#toleranceGraphContainer").removeClass('is-hidden');
 						createGraph(obj);
-						go = true;
 					}
 				}
 			};
@@ -163,7 +161,7 @@ function loadDoc() {
 						"application/x-www-form-urlencoded");
 				xhttp.send();
 
-				if ($("#domain").is(":checked") && go) {
+				if ($("#domain").is(":checked")) {
 					var xhttpD = new XMLHttpRequest();
 					xhttpD.onreadystatechange = function() {
 						if (this.readyState == 4 && this.status == 200) {
@@ -176,17 +174,13 @@ function loadDoc() {
 						}
 					}
 					// TODO: ensure proper link is retrieved here
-					xhttpD.open("GET",
-							"http://localhost:8080/ToleranceLandscape/domainServlet/?gtID="
-									+ gtID + "&startpos=" + startPos
-									+ "&endpos=" + endPos + "&slidingwindow="
-									+ slidingWindow + "", true);
+					xhttpD.open("GET", "{{ url_for('api.get_default_domains') }}" + "/" + gtID, true);
 					xhttpD.setRequestHeader("Content-type",
 							"application/x-www-form-urlencoded");
 					xhttpD.send();
 				}
 
-				if ($("#hgmd").is(":checked") && go) {
+				if ($("#hgmd").is(":checked")) {
 					var xhttpH = new XMLHttpRequest();
 					xhttpH.onreadystatechange = function() {
 						if (this.readyState == 4 && this.status == 200) {
@@ -209,7 +203,7 @@ function loadDoc() {
 					xhttpH.send();
 				}
 
-				if ($("#clinvar").is(":checked") && go) {
+				if ($("#clinvar").is(":checked")) {
 					var xhttpC = new XMLHttpRequest();
 					xhttpC.onreadystatechange = function() {
 						if (this.readyState == 4 && this.status == 200) {
