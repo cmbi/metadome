@@ -7,6 +7,8 @@ from metadom.domain.models.entities.gene_region import GeneRegion
 from flask.globals import request
 import traceback
 from metadom.domain.services.computation.gene_region_computations import compute_tolerance_landscape
+from metadom.domain.services.annotation.annotation import annotateSNVs
+from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithHGMDData
 
 _log = logging.getLogger(__name__)
 
@@ -43,13 +45,13 @@ def get_transcript_ids_for_gene(gene_name):
     
     return jsonify(trancript_ids=trancript_ids, message=message)
 
-@bp.route('/gene/geneTolerance', methods=['GET'])
-def get_default_tolerance():
+@bp.route('/gene/getToleranceLandscape', methods=['GET'])
+def get_tolerance_landscape():
     """This endpoint is a stub, to ensure deeper endpoints may be used"""
     pass
 
-@bp.route('/gene/geneTolerance/<transcript_id>/', methods=['GET'])
-def get_gene_tolerance_no_end(transcript_id):
+@bp.route('/gene/getToleranceLandscape/<transcript_id>/', methods=['GET'])
+def get_tolerance_landscape_for_transcript(transcript_id):
     if 'slidingWindow' in request.args:
         sliding_window = float(request.args['slidingWindow'])
     else:
@@ -87,16 +89,45 @@ def get_gene_tolerance_no_end(transcript_id):
     else:
         return jsonify(str())
 
-@bp.route('/gene/domainsInGene', methods=['GET'])
-def get_default_domains():
+@bp.route('/gene/getPfamDomains', methods=['GET'])
+def get_pfam_domains():
     """This endpoint is a stub, to ensure deeper endpoints may be used"""
     pass
 
-@bp.route('/gene/domainsInGene/<transcript_id>', methods=['GET'])
-def get_domains_for_transcript(transcript_id):
+@bp.route('/gene/getPfamDomains/<transcript_id>', methods=['GET'])
+def get_pfam_domains_for_transcript(transcript_id):
     # TODO: return as:
 #     return jsonify(InterproRepository.get_pfam_domains_for_transcript(transcript_id))
     return jsonify([{"ID": "PF00001", "Name": "test", "start":30, "stop":50, "domID":123}])
+
+@bp.route('/gene/annotateHGMD', methods=['GET'])
+def get_HGMD_annotation():
+    """This endpoint is a stub, to ensure deeper endpoints may be used"""
+    pass
+
+@bp.route('/gene/annotateHGMD/<transcript_id>', methods=['GET'])
+def get_HGMD_annotation_for_transcript(transcript_id):
+    # Retrieve the gene from the database
+    gene = GeneRepository.retrieve_gene(transcript_id)
+     
+    HGMD_variants = []
+    if not gene is None:
+        # build the gene region
+        gene_region = GeneRegion(gene)
+         
+        HGMD_annotation = annotateSNVs(annotateTranscriptWithHGMDData, gene_region)
+        
+        for chrom_pos in HGMD_annotation.keys():
+            for variant in HGMD_annotation[chrom_pos]:
+                HGMD_variant = {}
+                HGMD_variant['pos'] = gene_region.mappings_per_chromosome[chrom_pos].uniprot_position
+                HGMD_variant['ref'] = variant['REF']
+                HGMD_variant['alt'] = variant['ALT']
+                
+                HGMD_variants.append(HGMD_variant)
+
+    return jsonify(HGMD_variants)
+
 
 # # GET /api/chromosome/:id
 # @bp.route('/chromosome/<string:chromosome_id>', methods=['GET'])
