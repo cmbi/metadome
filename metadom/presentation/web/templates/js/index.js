@@ -210,12 +210,7 @@ function loadDoc() {
 							}
 						}
 					}
-					// TODO: ensure proper link is retrieved here
-					xhttpC.open("GET",
-							"http://localhost:8080/ToleranceLandscape/clinvarServlet/?gtID="
-									+ gtID + "&startpos=" + startPos
-									+ "&endpos=" + endPos + "&slidingwindow="
-									+ slidingWindow + "", true);
+					xhttpC.open("GET", "{{ url_for('api.get_ClinVar_annotation') }}" + "/" + gtID, true);
 					xhttpC.setRequestHeader("Content-type",
 							"application/x-www-form-urlencoded");
 					xhttpC.send();
