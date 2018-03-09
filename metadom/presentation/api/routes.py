@@ -8,7 +8,7 @@ from flask.globals import request
 import traceback
 from metadom.domain.services.computation.gene_region_computations import compute_tolerance_landscape
 from metadom.domain.services.annotation.annotation import annotateSNVs
-from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithHGMDData
+from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithHGMDData, annotateTranscriptWithClinvarData
 
 _log = logging.getLogger(__name__)
 
@@ -128,6 +128,33 @@ def get_HGMD_annotation_for_transcript(transcript_id):
 
     return jsonify(HGMD_variants)
 
+@bp.route('/gene/annotateClinVar', methods=['GET'])
+def get_ClinVar_annotation():
+    """This endpoint is a stub, to ensure deeper endpoints may be used"""
+    pass
+
+@bp.route('/gene/annotateClinVar/<transcript_id>', methods=['GET'])
+def get_ClinVar_annotation_for_transcript(transcript_id):
+    # Retrieve the gene from the database
+    gene = GeneRepository.retrieve_gene(transcript_id)
+     
+    ClinVar_variants = []
+    if not gene is None:
+        # build the gene region
+        gene_region = GeneRegion(gene)
+         
+        ClinVar_annotation = annotateSNVs(annotateTranscriptWithClinvarData, gene_region)
+        
+        for chrom_pos in ClinVar_annotation.keys():
+            for variant in ClinVar_annotation[chrom_pos]:
+                ClinVar_variant = {}
+                ClinVar_variant['pos'] = gene_region.mappings_per_chromosome[chrom_pos].uniprot_position
+                ClinVar_variant['ref'] = variant['REF']
+                ClinVar_variant['alt'] = variant['ALT']
+                
+                ClinVar_variants.append(ClinVar_variant)
+
+    return jsonify(ClinVar_variants)
 
 # # GET /api/chromosome/:id
 # @bp.route('/chromosome/<string:chromosome_id>', methods=['GET'])
