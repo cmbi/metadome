@@ -1,7 +1,7 @@
 import logging
 
 from flask import abort, Blueprint, jsonify, render_template
-from metadom.domain.repositories import GeneRepository
+from metadom.domain.repositories import GeneRepository, InterproRepository
 from builtins import Exception
 from metadom.domain.models.entities.gene_region import GeneRegion
 from flask.globals import request
@@ -42,7 +42,6 @@ def get_transcript_ids_for_gene(gene_name):
         message = "No transcripts available for gene '"+gene_name+"'"
     
     return jsonify(trancript_ids=trancript_ids, message=message)
-
 
 @bp.route('/gene/geneTolerance', methods=['GET'])
 def get_default_tolerance():
@@ -90,46 +89,56 @@ def get_gene_tolerance_no_end(transcript_id):
 
     return jsonify(str())
 
-
-# GET /api/chromosome/:id
-@bp.route('/chromosome/<string:chromosome_id>', methods=['GET'])
-def get_mapping_via_chr_pos(chromosome_id):
-    pass
-#     if len(locus) == 0:
-#         abort(404)
-#     return jsonify({'locus': locus[0]})
-
-# GET /api/mapping/:id
-@bp.route('/mapping/<string:mapping_id>', methods=['GET'])
-def get_mapping_via_id(mapping_id):
+@bp.route('/pfam/domainsInGene', methods=['GET'])
+def get_default_domains():
+    """This endpoint is a stub, to ensure deeper endpoints may be used"""
     pass
 
-# GET /api/gene/:id
-@bp.route('/gene/<string:gene_id>', methods=['GET'])
-def get_mapping_via_gene_id(gene_id):
-    pass
+@bp.route('/pfam/domainsInGene/<transcript_id>', methods=['GET'])
+def get_domains_for_transcript(transcript_id):
+    # TODO: return as:
+#     return jsonify(InterproRepository.get_pfam_domains_for_transcript(transcript_id))
+    return jsonify([{"ID": "PF00001", "Name": "test", "start":30, "stop":50, "domID":123}])
 
-
-# GET /api/protein/:id
-@bp.route('/protein/<string:protein_id>', methods=['GET'])
-def get_mapping_via_protein_id(protein_id):
-    pass
-
-# GET /api/pfam/:id
-@bp.route('/pfam/<string:pfam_id>', methods=['GET'])
-def get_mapping_via_pfam_id(pfam_id):
-#     for x in session.query(Mapping).join(Interpro).filter(Interpro.pfam_id == pfam_id):
-#         for y in session.query(Chromosome).filter(Chromosome.id == x.chromosome_id):
-#             print(y,x)
-    pass
-
-# GET /api/pfam/:id/:position
-@bp.route('/pfam/<string:pfam_id>/<int:position>', methods=['GET'])
-def get_mapping_via_pfam_position(pfam_id, position):
-#     for x in session.query(Mapping).join(Interpro).filter(and_(Mapping.pfam_consensus_position==position, Interpro.pfam_id == pfam_id)):
-#         for y in session.query(Chromosome).filter(Chromosome.id == x.chromosome_id):
-#             print(y,x)
-    pass
+# # GET /api/chromosome/:id
+# @bp.route('/chromosome/<string:chromosome_id>', methods=['GET'])
+# def get_mapping_via_chr_pos(chromosome_id):
+#     pass
+# #     if len(locus) == 0:
+# #         abort(404)
+# #     return jsonify({'locus': locus[0]})
+# 
+# # GET /api/mapping/:id
+# @bp.route('/mapping/<string:mapping_id>', methods=['GET'])
+# def get_mapping_via_id(mapping_id):
+#     pass
+# 
+# # GET /api/gene/:id
+# @bp.route('/gene/<string:gene_id>', methods=['GET'])
+# def get_mapping_via_gene_id(gene_id):
+#     pass
+# 
+# 
+# # GET /api/protein/:id
+# @bp.route('/protein/<string:protein_id>', methods=['GET'])
+# def get_mapping_via_protein_id(protein_id):
+#     pass
+# 
+# # GET /api/pfam/:id
+# @bp.route('/pfam/<string:pfam_id>', methods=['GET'])
+# def get_mapping_via_pfam_id(pfam_id):
+# #     for x in session.query(Mapping).join(Interpro).filter(Interpro.pfam_id == pfam_id):
+# #         for y in session.query(Chromosome).filter(Chromosome.id == x.chromosome_id):
+# #             print(y,x)
+#     pass
+# 
+# # GET /api/pfam/:id/:position
+# @bp.route('/pfam/<string:pfam_id>/<int:position>', methods=['GET'])
+# def get_mapping_via_pfam_position(pfam_id, position):
+# #     for x in session.query(Mapping).join(Interpro).filter(and_(Mapping.pfam_consensus_position==position, Interpro.pfam_id == pfam_id)):
+# #         for y in session.query(Chromosome).filter(Chromosome.id == x.chromosome_id):
+# #             print(y,x)
+#     pass
 
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover
