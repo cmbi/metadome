@@ -1,13 +1,9 @@
 /**
  * Controls all responsiveness for the index.html page
  */
-
-var slider = document.getElementById("slidingWindow");
-var swpercentage = document.getElementById("swPer");
-swpercentage.innerHTML = (slider.value) * 100 + "%";
-
-slider.oninput = function() {
-	swpercentage.innerHTML = (this.value) * 100 + "%";
+function updateSlidingwindowPercentage(slider){
+	var swpercentage = document.getElementById("swPer");
+	swpercentage.innerHTML = Math.round(slider.value * 100) + "%";
 }
 
 // Function to send AJAX request to the webserver to get all transcripts
