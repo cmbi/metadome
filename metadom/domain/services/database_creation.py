@@ -5,18 +5,12 @@ from metadom.domain.infrastructure import add_gene_mapping_to_database,\
 from metadom.domain.models.protein import Protein
 from metadom.domain.models.interpro import get_all_Pfam_identifiers
 from metadom.domain.wrappers.gencode import retrieve_all_protein_coding_gene_names
-from sklearn.externals.joblib.parallel import Parallel, cpu_count, delayed
+from metadom.domain.services.multi_threading import CalculateNumberOfActiveThreads
+from sklearn.externals.joblib.parallel import Parallel, delayed
+
 import logging
 
 _log = logging.getLogger(__name__)
-
-def CalculateNumberOfActiveThreads(numberOfTasks):
-    if(cpu_count() == 2):
-        return cpu_count()
-    elif numberOfTasks < cpu_count():
-        return numberOfTasks
-    else:
-        return cpu_count()
 
 def create_db():
     # initialize custom logging framework
@@ -24,14 +18,14 @@ def create_db():
 
     # the genes that are to be checked
     genes_of_interest = retrieve_all_protein_coding_gene_names()
- 
+   
     # (re-) construct the mapping database  => GENE2PROTEIN_MAPPING_DB
     generate_mappings_for_genes(genes_of_interest, batch_size=10, use_parallel=True)
-            
+              
     for protein in Protein.query.all():
         # generate all pfam domain to swissprot mappings
         annotate_interpro_domains_to_proteins(protein)
-       
+          
     for pfam_domain_id in get_all_Pfam_identifiers():
         # generate alignments and mappings based on protein domains
         generate_pfam_alignment_mappings(pfam_domain_id)
