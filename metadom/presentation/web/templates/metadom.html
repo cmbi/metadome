@@ -1,18 +1,104 @@
-{% extends "base.html" %}
-{% block page_title %}
-  <h1 class="title">Meta-domains</h1>
-  <h2 class="subtitle">Make use of domain-homology to interpret genetic variants</h2>
-{% endblock %}
-{% block content %}
+{% extends "base.html" %} {% block page_title %}
+<h1 class="title">Meta-domains</h1>
+<h2 class="subtitle">Make use of domain-homology to interpret
+  genetic variants</h2>
+{% endblock %} {% block content %}
 
 <!-- Scripts needed for functionality on this page -->
+<script src="{{ url_for('web.metadom_js') }}"></script>
 
 <!-- Custom stylesheet for this page -->
 
 <!-- Staring definition of site content -->
 <section class="section">
   <div class="container">
-    <h1 class="title" style="color: #00AFDC;">CONTENT</h1>
+    <h1>View a single meta domain based on URL; vb: http://127.0.0.1:5000/metadom/ABCA4/domain1</h1>
+    <h2>Which gene; which strand</h2>
+    <h2>protein domain length</h2>
+    <h2>domain instances in hg19</h2>
+    <h2>aligned instances</h2>
+    <h2>n_genes containing this domain</h2>
+    <table class="table is-hoverable is-fullwidth">
+      <thead>
+        <tr>
+          <th><abbr title="Chromosome positions for the codon">Chromosome positions</abbr></th>
+          <th><abbr title="Position in protein">Protein position</abbr></th>
+          <th><abbr title="Position based on the Pfam protein domain">Consensus position</abbr></th>
+          <th><abbr title="Percentage of positions that can be aligned throughout the human genome">Alignment %</abbr></th>
+          <th><abbr title="Relative entropy as measured via Pfam full alignments">Pfam entropy</abbr></th>
+          <th><abbr title="Relative entropy as measured solely via homology relations in the human genome, incorporating ExAC variants">ExAC entropy</abbr></th>
+          <th><abbr title="Number of missense variants found in ExAC at this domain position">Meta ExAC missense </abbr></th>
+          <th><abbr title="Number of missense variants found in HGMD at this domain position">Meta HGMD missense </abbr></th>
+          <th><abbr title="Identifiers for the variants found in ExAC at this domain position">ExAC identifiers</abbr></th>
+          <th><abbr title="Identifiers for the variants found in HGMD at this domain position">HGMD identfiers </abbr></th>
+        </tr>
+      </thead>
+      <tfoot>
+        <tr>
+          <th><abbr title="Chromosome positions for the codon">Chromosome positions</abbr></th>
+          <th><abbr title="Position in protein">Protein position</abbr></th>
+          <th><abbr title="Position based on the Pfam protein domain">Consensus position</abbr></th>
+          <th><abbr title="Percentage of positions that can be aligned throughout the human genome">Alignment %</abbr></th>
+          <th><abbr title="Relative entropy as measured via Pfam full alignments">Pfam entropy</abbr></th>
+          <th><abbr title="Relative entropy as measured solely via homology relations in the human genome, incorporating ExAC variants">ExAC entropy</abbr></th>
+          <th><abbr title="Number of missense variants found in ExAC at this domain position">Meta ExAC missense </abbr></th>
+          <th><abbr title="Number of missense variants found in HGMD at this domain position">Meta HGMD missense </abbr></th>
+          <th><abbr title="Identifiers for the variants found in ExAC at this domain position">ExAC identifiers</abbr></th>
+          <th><abbr title="Identifiers for the variants found in HGMD at this domain position">HGMD identfiers </abbr></th>
+        </tr>
+      </tfoot>
+      <tbody id="domainTable">
+        <tr id="row1"
+          onclick='$("[id^=row]").removeClass("is-selected");$("#row1").addClass("is-selected")'>
+          <th>1</th>
+          <td><a
+            href="https://en.wikipedia.org/wiki/Leicester_City_F.C."
+            title="Leicester City F.C.">Leicester City</a> <strong>(C)</strong>
+          </td>
+          <td>38</td>
+          <td>23</td>
+          <td>12</td>
+          <td>3</td>
+          <td>68</td>
+          <td>36</td>
+          <td>+32</td>
+          <td>81</td>
+          <td>Qualification for the <a
+            href="https://en.wikipedia.org/wiki/2016%E2%80%9317_UEFA_Champions_League#Group_stage"
+            title="2016–17 UEFA Champions League">Champions League
+              group stage</a></td>
+        </tr>
+        <tr id="row2"
+          onclick='$("[id^=row]").removeClass("is-selected");$("#row2").addClass("is-selected")'>
+          <th>1</th>
+          <td><a
+            href="https://en.wikipedia.org/wiki/Leicester_City_F.C."
+            title="Leicester City F.C.">Leicester City</a> <strong>(C)</strong>
+          </td>
+          <td>38</td>
+          <td>23</td>
+          <td>12</td>
+          <td>3</td>
+          <td>68</td>
+          <td>36</td>
+          <td>+32</td>
+          <td>81</td>
+          <td>Qualification for the <a
+            href="https://en.wikipedia.org/wiki/2016%E2%80%9317_UEFA_Champions_League#Group_stage"
+            title="2016–17 UEFA Champions League">Champions League
+              group stage</a></td>
+        </tr>
+
+      </tbody>
+    </table>
+    <div class="field">
+      <div class="field has-addons">
+        <div class="control">
+          <button class="button is-info" onclick="clearTable()">
+            Clear Table</button>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
