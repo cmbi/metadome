@@ -1,4 +1,9 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %}
+{% block page_title %}
+  <h1 class="title">Tolerance Landscape</h1>
+  <h2 class="subtitle">Generate a gene tolerance landscape</h2>
+{% endblock %}
+{% block content %}
 
 <!-- Scripts needed for functionality on this page -->
 <script src="{{ url_for('static', filename='js/d3-save-svg.min.js') }}"></script>
@@ -7,7 +12,7 @@
 <script src="{{ url_for('static', filename='js/toleranceLandscape/graphAdditions.js') }}"></script>
 <script src="{{ url_for('static', filename='js/toleranceLandscape/downloadmethods.js') }}"></script>
 <script src="{{ url_for('static', filename='js/toleranceLandscape/createGraph.js') }}"></script>
-<script src="{{ url_for('web.index_js') }}"></script>
+<script src="{{ url_for('web.tolerance_js') }}"></script>
 
 <!-- Custom stylesheet for this page -->
 <link rel="stylesheet"
@@ -16,8 +21,6 @@
 <!-- Staring definition of site content -->
 <section class="section">
   <div class="container">
-    <h1 class="title" style="color: #00AFDC;">Generate a gene
-      tolerance landscape</h1>
     <div id="content">
       <!-- Loading screen -->
       <div class="modal" id="loading_overlay">

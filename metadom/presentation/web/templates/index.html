@@ -1,0 +1,13 @@
+{% extends "base.html" %} {% block content %}
+
+<!-- Staring definition of site content -->
+<section class="section">
+  <div class="container">
+    <h1 class="title" style="color: #00AFDC;">Generate a gene
+      <a href="{{ url_for('web.tolerance') }}">tolerance landscape</a></h1>
+    <h1 class="title" style="color: #00AFDC;">Retrieve 
+      <a href="{{ url_for('web.metadom') }}">meta-domains</a></h1>
+  </div>
+</section>
+
+{% endblock %} {% block js %} {% endblock %}
