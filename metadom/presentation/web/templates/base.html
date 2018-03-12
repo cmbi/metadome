@@ -20,9 +20,8 @@
 <body class="modal-body">
 	<nav class="navbar ">
 		<div class="navbar-brand">
-			<a class="navbar-item" href="{{ url_for('web.index') }}"> <img
-				src="{{ url_for('static', filename='img/logo.png') }}"
-				alt="MetaDom: Using domain-homology to interpret genetic variants">
+			<a class="navbar-item" href="https://www.radboudumc.nl/en/research" target="_blank"> <img
+				src="{{ url_for('static', filename='img/logo.png') }}">
 			</a>
 
 			<div class="navbar-burger burger" data-target="navMenuExample">
@@ -34,7 +33,6 @@
 			<div class="navbar-start">
 				
 				<div class=navbar-item><a class="link is-info" href="{{ url_for('web.index') }}">Home</a></div>
-				<div class=navbar-item><a class="link is-info" href="{{ url_for('web.help') }}">Help</a></div>
 				<div class=navbar-item><a class="link is-info" href="{{ url_for('web.about') }}">About</a></div>
 				<div class=navbar-item><a class="link is-info" href="{{ url_for('web.contact') }}">Contact</a></div>
 				<div class="navbar-item has-dropdown is-hoverable">
