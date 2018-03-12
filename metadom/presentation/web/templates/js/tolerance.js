@@ -144,6 +144,10 @@ function loadDoc() {
 						$("#toleranceGraphContainer").removeClass('is-hidden');
 						$("#download_tsv_button").removeClass('is-hidden');
 						$("#download_svg_button").removeClass('is-hidden');
+						var geneName = document.getElementById("geneName").value;
+						var geneDetails = document.getElementById("geneDetails");
+						geneDetails.innerHTML = '<div class="label"><label class="label">'+geneName+' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='+gtID+'" target="_blank">'+gtID+'</a>)</label></div>';
+						
 						createGraph(obj);
 					}
 				}
