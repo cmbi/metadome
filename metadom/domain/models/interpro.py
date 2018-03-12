@@ -1,5 +1,7 @@
 from metadom.database import db
 from metadom.domain.models.protein import Protein
+from metadom.domain.models.mapping import Mapping
+from metadom.domain.models.pfam_domain_alignment import PfamDomainAlignment
 
 def get_all_Pfam_identifiers():
     for domain_entry in Interpro.query.filter(Interpro.ext_db_id.like('PF%')).distinct(Interpro.ext_db_id):
@@ -46,9 +48,31 @@ class Interpro(db.Model):
     __table_args__ = (db.UniqueConstraint('protein_id', 'ext_db_id', 'uniprot_start', 'uniprot_stop', name='_unique_protein_region'),
                      )
     
-    def get_alignment(self):
-        # TODO: create this method
-        pass
+    
+#     def get_domain_alignment(self):
+#         aligned_residues = Mapping.query.join(PfamDomainAlignment).filter(\
+#             (Mapping.id == PfamDomainAlignment.mapping_id) &\
+#             (PfamDomainAlignment.domain_id == self.id)).all()
+#         
+#         return aligned_residues
+# #         mappings = {x.uniprot_position:x.uniprot_residue for x in Mapping.query.filter_by(protein_id = self.id).all()}
+# #         for key in sorted(mappings):
+# #             if region_start-1 <= key < region_stop:
+# #                 
+# #             if skip_asterix_at_end and key is None:
+# #                 continue
+# #             _aa_sequence+= mappings[key]
+# #         return _aa_sequence
+#     
+#     def get_domain_alignment(self):
+#         return PfamDomainAlignment.query.filter_by(domain_id = self.id).all()
+#     
+#     def get_pfam_alignment(self):
+#         alignments = PfamDomainAlignment.query.filter_by(domain_id = self.id)
+#         print(alignments)
+# #         
+# #         
+# #         return PfamDomainAlignment.query.filter_by(domain_id = self.id)
     
     def get_protein(self):
         return Protein.query.filter_by(id = self.protein_id).first()

@@ -54,24 +54,32 @@ PFAM_ALIGNMENT_DIR = PFAM_DIR+"/alignment/"
 PFAM_HMM_DAT = PFAM_DIR+"/Pfam-A.hmm.dat.gz"
 PFAM_HMM = PFAM_DIR+"/Pfam-A.hmm"
 
+# Exac specific files
+EXAC_DIR = DATA_DIR + "ExAC/release1.0/"
+EXAC_VCF_FILE = EXAC_DIR + "ExAC.r1.sites.vep.vcf.gz"
+EXAC_ACCEPTED_FILTERS = ['PASS']
 
+## TODO: create filter based on ExAC r1.0
+#HGMD specific files
+HGMD_DIR = DATA_DIR + 'HGMD/HGMD_PRO_2016.2/2016.2/'
+HGMD_ORIGINAL_VCF_FILE = HGMD_DIR + "HGMD_PRO_2016.2_hg19_edited_format_errors.vcf.gz"
+HGMD_FILTERED_VCF_FILE = HGMD_DIR + 'HGMD_PRO_2016.2_hg19.snv.filtered_ExAC.r0.3.1.pass.0.001AF.vcf.gz'
+HGMD_VCF_FILE = HGMD_FILTERED_VCF_FILE
+HGMD_CONSIDERED_CLASSES = ['DM']
+
+## TODO: create filter based on ExAC r1.0
+# ClinVar specific files
+CLINVAR_DIR = DATA_DIR + 'ClinVar/GRCh37/20170615_vcf_2.0/'
+CLINVAR_ORIGINAL_VCF_FILE = CLINVAR_DIR + 'clinvar.vcf.gz'
+CLINVAR_FILTERED_VCF_FILE = CLINVAR_DIR + 'clinvar.snv.filtered_ExAC.r0.3.1.pass.0.001AF.vcf.gz'
+CLINVAR_VCF_FILE = CLINVAR_FILTERED_VCF_FILE
+CLINVAR_CONSIDERED_CLINSIG = ['Pathogenic']
 
 # # Configuration
 # MINIMAL_BLASTPE_VALUE = 0.01
 # MINIMAL_TRANSLATION_TO_STRUCTURE_PIDENT_VALUE = 95.0
 # MINIMAL_XRAY_STRUCTURE_RESOLUTION = 4.0
 # 
-# # Exac specific files
-# EXAC_DIR = DATA_DIR + "Exac/release0.3.1/"
-# EXAC_VCF_FILE = EXAC_DIR + "ExAC.r0.3.1.sites.vep.vcf.gz"
-# EXAC_TBI_FILE = EXAC_VCF_FILE + ".tbi"
-# EXAC_ACCEPTED_FILTERS = ['PASS']
-# 
-# #HGMD specific files
-# HGMD_DIR = DATA_DIR + 'HGMD/HGMD_PRO_2016.2/2016.2/'
-# HGMD_VCF_FILE = HGMD_DIR + "HGMD_PRO_2016.2_hg19.vcf.gz"
-# HGMD_TBI_FILE = HGMD_VCF_FILE + ".tbi"
-# HGMD_CONSIDERED_CLASSES = ['DM']
 # 
 # # PDB specific files
 # PDB_DIR = DATA_DIR+"PDB"

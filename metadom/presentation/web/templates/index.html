@@ -1,13 +1,152 @@
 {% extends "base.html" %} {% block content %}
-<section class="hero">
-	<div class="hero-body">
-		<div class="container">
-			<h1 class="title">Metadom</h1>
-			<h2 class="subtitle">Metadomains like you've never seen them
-				before!</h2>
-			<a class="button" href="{{ url_for('web.input') }}">Start Here!</a>
-		</div>
-	</div>
+
+<!-- Scripts needed for functionality on this page -->
+<script src="{{ url_for('static', filename='js/d3-save-svg.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/FileSaver.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/d3-tip.js') }}"></script>
+<script src="{{ url_for('static', filename='js/toleranceLandscape/graphAdditions.js') }}"></script>
+<script src="{{ url_for('static', filename='js/toleranceLandscape/downloadmethods.js') }}"></script>
+<script src="{{ url_for('static', filename='js/toleranceLandscape/createGraph.js') }}"></script>
+<script src="{{ url_for('web.index_js') }}"></script>
+
+<!-- Custom stylesheet for this page -->
+<link rel="stylesheet"
+  href="{{ url_for('static', filename='css/tolerance_graph.css') }}">
+
+<!-- Staring definition of site content -->
+<section class="section">
+  <div class="container">
+    <h1 class="title" style="color: #00AFDC;">Generate a gene
+      tolerance landscape</h1>
+    <div id="content">
+      <!-- Loading screen -->
+      <div class="modal" id="loading_overlay">
+        <div class="modal-content is-shadowless"
+          style="position: absolute; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.5);">
+          <img src="{{ url_for('static', filename='img/loading.gif') }}"
+            style="display: block; margin: auto;">
+        </div>
+      </div>
+      <button class="modal-close is-large" aria-label="close"></button>
+    </div>
+
+    <!-- Tolerance landscape form -->
+    <div class="field">
+
+      <!-- Gene name input -->
+      <div class="field has-addons">
+        <div class="control is-expanded">
+          <input class="input is-fullwidth" type="text" name="geneName"
+            id="geneName" size="20"
+            placeholder="Type here your gene name of interest" required />
+        </div>
+        <div class="control">
+          <button class="button is-info" onclick="getTranscript()">
+            Get transcripts</button>
+        </div>
+      </div>
+      <div id="geneNameHelpMessage" class="help"></div>
+
+      <!-- Transcript selection -->
+      <div class="field has-addons">
+        <div class="control is-expanded">
+          <div class="select is-fullwidth">
+            <select name="gtID" id="gtID" required disabled>
+              <option value="" disabled selected hidden>Please
+                first retrieve the transcripts</option>
+            </select>
+          </div>
+        </div>
+        <div class="control">
+          <button id='getToleranceButton' type="submit"
+            class="button is-static" onclick="loadDoc()">Get
+            tolerance</button>
+          <button class="button" onclick="clearTranscripts()">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id='toleranceGraphContainer' class="container is-hidden">
+    <p id="geneName">TODO: here an interactive text is dispayed for
+      gene name, transcript and protein id</p>
+    <svg xmlns="http://www.w3.org/2000/svg" id="svg" width="1300"
+      height="700"></svg>
+    <div id="graph">
+      <script
+        src="{{ url_for('static', filename='js/toleranceLandscape/toleranceLandscapeGraph.js') }}"></script>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Toggling advanced mode -->
+    <div class="field is-grouped">
+      <div class="control is-hidden" id="advanced_checkbox_control">
+        <label class="checkbox"> <input id="advanced_checkbox"
+          type="checkbox" disabled onclick="toggleAdvancedOpions(this)">
+          Advanced mode
+        </label>
+      </div>
+      <div class="control is-hidden" id="download_svg_button">
+        <button id='dlSVG' name="downloadButton" type="button"
+          class="button is-info is-outlined"">Download Graph as
+          SVG</button>
+      </div>
+      <div class="control is-hidden" id="download_tsv_button">
+        <button id='dlJSON' name="downloadButton" type="button"
+          class="button is-info is-outlined"">Download data for
+          Graph as TSV</button>
+      </div>
+    </div>
+
+    <!-- Advanced options -->
+    <div id="advanced_options" class="field is-hidden">
+
+      <!-- Implement ExAC frequency filter -->
+      <div class="control">
+        <div class="label">ExAC frequency filter</div>
+        <input type="range" name="frequency" id="frequency" value="0.0"
+          min="0.0" max="1.0" step="0.0001" required />
+      </div>
+
+      <!-- Change the sliding window size -->
+      <div class="control">
+        <div class="label">
+          Sliding window (<span id="swPer">5%</span> of total protein sequence length)
+        </div>
+        <input type="range" name="slidingWindow" id="slidingWindow"
+          value="0.05" min="0" max="0.2" step="0.01" required oninput="updateSlidingwindowPercentage(this)"/>
+      </div>
+
+      <!-- Toggle ClinVar variant annotation -->
+      <div class="control">
+        <label class="checkbox"> <input id="clinvar"
+          type="checkbox" checked> Annotate <a
+          href="https://www.ncbi.nlm.nih.gov/clinvar/">ClinVar</a> SNVs
+          in Tolerance Landscape
+        </label>
+      </div>
+
+      <!-- Toggle HGMD variant annotation -->
+      <div class="control">
+        <label class="checkbox"> <input id="hgmd"
+          type="checkbox" checked> Annotate <a
+          href="http://www.hgmd.cf.ac.uk/ac/index.php">HGMD</a> SNVs in
+          Tolerance Landscape
+        </label>
+      </div>
+
+      <!-- Toggle PFAM domain annotation -->
+      <div class="control">
+        <label class="checkbox"> <input id="domain"
+          type="checkbox" checked> Annotate <a
+          href="https://pfam.xfam.org/">PFAM</a> domains below the
+          Tolerance Landscape
+        </label>
+      </div>
+    </div>
+  </div>
+  </div>
 </section>
 
 {% endblock %} {% block js %} {% endblock %}

@@ -8,7 +8,46 @@ from metadom.domain.models.protein import Protein
 from metadom.domain.models.interpro import Interpro
 from metadom.domain.models.pfam_domain_alignment import PfamDomainAlignment
 
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+
 _log = logging.getLogger(__name__)
+
+class GeneRepository:
+    
+    @staticmethod
+    def retrieve_all_transcript_ids(gene_name):
+        return [transcript_id for transcript_id in db.session.query(Gene.gencode_transcription_id).filter(Gene.gene_name == gene_name).all()]
+    
+    @staticmethod
+    def retrieve_gene(transcription_id):
+        try:
+            gene = db.session.query(Gene).filter(Gene.gencode_transcription_id == transcription_id).one()
+            return gene
+        except MultipleResultsFound as e:
+            _log.error("GeneRepository.retrieve_gene(transcription_id): Multiple results found while expecting uniqueness for transcription_id '"+str(transcription_id)+"'. "+e)
+        except NoResultFound as  e:
+            _log.error("GeneRepository.retrieve_gene(transcription_id): Expected results but found none for transcription_id '"+str(transcription_id)+"'. "+e)
+        return None
+    
+class InterproRepository:
+    
+    @staticmethod
+    def get_domains_for_protein(protein_id):
+        return [interpro_domain for interpro_domain in db.session.query(Interpro).filter(Interpro.protein_id == protein_id).all()]
+    
+class ProteinRepository:
+    
+    @staticmethod
+    def retrieve_protein(protein_id):
+        try:
+            protein = db.session.query(Protein).filter(Protein.id == protein_id).one()
+            return protein
+        except MultipleResultsFound as e:
+            _log.error("ProteinRepository.retrieve_protein(protein_id): Multiple results found while expecting uniqueness for protein_id '"+str(protein_id)+"'. "+e)
+        except NoResultFound as  e:
+            _log.error("ProteinRepository.retrieve_protein(protein_id): Expected results but found none for protein_id '"+str(protein_id)+"'. "+e)
+        return None
+        return 
 
 class PfamDomainAlignmentRepository:
     
@@ -42,9 +81,13 @@ class PfamDomainAlignmentRepository:
         return domain_alignments
 
 class MappingRepository:
+    
+    @staticmethod
+    def get_mappings_and_chromosomes_from_gene(_gene):
+        return {x.Mapping.cDNA_position:x for x in Mapping.query.join(Chromosome).add_columns(Chromosome.chromosome, Chromosome.position).filter(Mapping.gene_id == _gene.id).all()}
 
     @staticmethod
-    def get_mappings(entry_id, position):
+    def get_mappings_position(entry_id, position):
         # TODO: remove when testing is done
         _log.info("got entry:" +str(entry_id)+" and position: "+str(position))
          

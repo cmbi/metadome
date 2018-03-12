@@ -16,13 +16,30 @@ def index():
     _log.info("Rendering index page")
     return render_template('index.html')
 
+@bp.route('/index_js')
+def index_js():
+    # Renders the javascript used on the index page
+    return render_template('/js/index.js')
+
+@bp.route('/contact', methods=['GET'])
+def contact():
+    return render_template('contact.html')
+
+@bp.route('/help', methods=['GET'])
+def help():
+    return render_template('help.html')
+
+@bp.route('/about', methods=['GET'])
+def about():
+    return render_template('contact.html')
+
 
 @bp.route("/input", methods=['GET', 'POST'])
 def input():
     form = MetaDomForm()
     if form.validate_on_submit():
         # get result
-        mappings = MappingRepository.get_mappings(form.entry_id.data, 
+        mappings = MappingRepository.get_mapping_position(form.entry_id.data, 
                                                   form.position.data)
         
         alignments = PfamDomainAlignmentRepository.get_msa_alignment(form.entry_id.data)
