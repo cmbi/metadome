@@ -13,13 +13,21 @@ bp = Blueprint('web', __name__)
 
 @bp.route('/', methods=['GET'])
 def index():
-    _log.info("Rendering index page")
     return render_template('index.html')
 
-@bp.route('/index_js')
-def index_js():
+@bp.route('/metadom', methods=['GET'])
+def metadom():
+    return render_template('metadom.html')
+
+@bp.route('/tolerance', methods=['GET'])
+def tolerance():
+    return render_template('tolerance.html')
+
+
+@bp.route('/tolerance_js')
+def tolerance_js():
     # Renders the javascript used on the index page
-    return render_template('/js/index.js')
+    return render_template('/js/tolerance.js')
 
 @bp.route('/contact', methods=['GET'])
 def contact():
