@@ -6,6 +6,12 @@ function updateSlidingwindowPercentage(slider){
 	swpercentage.innerHTML = Math.round(slider.value * 100) + "%";
 }
 
+function updateExACFrequencySlider(slider){
+	var exacFreq = document.getElementById("exacFreq");
+	exacFreq.innerHTML = Math.round(slider.value * 10000)/100 + "%";
+}
+
+
 // Function to send AJAX request to the webserver to get all transcripts
 // belonging to a gene name
 function getTranscript() {

@@ -107,9 +107,9 @@
 
       <!-- Implement ExAC frequency filter -->
       <div class="control">
-        <div class="label">ExAC frequency filter</div>
-        <input type="range" name="frequency" id="frequency" value="0.0"
-          min="0.0" max="1.0" step="0.0001" required />
+        <div class="label">Tolerance is based on ExAC SNV variants with "<span id="exacFreq">0.00%</span>" frequency or greater </div>
+        <input type="range" name="frequency" id="frequency" value="0.0" min="0.0" max="0.01" step="0.0001" required 
+         oninput="updateExACFrequencySlider(this)" onmouseup="loadDoc()"/>
       </div>
 
       <!-- Change the sliding window size -->
@@ -118,13 +118,13 @@
           Sliding window (<span id="swPer">5%</span> of total protein sequence length)
         </div>
         <input type="range" name="slidingWindow" id="slidingWindow"
-          value="0.05" min="0" max="0.2" step="0.01" required oninput="updateSlidingwindowPercentage(this)"/>
+          value="0.05" min="0" max="0.2" step="0.01" required oninput="updateSlidingwindowPercentage(this)" onmouseup="loadDoc()"/>
       </div>
 
       <!-- Toggle ClinVar variant annotation -->
       <div class="control">
         <label class="checkbox"> <input id="clinvar"
-          type="checkbox" checked> Annotate <a
+          type="checkbox" checked onclick="loadDoc()"> Annotate <a
           href="https://www.ncbi.nlm.nih.gov/clinvar/">ClinVar</a> SNVs
           in Tolerance Landscape
         </label>
@@ -133,7 +133,7 @@
       <!-- Toggle HGMD variant annotation -->
       <div class="control">
         <label class="checkbox"> <input id="hgmd"
-          type="checkbox" checked> Annotate <a
+          type="checkbox" checked onclick="loadDoc()"> Annotate <a
           href="http://www.hgmd.cf.ac.uk/ac/index.php">HGMD</a> SNVs in
           Tolerance Landscape
         </label>
@@ -142,7 +142,7 @@
       <!-- Toggle PFAM domain annotation -->
       <div class="control">
         <label class="checkbox"> <input id="domain"
-          type="checkbox" checked> Annotate <a
+          type="checkbox" checked onclick="loadDoc()"> Annotate <a
           href="https://pfam.xfam.org/">PFAM</a> domains below the
           Tolerance Landscape
         </label>
