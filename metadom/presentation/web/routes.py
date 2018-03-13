@@ -19,10 +19,14 @@ def index():
 def metadom():
     return render_template('metadom.html')
 
+@bp.route('/metadom_js')
+def metadom_js():
+    # Renders the javascript used on the index page
+    return render_template('/js/metadom.js')
+
 @bp.route('/tolerance', methods=['GET'])
 def tolerance():
     return render_template('tolerance.html')
-
 
 @bp.route('/tolerance_js')
 def tolerance_js():
