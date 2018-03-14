@@ -1,4 +1,3 @@
-import logging
 from metadom.default_settings import UNIPROT_SPROT_SPECIES_FILTER
 from metadom.domain.wrappers.gencode import retrieveGeneTranslations_gencode,\
     retrieveNucleotideSequence_gencode, retrieveCodingGenomicLocations_gencode,\
@@ -16,8 +15,9 @@ from metadom.domain.models.protein import Protein
 from metadom.domain.models.interpro import Interpro
 from metadom.domain.repositories import MappingRepository, SequenceRepository
 
-_log = logging.getLogger(__name__)
+import logging
 
+_log = logging.getLogger(__name__)
 
 def annotate_interpro_domains_to_proteins(protein):
     interpro_entries = Interpro.query.join(Protein).filter(Interpro.protein_id == protein.id).all()
