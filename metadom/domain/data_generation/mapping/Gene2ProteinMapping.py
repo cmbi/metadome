@@ -1,7 +1,6 @@
 from metadom.domain.data_generation.mapping.Protein2ProteinMapping import \
     createMappingOfAASequenceToAASequence, map_single_residue
 from metadom.domain.models.mapping import Mapping
-from metadom.domain.models.chromosome import Chromosome
 
 import logging
 
@@ -35,8 +34,7 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
     # Create mapping between Gene and cDNA
     cDNA_pos = 0
     currentChr = ''
-    to_be_added_chrom_pos = dict()
-    to_be_added_mapping = dict()
+    to_be_added_mapping = []
     for cd in cds:
         if currentChr == '': currentChr = cd.seqid # set it as the first
         elif not(cd.seqid == currentChr):
@@ -54,10 +52,6 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
             cDNA_pos = cDNA_pos+1
             aa_pos = int((cDNA_pos-1) / 3)
             
-            # create chromosome entry
-            chrom_pos = Chromosome(chromosome=str(cd.seqid), position=i)
-            to_be_added_chrom_pos[chrom_pos.position] = chrom_pos
-            
             # add codon to the mapping
             codon = translationCodons[aa_pos]                
             # add codon base pair number to the mapping
@@ -73,7 +67,7 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
                 uniprot_position, uniprot_residue = map_single_residue(translation_to_uniprot_mapping, aa_pos)
             
             # create the mapping entry
-            to_be_added_mapping[chrom_pos.position] = Mapping(
+            to_be_added_mapping.append(Mapping(
                 base_pair = base_pair,
                 cDNA_position = cDNA_pos,
                 codon = codon,
@@ -81,10 +75,12 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
                 amino_acid_residue = amino_acid_residue,
                 amino_acid_position = aa_pos,
                 uniprot_position = uniprot_position,
-                uniprot_residue = uniprot_residue
-                )
+                uniprot_residue = uniprot_residue,
+                chromosome = str(cd.seqid),
+                chromosome_position = i,
+                ))
                 
-    return to_be_added_chrom_pos, to_be_added_mapping
+    return to_be_added_mapping
 
 def extract_pdb_from_gene_region(gene_mapping, gene_region):
     """Expects a gene_region, as created by 'extract_gene_region' with 
