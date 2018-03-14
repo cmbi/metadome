@@ -1,5 +1,4 @@
 from metadom.domain.repositories import MappingRepository, ProteinRepository, InterproRepository
-
 import numpy as np
 
 class FailedToConstructGeneRegion(Exception):
@@ -58,8 +57,7 @@ class GeneRegion(object):
                     yield (q[i],q[j-1])
                     i = j
             yield (q[i], q[-1])
-
-    
+                
     def __init__(self, _gene, _region_start=None, _region_stop=None):
         if _region_start is None or _region_start < 0:
             self.protein_region_start = 0
@@ -79,7 +77,7 @@ class GeneRegion(object):
         self.strand = _gene.strand
         
         # Retrieve mappings from the database
-        _mappings = MappingRepository.get_mappings_and_chromosomes_from_gene(_gene)
+        _mappings = {x.Mapping.cDNA_position:x for x in MappingRepository.get_mappings_for_gene(_gene)}
 
         # Check f everything went fine so far
         if len(_mappings) == 0:
@@ -102,7 +100,7 @@ class GeneRegion(object):
             # retrieve the protein id and set the uniprot ac and name  
             if self.uniprot_ac == str():
                 # retrieve the protein id
-                _protein = ProteinRepository.retrieve_protein(_mapping.Mapping.protein_id)
+                _protein = ProteinRepository.retrieve_protein(_mapping.protein_id)
                 
                 # set the uniprot ac and name
                 self.protein_id = _protein.id
@@ -113,7 +111,7 @@ class GeneRegion(object):
                 
             else:
                 # type check protein id
-                if self.protein_id !=  _mapping.Mapping.protein_id:
+                if self.protein_id !=  _mapping.protein_id:
                     raise MalformedGeneRegionException("For transcript '"+str(self.gencode_transcription_id)+
                                                        "': Found mappings for a single transcript aligned to multiple different proteins")
 
@@ -128,18 +126,18 @@ class GeneRegion(object):
                                                        "': Found alignments to multiple chromosomes")
             
             # ensure we have alignment here
-            if _mapping.Mapping.uniprot_residue == '-' or _mapping.Mapping.uniprot_residue == '*':
+            if _mapping.uniprot_residue == '-' or _mapping.uniprot_residue == '*':
                 continue
             
             # test if this position falls within the region
-            if self.protein_region_start <= _mapping.Mapping.uniprot_position < self.protein_region_stop:
+            if self.protein_region_start <= _mapping.uniprot_position < self.protein_region_stop:
                 # Add to the mapping to the mappings_per_chromosome
-                self.mappings_per_chromosome[_mapping.position] = _mapping.Mapping
+                self.mappings_per_chromosome[_mapping.chromosome_position] = _mapping
                 
                 # Add the chromosomal position to the list
-                _chromosome_positions_in_region.append(_mapping.position)
-                _uniprot_positions.append(_mapping.Mapping.uniprot_position)
-                _cDNA_positions.append(_mapping.Mapping.cDNA_position)
+                _chromosome_positions_in_region.append(_mapping.chromosome_position)
+                _uniprot_positions.append(_mappinqg.uniprot_position)
+                _cDNA_positions.append(_mapping.cDNA_position)
         
         # ensure that the region is fully covered
         if(self.protein_region_length != len(np.unique(_uniprot_positions))):
