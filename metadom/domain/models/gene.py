@@ -1,6 +1,5 @@
 from metadom.database import db
 import enum
-from metadom.domain.models.mapping import Mapping
 
 class Strand(enum.Enum):
     plus = '+'
@@ -21,8 +20,10 @@ class Gene(db.Model):
     havana_gene_id            e.g. OTTHUMG#####....
     havana_translation_id     e.g. OTTHUMT#####....
     sequence_length           length of amino acid sequence
+    protein_id                Foreign key
     
     Relationships
+    many to one               protein
     one to many               mappings
     """
     
@@ -39,8 +40,10 @@ class Gene(db.Model):
     havana_gene_id = db.Column(db.String(50))
     havana_translation_id = db.Column(db.String(50))
     sequence_length = db.Column(db.Integer)
+    protein_id = db.Column(db.Integer, db.ForeignKey('proteins.id'))
     
     # Relationships
+    protein = db.relationship("Protein", back_populates="genes")
     mappings = db.relationship('Mapping', back_populates="gene")
     
     def __init__(self, _strand, _gene_name, _gencode_transcription_id, 
