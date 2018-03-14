@@ -47,9 +47,9 @@ class Gene(db.Model):
                  _gencode_translation_name, _gencode_gene_id, _havana_gene_id, 
                  _havana_translation_id, _sequence_length):
         if _strand == '-':
-            self.strand = Gene.Strand.minus
+            self.strand = Strand.minus
         elif _strand == '+':
-            self.strand = Gene.Strand.plus
+            self.strand = Strand.plus
         else:
             raise Exception('no strand defined for gene')
         
