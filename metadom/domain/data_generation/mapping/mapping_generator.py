@@ -1,5 +1,4 @@
 import logging
-import time
 from metadom.default_settings import UNIPROT_SPROT_SPECIES_FILTER
 from metadom.domain.wrappers.gencode import retrieveGeneTranslations_gencode,\
     retrieveNucleotideSequence_gencode, retrieveCodingGenomicLocations_gencode,\
@@ -10,137 +9,15 @@ from metadom.domain.wrappers.gencode import retrieveGeneTranslations_gencode,\
 from metadom.domain.wrappers.uniprot import retrieveIdenticalUniprotMatch,\
     NoUniProtACFoundException
 from metadom.domain.wrappers.interpro import retrieve_interpro_entries
-from metadom.domain.wrappers.hmmer import align_sequences_according_to_PFAM_HMM,\
-    FoundNoPfamHMMException, FoundMoreThanOnePfamHMMException,\
-    convert_pfam_fasta_alignment_to_original_aligned_sequence,\
-    map_sequence_to_aligned_sequence,\
-    convert_pfam_fasta_alignment_to_strict_fasta
-from metadom.domain.data_generation.mapping.Protein2ProteinMapping import createAlignedSequenceMapping
 from metadom.domain.data_generation.mapping.Gene2ProteinMapping import createMappingOfGeneTranscriptionToTranslationToProtein
 from metadom.database import db
 from metadom.domain.models.gene import Gene
 from metadom.domain.models.protein import Protein
 from metadom.domain.models.interpro import Interpro
-from metadom.domain.models.mapping import Mapping
-from metadom.domain.models.pfam_domain_alignment import PfamDomainAlignment
+from metadom.domain.repositories import MappingRepository, SequenceRepository
 
 _log = logging.getLogger(__name__)
 
-def generate_pfam_alignment_mappings(pfam_id):
-    # retrieve any entries already present in the database with this pfam_id
-    domain_alignment_entries = PfamDomainAlignment.query.join(Interpro).filter(Interpro.ext_db_id == pfam_id).all()
-    if len(domain_alignment_entries) > 0:
-        _log.info("Pfam domain "+pfam_id+" is already aligned and mapped. Skipping Pfam annotation...")
-    else:
-        _log.info("Started creating an alignment of all '"+pfam_id+"' Pfam domains in the human genome")
-        start_time = time.clock()
-        
-        # retrieve all domain occurrences for the domain_id
-        domain_of_interest_occurrences = Interpro.query.filter_by(ext_db_id = pfam_id).all()
-    
-        # Retrieve all the sequences of the domain of interest
-        domain_of_interest_sequences = [domain_occurrence.get_aa_sequence() for domain_occurrence in domain_of_interest_occurrences]
-        
-        _log.debug("Starting HMM based alignment on for domain '"+pfam_id+"' for '"+str(len(domain_of_interest_occurrences))+"' occurrences across HG19")
-        # Run the HMMERAlign algorithm based on the Pfam HMM
-        try:
-            hmmeralign_output = align_sequences_according_to_PFAM_HMM(domain_of_interest_sequences, pfam_id)
-        except (FoundNoPfamHMMException, FoundMoreThanOnePfamHMMException) as e:
-            _log.error(e)
-            time_step = time.clock()
-            _log.error("Prematurely stopped creating the '"+pfam_id+"' 'meta'-domain in "+str(time_step-start_time)+" seconds")
-            return None
-        _log.debug("Finished HMM based alignment on for domain '"+pfam_id+"'")
-        
-        # Create the strict versions of the consensus alignment
-        _log.debug("Creating the mappings for '"+str(len(domain_of_interest_occurrences)) +"' '"+pfam_id+"' domain occurrences based on the HMM alignment to consensus and original domain sequence")
-        
-        # ensure we can map consensus residues back to consensus positions
-        hmmeralign_output['consensus']['aligned_sequence'] = convert_pfam_fasta_alignment_to_original_aligned_sequence(hmmeralign_output['consensus']['alignment'])
-        hmmeralign_output['consensus']['mapping_consensus_alignment_to_positions'] = map_sequence_to_aligned_sequence(hmmeralign_output['consensus']['sequence'], hmmeralign_output['consensus']['aligned_sequence'])
-        
-        # create mappings between domain occurrences and the domain consensus sequence
-        with db.session.no_autoflush:
-            for index in range(len(hmmeralign_output['alignments'])):
-                # retrieve current aligned domain
-                domain_occurrence = domain_of_interest_occurrences[index]
-                
-                # Create a mapping from the aligned domain sequence to the domain sequence
-                aligned_sequence = convert_pfam_fasta_alignment_to_original_aligned_sequence(hmmeralign_output['alignments'][index]['alignment'])
-                mapping_domain_alignment_to_sequence_positions = map_sequence_to_aligned_sequence(domain_occurrence.get_aa_sequence(), aligned_sequence)
-                
-                # Generate the strict sequence for this domain; leaving only residues that were aligned to the domain consensus
-                strict_aligned_sequence = convert_pfam_fasta_alignment_to_strict_fasta(hmmeralign_output['alignments'][index]['alignment'])
-                
-                # create the mapping between the strict alignments and the original consensus sequence
-                mapping_aligned_domain_to_domain_consensus = createAlignedSequenceMapping(strict_aligned_sequence, hmmeralign_output['consensus']['aligned_sequence'], False)
-                
-                # create a list of mapping positions that includes insertions
-                mapping_positions = list(mapping_domain_alignment_to_sequence_positions.keys()) + list(set(mapping_aligned_domain_to_domain_consensus.keys()) - set(mapping_domain_alignment_to_sequence_positions.keys()))
-                
-                # Second add each aligned residue mapping
-                for mapping_pos in sorted(mapping_positions):
-                    # retrieve the residue at the consensus position and the residue at the domain position
-                    consensus_domain_residue = hmmeralign_output['consensus']['aligned_sequence'][mapping_pos]
-                    
-                    if consensus_domain_residue == '-':
-                        # Set the default values for the insertion
-                        domain_consensus_pos = None
-                    else:
-                        # retrieve the position in the domain consensus
-                        domain_consensus_pos = hmmeralign_output['consensus']['mapping_consensus_alignment_to_positions'][mapping_pos]
-                    
-                    # retrieve the aligned residue
-                    aligned_residue = aligned_sequence[mapping_pos]
-                    
-                    # retrieve the position in the domain sequence
-                    ref_pos = mapping_domain_alignment_to_sequence_positions[mapping_pos]
-                    # convert the position in the domain sequence to the uniprot position and genomic position
-                    uniprot_pos = domain_occurrence.uniprot_start + ref_pos -1
-                    
-                    # Retrieve the mapping for the corresponding uniprot_position
-                    mapping = Mapping.query.filter((Mapping.uniprot_position == uniprot_pos) & (Mapping.protein_id == domain_occurrence.protein_id) & (Mapping.codon_base_pair_position == 0)).first()
-                    
-                    # Double check for any possible errors at this point
-                    if mapping is None:
-                        raise Exception("For domain '"+str(pfam_id)+
-                                                               "' for occurrence '"+str(domain_occurrence.id)+
-                                                               "' at aligned position '"+str(mapping_pos)+
-                                                               "' for uniprot position '"+str(uniprot_pos)+
-                                                               "' there was no mapping present in the database")
-                        continue
-            
-                    if aligned_residue != mapping.uniprot_residue:
-                        raise Exception("For domain '"+str(pfam_id)+
-                                                               "' for occurrence '"+str(domain_occurrence.id)+
-                                                               "' at aligned position '"+str(mapping_pos)+
-                                                               "' aligned sequence residue '"+aligned_residue+
-                                                               "' did not match uniprot residue '"+mapping.uniprot_residue+"'")
-                        continue
-                     
-                    if mapping.amino_acid_residue != mapping.uniprot_residue:
-                        raise Exception("For domain '"+str(pfam_id)+
-                                                               "' for occurrence '"+str(domain_occurrence.id)+
-                                                               "' at aligned position '"+str(mapping_pos)+
-                                                               "' translation residue '"+mapping.amino_acid_residue+
-                                                               "' did not match uniprot residue '"+mapping.uniprot_residue+"'")
-                        continue
-                    
-                    # create new domain_ alignment object
-                    domain_alignment = PfamDomainAlignment(alignment_position=mapping_pos, domain_consensus_residue=consensus_domain_residue, domain_consensus_position=domain_consensus_pos)
-                    
-                    # Add the foreign keys
-                    domain_occurrence.pfam_domain_alignments.append(domain_alignment)
-                    mapping.pfam_domain_alignment.append(domain_alignment)
-        
-                    # add the alignment to the database
-                    db.session.add(domain_alignment)
-                
-        # commit the alignments to the database
-        db.session.commit()
-        
-        time_step = time.clock()
-        _log.info("Finished the mappings for '"+str(len(domain_of_interest_occurrences)) +"' '"+pfam_id+"' domain occurrences in "+str(time_step-start_time)+" seconds")
 
 def annotate_interpro_domains_to_proteins(protein):
     interpro_entries = Interpro.query.join(Protein).filter(Interpro.protein_id == protein.id).all()
@@ -149,7 +26,8 @@ def annotate_interpro_domains_to_proteins(protein):
     else:
         _log.info("Protein "+str(protein.uniprot_ac)+" has not yet been annotated by Interpro. Annotating...")
         # Annotate the interpro ids
-        aa_sequence = protein.get_aa_sequence(skip_asterix_at_end=True)
+        mappings = MappingRepository.get_mappings_for_protein(protein)
+        aa_sequence = SequenceRepository.get_aa_sequence(mappings, skip_asterix_at_end=True)
         
         # Query the sequence to interpro
         interpro_results = retrieve_interpro_entries(protein.uniprot_ac, aa_sequence)
@@ -248,8 +126,7 @@ def generate_gene_to_swissprot_mapping(gene_name):
                 _source = uniprot['database'])
         
         # create the mapping between both sequences
-        chromosome_positions, mappings = createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, matching_coding_translation, uniprot)
-        to_be_added_db_entries["chromosome_positions"][matching_coding_translation['transcription-id']] = chromosome_positions
+        mappings = createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, matching_coding_translation, uniprot)
         to_be_added_db_entries["mappings"][matching_coding_translation['transcription-id']] = mappings
         
         _log.info("For gene '"+str(gene_name)+
