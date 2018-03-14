@@ -48,38 +48,6 @@ class Interpro(db.Model):
     __table_args__ = (db.UniqueConstraint('protein_id', 'ext_db_id', 'uniprot_start', 'uniprot_stop', name='_unique_protein_region'),
                      )
     
-    
-#     def get_domain_alignment(self):
-#         aligned_residues = Mapping.query.join(PfamDomainAlignment).filter(\
-#             (Mapping.id == PfamDomainAlignment.mapping_id) &\
-#             (PfamDomainAlignment.domain_id == self.id)).all()
-#         
-#         return aligned_residues
-# #         mappings = {x.uniprot_position:x.uniprot_residue for x in Mapping.query.filter_by(protein_id = self.id).all()}
-# #         for key in sorted(mappings):
-# #             if region_start-1 <= key < region_stop:
-# #                 
-# #             if skip_asterix_at_end and key is None:
-# #                 continue
-# #             _aa_sequence+= mappings[key]
-# #         return _aa_sequence
-#     
-#     def get_domain_alignment(self):
-#         return PfamDomainAlignment.query.filter_by(domain_id = self.id).all()
-#     
-#     def get_pfam_alignment(self):
-#         alignments = PfamDomainAlignment.query.filter_by(domain_id = self.id)
-#         print(alignments)
-# #         
-# #         
-# #         return PfamDomainAlignment.query.filter_by(domain_id = self.id)
-    
-    def get_protein(self):
-        return Protein.query.filter_by(id = self.protein_id).first()
-    
-    def get_aa_sequence(self):
-        return self.get_protein().get_aa_region(region_start=self.uniprot_start, region_stop=self.uniprot_stop)
-    
     def __init__(self, _interpro_id, _ext_db_id, _region_name, _start_pos, _end_pos):
         self.interpro_id = _interpro_id
         self.ext_db_id = _ext_db_id

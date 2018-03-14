@@ -35,18 +35,6 @@ class Protein(db.Model):
     mappings = db.relationship('Mapping', back_populates="protein")
     interpro_domains = db.relationship("Interpro", back_populates="protein")
     
-    def get_aa_sequence(self, skip_asterix_at_end=False):
-        _aa_sequence = ""
-        mappings = {x.uniprot_position:x.uniprot_residue for x in Mapping.query.filter_by(protein_id = self.id).all()}
-        for key in sorted(mappings, key=lambda x: (x is None, x)):
-            if skip_asterix_at_end and key is None:
-                continue
-            _aa_sequence+= mappings[key]
-        return _aa_sequence
-    
-    def get_aa_region(self, region_start, region_stop, skip_asterix_at_end=False):
-        return self.get_aa_sequence(skip_asterix_at_end)[region_start-1:region_stop]
-    
     def __init__(self, _uniprot_ac, _uniprot_name, _source):
         if _source == 'swissprot':
             self.source = Protein.ProteinSource.swissprot

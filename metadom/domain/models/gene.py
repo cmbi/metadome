@@ -43,20 +43,6 @@ class Gene(db.Model):
     # Relationships
     mappings = db.relationship('Mapping', back_populates="gene")
     
-    def get_cDNA_sequence(self):
-        _cDNA_sequence = ""
-        mappings = {x.cDNA_position:x.base_pair for x in Mapping.query.filter_by(gene_id = self.id).all()}
-        for key in sorted(mappings.keys()):
-            _cDNA_sequence+= mappings[key]
-        return _cDNA_sequence
-    
-    def get_aa_sequence(self):
-        _aa_sequence = ""
-        mappings = {x.amino_acid_position:x.amino_acid_residue for x in Mapping.query.filter_by(gene_id = self.id).all()}
-        for key in sorted(mappings, key=lambda x: (x is None, x)):
-            _aa_sequence+= mappings[key]
-        return _aa_sequence
-    
     def __init__(self, _strand, _gene_name, _gencode_transcription_id, 
                  _gencode_translation_name, _gencode_gene_id, _havana_gene_id, 
                  _havana_translation_id, _sequence_length):
