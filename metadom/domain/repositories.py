@@ -34,7 +34,11 @@ class GeneRepository:
         return None
     
 class InterproRepository:    
-        
+    @staticmethod
+    def get_all_Pfam_identifiers():
+        for domain_entry in Interpro.query.filter(Interpro.ext_db_id.like('PF%')).distinct(Interpro.ext_db_id):
+            yield domain_entry.ext_db_id
+    
     @staticmethod
     def get_domains_for_ext_domain_id(ext_domain_id):
         """Retrieves all interpro entries of the corresponding ext_db_id"""
