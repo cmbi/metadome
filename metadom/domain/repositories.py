@@ -33,9 +33,11 @@ class GeneRepository:
             _log.error("GeneRepository.retrieve_gene(transcription_id): Expected results but found none for transcription_id '"+str(transcription_id)+"'. "+e)
         return None
     
-class InterproRepository:    
+class InterproRepository:
+    
     @staticmethod
     def get_all_Pfam_identifiers():
+        """Retrieves all pfam identifiers present in the database"""
         for domain_entry in Interpro.query.filter(Interpro.ext_db_id.like('PF%')).distinct(Interpro.ext_db_id):
             yield domain_entry.ext_db_id
     
@@ -64,6 +66,19 @@ class ProteinRepository:
         return None
 
 class MappingRepository:
+    
+    @staticmethod
+    def get_mappings_for_multiple_proteins(_proteins):
+        """Retrieves all mappings for a multiple Protein objects as {protein_id: [ Mapping ]}"""
+        _protein_ids = np.unique([x.id for x in _proteins])
+        
+        _mappings_per_protein = {}
+        for mapping in db.session.query(Mapping).filter(Mapping.protein_id.in_(_protein_ids)).all():
+            if not mapping.protein_id in _mappings_per_protein:
+                _mappings_per_protein[mapping.protein_id] = []
+                
+            _mappings_per_protein[mapping.protein_id].append(mapping)
+        return _mappings_per_protein
     
     @staticmethod
     def get_mappings_for_protein(_protein):
