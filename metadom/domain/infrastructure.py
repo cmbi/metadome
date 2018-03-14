@@ -1,6 +1,5 @@
 from metadom.database import db
 from metadom.domain.models.protein import Protein
-from metadom.domain.models.chromosome import Chromosome
 from metadom.domain.models.gene import Gene
 from sqlalchemy.sql.expression import distinct
 import logging
@@ -46,20 +45,10 @@ def add_gene_mapping_to_database(gene_mapping):
                     protein_already_present = False
                     
                 # add relationships to mapping from gene translation and protein
-                for chromosome_position in gene_mapping["mappings"][transcription_id].keys():
-                    gene_translation.mappings.append(gene_mapping["mappings"][transcription_id][chromosome_position])
-                    matching_protein.mappings.append(gene_mapping["mappings"][transcription_id][chromosome_position])
+                for mapping in gene_mapping["mappings"][transcription_id]:
+                    gene_translation.mappings.append(mapping)
+                    matching_protein.mappings.append(mapping)
         
-                # merge all chromosomes that are already present in the database
-                for each in _session.query(Chromosome).filter((Chromosome.chromosome == gene_mapping["chromosome_positions"][transcription_id][chromosome_position].chromosome) &\
-                                                     (Chromosome.position.in_(gene_mapping["chromosome_positions"][transcription_id].keys()))).all():
-                    gene_mapping["chromosome_positions"][transcription_id].pop(each.position)
-                    each.mappings.append(gene_mapping["mappings"][transcription_id][each.position])
-                
-                # add each chromosomal postion not yet present in the database
-                for each in gene_mapping["chromosome_positions"][transcription_id].keys():
-                    gene_mapping["chromosome_positions"][transcription_id][each].mappings.append(gene_mapping["mappings"][transcription_id][each])
-                
                 # add the gene translation to the database
                 _session.add(gene_translation)
                 
@@ -68,10 +57,7 @@ def add_gene_mapping_to_database(gene_mapping):
                     _session.add(matching_protein)
                 
                 # add all other objects to the database
-                _session.add_all(gene_mapping["mappings"][transcription_id].values())
-                
-                # add the remaining chromosome positions
-                _session.add_all(gene_mapping["chromosome_positions"][transcription_id].values())                        
+                _session.add_all(gene_mapping["mappings"][transcription_id])       
             else:
                 # add the gene translation to the database
                 _session.add(gene_translation)
