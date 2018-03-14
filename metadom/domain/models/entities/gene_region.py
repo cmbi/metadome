@@ -57,7 +57,7 @@ class GeneRegion(object):
                     yield (q[i],q[j-1])
                     i = j
             yield (q[i], q[-1])
-                
+            
     def __init__(self, _gene, _region_start=None, _region_stop=None):
         if _region_start is None or _region_start < 0:
             self.protein_region_start = 0
@@ -77,7 +77,7 @@ class GeneRegion(object):
         self.strand = _gene.strand
         
         # Retrieve mappings from the database
-        _mappings = {x.Mapping.cDNA_position:x for x in MappingRepository.get_mappings_for_gene(_gene)}
+        _mappings = {x.cDNA_position:x for x in MappingRepository.get_mappings_for_gene(_gene)}
 
         # Check f everything went fine so far
         if len(_mappings) == 0:
@@ -136,7 +136,7 @@ class GeneRegion(object):
                 
                 # Add the chromosomal position to the list
                 _chromosome_positions_in_region.append(_mapping.chromosome_position)
-                _uniprot_positions.append(_mappinqg.uniprot_position)
+                _uniprot_positions.append(_mapping.uniprot_position)
                 _cDNA_positions.append(_mapping.cDNA_position)
         
         # ensure that the region is fully covered
