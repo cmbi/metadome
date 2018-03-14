@@ -19,12 +19,12 @@ class Mapping(db.Model):
     uniprot_residue           one of the 20 amino acids in the uniprot sequence,
                               * or None
     uniprot_position          the position in the protein
-    chromosome_id             Foreign key
+    chromosome                the chromosome this mapping points to
+    chromosome_position       the chromosomal position of this mapping
     gene_id                   Foreign key
     protein_id                Foreign key
     
     Relationships
-    many to one               chromosome
     many to one               gene
     many to one               protein
     one to many               pfam_domain_alignment
@@ -42,12 +42,12 @@ class Mapping(db.Model):
     cDNA_position = db.Column(db.Integer)
     uniprot_residue = db.Column(db.String(1))
     uniprot_position = db.Column(db.Integer)
-    chromosome_id = db.Column(db.Integer, db.ForeignKey('chromosomes.id'), nullable=False)
+    chromosome = db.Column(db.String(5), nullable=False)
+    chromosome_position = db.Column(db.Integer, nullable=False)    
     gene_id = db.Column(db.Integer, db.ForeignKey('genes.id'), nullable=False)
     protein_id = db.Column(db.Integer, db.ForeignKey('proteins.id'))
     
     # Relationships
-    chromosome = db.relationship('Chromosome', back_populates="mappings")
     gene = db.relationship("Gene", back_populates="mappings")
     protein = db.relationship("Protein", back_populates="mappings")
     pfam_domain_alignment = db.relationship("PfamDomainAlignment", back_populates="mappings")
