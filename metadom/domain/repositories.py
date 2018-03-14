@@ -6,20 +6,25 @@ from metadom.domain.models.chromosome import Chromosome
 from metadom.domain.models.gene import Gene
 from metadom.domain.models.protein import Protein
 from metadom.domain.models.interpro import Interpro
-from metadom.domain.models.pfam_domain_alignment import PfamDomainAlignment
 
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 _log = logging.getLogger(__name__)
 
+class MalformedAARegionException(Exception):
+    pass
+
+
 class GeneRepository:
     
     @staticmethod
     def retrieve_all_transcript_ids(gene_name):
+        """Retrieves all transcript ids for a gene name"""
         return [transcript_id for transcript_id in db.session.query(Gene.gencode_transcription_id).filter(Gene.gene_name == gene_name).all()]
     
     @staticmethod
     def retrieve_gene(transcription_id):
+        """Retrieves the gene object for a given transcript id"""
         try:
             gene = db.session.query(Gene).filter(Gene.gencode_transcription_id == transcription_id).one()
             return gene
@@ -29,16 +34,23 @@ class GeneRepository:
             _log.error("GeneRepository.retrieve_gene(transcription_id): Expected results but found none for transcription_id '"+str(transcription_id)+"'. "+e)
         return None
     
-class InterproRepository:
+class InterproRepository:    
+        
+    @staticmethod
+    def get_domains_for_ext_domain_id(ext_domain_id):
+        """Retrieves all interpro entries of the corresponding ext_db_id"""
+        return [interpro_domain for interpro_domain in db.session.query(Interpro).filter(Interpro.ext_db_id == ext_domain_id).all()]
     
     @staticmethod
     def get_domains_for_protein(protein_id):
+        """Retrieves all interpro entries for a given protein_id"""
         return [interpro_domain for interpro_domain in db.session.query(Interpro).filter(Interpro.protein_id == protein_id).all()]
     
 class ProteinRepository:
     
     @staticmethod
     def retrieve_protein(protein_id):
+        """Retrieves the protein object for a given protein id"""
         try:
             protein = db.session.query(Protein).filter(Protein.id == protein_id).one()
             return protein
@@ -47,67 +59,61 @@ class ProteinRepository:
         except NoResultFound as  e:
             _log.error("ProteinRepository.retrieve_protein(protein_id): Expected results but found none for protein_id '"+str(protein_id)+"'. "+e)
         return None
-        return 
-
-class PfamDomainAlignmentRepository:
-    
-    @staticmethod
-    def get_msa_alignment(entry_id):
-        # TODO: remove when testing is done
-        _log.info("got entry:" +str(entry_id))
-        
-        domain_alignments = []        
-#         domain_occurrences = Interpro.query.filter(Interpro.ext_db_id.like(entry_id)).all()
-#         alignment_positions = [x.alignment_position for x in PfamDomainAlignment.query.join(Interpro).filter((Interpro.id == PfamDomainAlignment.domain_id) & (Interpro.ext_db_id.like(entry_id))).distinct(PfamDomainAlignment.alignment_position)]
-#         for domain_entry in domain_occurrences:
-#             protein = domain_entry.get_protein()
-#             alignment_entries = {x.alignment_position:x.get_aligned_residue() for x in PfamDomainAlignment.query.filter(domain_entry.id == PfamDomainAlignment.domain_id).order_by( PfamDomainAlignment.alignment_position).all()}
-#             
-#             aligned_sequence = ""
-#             for alignment_pos in alignment_positions:
-#                 if alignment_pos in alignment_entries.keys():
-#                     aligned_sequence += alignment_entries[alignment_pos]
-#                 else:
-#                     aligned_sequence += '.'
-#             
-#             alignment_row = {"uniprot_start":domain_entry.uniprot_stop, 
-#                              "uniprot_stop":domain_entry.uniprot_stop,
-#                              "uniprot_name":protein.uniprot_name,
-#                              "uniprot_ac":protein.uniprot_ac,
-#                              "aligned_sequence":aligned_sequence}
-#             
-#             domain_alignments.append(alignment_row)
-        
-        return domain_alignments
 
 class MappingRepository:
     
     @staticmethod
-    def get_mappings_and_chromosomes_from_gene(_gene):
-        return {x.Mapping.cDNA_position:x for x in Mapping.query.join(Chromosome).add_columns(Chromosome.chromosome, Chromosome.position).filter(Mapping.gene_id == _gene.id).all()}
-
+    def get_mappings_for_protein(_protein):
+        """Retrieves all mappings for a Protein object"""
+        return [x for x in db.session.query(Mapping).filter(Mapping.protein_id == _protein.id).all()]
+    
     @staticmethod
-    def get_mappings_position(entry_id, position):
-        # TODO: remove when testing is done
-        _log.info("got entry:" +str(entry_id)+" and position: "+str(position))
-         
-        # Default mapping
-        mapping = {}
-         
-        # TODO: create handling of specific type of queries
-        # TODO: make use of services
+    def get_mappings_for_gene(_gene):
+        """Retrieves all mappings for a Gene object"""
+        return [x for x in db.session.query(Mapping).filter(Mapping.gene_id == _gene.id).all()]
+    
+    @staticmethod
+    def get_mappings_and_chromosomes_from_gene(_gene):
+        """Retrieves all mappings as {cDNA_position:{Mapping, Chromosome.chromosome, Chromosome.position}} for a Gene object"""
+        return {x.Mapping.cDNA_position:x for x in db.session.query(Mapping).join(Chromosome).add_columns(Chromosome.chromosome, Chromosome.position).filter(Mapping.gene_id == _gene.id).all()}
+
+
+class SequenceRepository:
+    
+    @staticmethod
+    def get_aa_sequence(mappings, skip_asterix_at_end=False):
+        """For a list of mappings, returns the amino acid sequence based on the uniprot positions
+        If an asterix is expected at the end (e.g. a stop codon) there is the posibility to skip that"""
+        _aa_sequence = ""
+        mappings = {x.uniprot_position:x.uniprot_residue for x in mappings}
+        for key in sorted(mappings, key=lambda x: (x is None, x)):
+            # type check this is all the same protein and gene
+            
+            # type check if there are any gaps
+            
+            if skip_asterix_at_end and key is None:
+                continue
+            _aa_sequence+= mappings[key]
+        return _aa_sequence
+    
+    @staticmethod
+    def get_aa_region(sequence, region_start, region_stop):
+        """For a given sequence, returns the sub-sequence
+        based on the region_start and region stop"""
+        # type check region start and region stop
+        if region_start < 0 or region_stop > len(sequence) or region_stop < region_start:
+            raise MalformedAARegionException("For sequence of length '"+str(len(sequence))+
+                                              "': received a faulty  attempted to build a gene region where_region_stop < _region_start")        
+
         
-        # This is a pfam with position query
-        for x in Mapping.query.join(PfamDomainAlignment).join(Interpro).filter(
-            (Interpro.ext_db_id.like(entry_id)) &
-            (PfamDomainAlignment.domain_consensus_position == position)):
-            for y in db.session.query(Chromosome).filter(Chromosome.id ==
-                                                        x.chromosome_id):
-                chr_key = str(y.chromosome)+":"+str(y.position)
-                if chr_key in mapping:
-                    _log.error('Dublicate chromosome entry')
-                else:
-                    mapping[chr_key] = str(x)
-          
-        _log.info('got mapping: '+str(mapping))
-        return mapping
+        # Return the sub sequence
+        return sequence[region_start-1:region_stop]
+    
+    @staticmethod
+    def get_cDNA_sequence(mappings):
+        """For a list of mappings, returns the cDNA sequence based on the cDNA positions"""
+        _cDNA_sequence = ""
+        mappings = {x.cDNA_position:x.base_pair for x in mappings}
+        for key in sorted(mappings.keys()):
+            _cDNA_sequence+= mappings[key]
+        return _cDNA_sequence
