@@ -2,7 +2,6 @@ import logging
 
 from metadom.database import db
 from metadom.domain.models.mapping import Mapping
-from metadom.domain.models.chromosome import Chromosome
 from metadom.domain.models.gene import Gene
 from metadom.domain.models.protein import Protein
 from metadom.domain.models.interpro import Interpro
@@ -72,12 +71,6 @@ class MappingRepository:
         """Retrieves all mappings for a Gene object"""
         return [x for x in db.session.query(Mapping).filter(Mapping.gene_id == _gene.id).all()]
     
-    @staticmethod
-    def get_mappings_and_chromosomes_from_gene(_gene):
-        """Retrieves all mappings as {cDNA_position:{Mapping, Chromosome.chromosome, Chromosome.position}} for a Gene object"""
-        return {x.Mapping.cDNA_position:x for x in db.session.query(Mapping).join(Chromosome).add_columns(Chromosome.chromosome, Chromosome.position).filter(Mapping.gene_id == _gene.id).all()}
-
-
 class SequenceRepository:
     
     @staticmethod
