@@ -76,6 +76,16 @@ class GeneRegion(object):
         self.protein_region_length = self.protein_region_stop - self.protein_region_start
         self.strand = _gene.strand
         
+        
+        # retrieve the protein id
+        _protein = ProteinRepository.retrieve_protein(_gene.protein_id)
+        
+        # set the uniprot ac and name
+        self.protein_id = _protein.id
+        self.uniprot_ac = _protein.uniprot_ac
+        self.uniprot_name = _protein.uniprot_name
+        self.interpro_domains = InterproRepository.get_domains_for_protein(self.protein_id)
+        
         # Retrieve mappings from the database
         _mappings = {x.cDNA_position:x for x in MappingRepository.get_mappings_for_gene(_gene)}
 
@@ -97,23 +107,10 @@ class GeneRegion(object):
         for cDNA_position in sorted( _mappings.keys(), key=lambda x: int(x) ):
             _mapping = _mappings[cDNA_position]
             
-            # retrieve the protein id and set the uniprot ac and name  
-            if self.uniprot_ac == str():
-                # retrieve the protein id
-                _protein = ProteinRepository.retrieve_protein(_mapping.protein_id)
-                
-                # set the uniprot ac and name
-                self.protein_id = _protein.id
-                self.uniprot_ac = _protein.uniprot_ac
-                self.uniprot_name = _protein.uniprot_name
-                self.interpro_domains = InterproRepository.get_domains_for_protein(self.protein_id)
-                
-                
-            else:
-                # type check protein id
-                if self.protein_id !=  _mapping.protein_id:
-                    raise MalformedGeneRegionException("For transcript '"+str(self.gencode_transcription_id)+
-                                                       "': Found mappings for a single transcript aligned to multiple different proteins")
+            # type check protein id
+            if self.protein_id !=  _mapping.protein_id:
+                raise MalformedGeneRegionException("For transcript '"+str(self.gencode_transcription_id)+
+                                                   "': Found mappings for a single transcript aligned to multiple different proteins")
 
 
             # test if we already set the chromosome
