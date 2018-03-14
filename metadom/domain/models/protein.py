@@ -1,7 +1,9 @@
 from metadom.database import db
 import enum
-from metadom.domain.models.mapping import Mapping
-from metadom import _log
+
+class ProteinSource(enum.Enum):
+    uniprot = 'uniprot'
+    swissprot = 'swissprot'
 
 class Protein(db.Model):
     """
@@ -14,14 +16,10 @@ class Protein(db.Model):
     source                    'swissprot' or 'uniprot'
     
     Relationships
+    one to many               genes
     one to many               mappings
     one to many               interpro_domains
     """
-    # Custom field declarations
-    class ProteinSource(enum.Enum):
-        uniprot = 'uniprot'
-        swissprot = 'swissprot'
-    
     # Table configuration
     __tablename__ = 'proteins'
     
@@ -32,14 +30,15 @@ class Protein(db.Model):
     source = db.Column(db.Enum(ProteinSource), nullable=False)
     
     # Relationships
+    genes = db.relationship('Gene', back_populates="protein")
     mappings = db.relationship('Mapping', back_populates="protein")
     interpro_domains = db.relationship("Interpro", back_populates="protein")
     
     def __init__(self, _uniprot_ac, _uniprot_name, _source):
         if _source == 'swissprot':
-            self.source = Protein.ProteinSource.swissprot
+            self.source = ProteinSource.swissprot
         elif _source == 'uniprot':
-            self.source = Protein.ProteinSource.uniprot
+            self.source = ProteinSource.uniprot
         else:
             raise Exception('no source database defined for protein')
         self.uniprot_ac = _uniprot_ac
