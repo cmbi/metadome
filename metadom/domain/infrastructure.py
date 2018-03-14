@@ -48,6 +48,9 @@ def add_gene_mapping_to_database(gene_mapping):
                 for mapping in gene_mapping["mappings"][transcription_id]:
                     gene_translation.mappings.append(mapping)
                     matching_protein.mappings.append(mapping)
+                    
+                # add relationship from protein to gene transcript
+                matching_protein.genes.append(gene_translation)
         
                 # add the gene translation to the database
                 _session.add(gene_translation)
