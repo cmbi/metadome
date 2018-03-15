@@ -24,6 +24,7 @@ def create_db():
     # (re-) construct the mapping database  => GENE2PROTEIN_MAPPING_DB
     generate_mappings_for_genes(genes_of_interest, batch_size=10, use_parallel=True)
     
+    # annotate all the proteins with interpro_domains
     for protein in Protein.query.filter(Protein.evaluated_interpro_domains == False).all():
         # generate all pfam domain to swissprot mappings
         annotate_interpro_domains_to_proteins(protein)
