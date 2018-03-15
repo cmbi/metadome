@@ -10,15 +10,16 @@ class Protein(db.Model):
     Table: proteins
     
     Fields
-    id                        identifier
-    uniprot_ac                uniprot accession code
-    uniprot_name              uniprot name
-    source                    'swissprot' or 'uniprot'
+    id                         identifier
+    uniprot_ac                 uniprot accession code
+    uniprot_name               uniprot name
+    source                     'swissprot' or 'uniprot'
+    evaluated_interpro_domains True if interpro domains have been annotated to this protein
     
     Relationships
-    one to many               genes
-    one to many               mappings
-    one to many               interpro_domains
+    one to many                genes
+    one to many                mappings
+    one to many                interpro_domains
     """
     # Table configuration
     __tablename__ = 'proteins'
@@ -28,6 +29,7 @@ class Protein(db.Model):
     uniprot_ac = db.Column(db.String(12), unique=True, nullable=False)
     uniprot_name = db.Column(db.String(20))
     source = db.Column(db.Enum(ProteinSource), nullable=False)
+    evaluated_interpro_domains = db.Column(db.Boolean)
     
     # Relationships
     genes = db.relationship('Gene', back_populates="protein")
@@ -43,6 +45,7 @@ class Protein(db.Model):
             raise Exception('no source database defined for protein')
         self.uniprot_ac = _uniprot_ac
         self.uniprot_name = _uniprot_name
+        self.evaluated_interpro_domains = False
 
     def __repr__(self):
         return "<Protein(uniprot_ac='%s', uniprot_name='%s', source='%s')>" % (
