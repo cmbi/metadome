@@ -20,10 +20,10 @@ def create_db():
 
     # the genes that are to be checked
     genes_of_interest = retrieve_all_protein_coding_gene_names()
-      
+        
     # (re-) construct the mapping database  => GENE2PROTEIN_MAPPING_DB
     generate_mappings_for_genes(genes_of_interest, batch_size=10, use_parallel=True)
-    
+     
     # annotate all the proteins with interpro_domains
     for protein in Protein.query.filter(Protein.evaluated_interpro_domains == False).all():
         # generate all pfam domain to swissprot mappings
@@ -53,6 +53,7 @@ def generate_mappings_for_genes(genes_of_interest, batch_size, use_parallel):
         # add the batches to the database
         for gene_mapping in gene_mappings:
             add_gene_mapping_to_database(gene_mapping)
+            succeeded_genes +=1
          
         _log.info("Finished batch '"+str(batch_counter+1)+"' out of '"+str(n_batches)+"'")
     _log.info("Finished the mapping of batched analysis of '"+str(n_genes)+"' over '"+str(n_batches)+"' batches, resulting in '"+str(succeeded_genes)+"' successful gene mappings")
