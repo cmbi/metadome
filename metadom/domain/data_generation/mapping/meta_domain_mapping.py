@@ -8,10 +8,8 @@ import numpy as np
 import time
 import logging
 from metadom.domain.repositories import MappingRepository, SequenceRepository
-from metadom.domain.models.mapping import Mapping
 
 _log = logging.getLogger(__name__)
-
 
 def generate_pfam_alignment_mappings(pfam_id, domain_of_interest_occurrences):
     _log.info("Started creating an alignment of all '"+pfam_id+"' Pfam domains in the human genome")
@@ -19,7 +17,9 @@ def generate_pfam_alignment_mappings(pfam_id, domain_of_interest_occurrences):
       
     # the meta_domain that is to be returned
     mappings_per_consensus_pos = {}
-      
+    # the mapping of the protein {protein_id: {protein_posistion: consensus_position}}
+    consensus_pos_per_protein = {}
+    
     # First: retrieve all protein ids for this domain
     protein_ids = [int(y) for y  in np.unique([x.protein_id for x in domain_of_interest_occurrences])]
     
@@ -87,9 +87,18 @@ def generate_pfam_alignment_mappings(pfam_id, domain_of_interest_occurrences):
             ref_pos = mapping_domain_alignment_to_sequence_positions[mapping_pos]
             # convert the position in the domain sequence to the uniprot position and genomic position
             uniprot_pos = domain_occurrence.uniprot_start + ref_pos -1
-               
+            
+            # Add the consensus pos to the protein
+            if not domain_occurrence.protein_id in consensus_pos_per_protein.keys():
+                consensus_pos_per_protein[domain_occurrence.protein_id] = {}
+            if uniprot_pos in consensus_pos_per_protein[domain_occurrence.protein_id].keys():
+               # found a duplicate... this should not happen
+               raise Exception("duplicate uniprot position in metadomain for protein_id ='"+str(domain_occurrence.protein_id)+"' at position '"+str(uniprot_pos)+"'") 
+            else:
+                consensus_pos_per_protein[domain_occurrence.protein_id][uniprot_pos] = domain_consensus_pos
+            
             # Retrieve the mapping for the corresponding uniprot_position
-            mappings = [x for x in Mapping.query.filter((Mapping.uniprot_position == uniprot_pos) & (Mapping.protein_id == domain_occurrence.protein_id) & (Mapping.codon_base_pair_position == 0)).all()]
+            mappings = [x for x in protein_mappings[domain_occurrence.protein_id] if x.uniprot_position == uniprot_pos]
                
             for mapping in mappings:
                 # Double check for any possible errors at this point
@@ -99,7 +108,7 @@ def generate_pfam_alignment_mappings(pfam_id, domain_of_interest_occurrences):
                                                            "' at aligned position '"+str(mapping_pos)+
                                                            "' for uniprot position '"+str(uniprot_pos)+
                                                            "' there was no mapping present in the database")
-                    continue
+#                     continue
            
                 if aligned_residue != mapping.uniprot_residue:
                     raise Exception("For domain '"+str(pfam_id)+
@@ -107,7 +116,7 @@ def generate_pfam_alignment_mappings(pfam_id, domain_of_interest_occurrences):
                                                            "' at aligned position '"+str(mapping_pos)+
                                                            "' aligned sequence residue '"+aligned_residue+
                                                            "' did not match uniprot residue '"+mapping.uniprot_residue+"'")
-                    continue
+#                     continue
                     
                 if mapping.amino_acid_residue != mapping.uniprot_residue:
                     raise Exception("For domain '"+str(pfam_id)+
@@ -115,13 +124,13 @@ def generate_pfam_alignment_mappings(pfam_id, domain_of_interest_occurrences):
                                                            "' at aligned position '"+str(mapping_pos)+
                                                            "' translation residue '"+mapping.amino_acid_residue+
                                                            "' did not match uniprot residue '"+mapping.uniprot_residue+"'")
-                    continue
+#                     continue
                    
-                # create new domain_ alignment object
+                # Add the domain alignment
                 if not domain_consensus_pos in mappings_per_consensus_pos.keys():
                     mappings_per_consensus_pos[domain_consensus_pos] = []
                 mappings_per_consensus_pos[domain_consensus_pos].append(mapping)
   
     time_step = time.clock()
     _log.info("Finished the mappings for '"+str(len(domain_of_interest_occurrences)) +"' '"+pfam_id+"' domain occurrences in "+str(time_step-start_time)+" seconds")
-    return mappings_per_consensus_pos
+    return mappings_per_consensus_pos, consensus_pos_per_protein
