@@ -27,24 +27,18 @@ def get_default_transcript_ids():
 @bp.route('/gene/geneToTranscript/<string:gene_name>', methods=['GET'])
 def get_transcript_ids_for_gene(gene_name):  
     # retrieve the transcript ids for this gene
-    trancript_ids = GeneRepository.retrieve_all_transcript_ids(gene_name)
+    trancripts = GeneRepository.retrieve_all_transcript_ids(gene_name)
     
     # check if there was any return value
-    if len(trancript_ids) > 0:
-        message = "Retrieved transcripts for gene '"+gene_name+"'"
-    elif len(trancript_ids) == 0 and gene_name.upper() != gene_name:
-        # retrieve the transcript ids for this capitalized form of this gene
-        trancript_ids  = GeneRepository.retrieve_all_transcript_ids(gene_name.upper())
-            
-        # again check if there was any return value
-        if len(trancript_ids) == 0:
-            message = "Gene '"+str(gene_name)+"' was not present in the database, nor was '"+str(gene_name.upper())+"'"
-        else:
-            message = "Retrieved transcripts for gene '"+gene_name.upper()+"'"
+    if len(trancripts) > 0:
+        message = "Retrieved transcripts for gene '"+trancripts[0].gene_name+"'"
     else:
-        message = "No transcripts available for gene '"+gene_name+"'"
+        message = "No transcripts available in database for gene '"+gene_name+"'"
     
-    return jsonify(trancript_ids=trancript_ids, message=message)
+    transcripts_with_data = [t.gencode_transcription_id for t in trancripts if not t.protein_id is None]
+    transcripts_with_no_data = [t.gencode_transcription_id for t in trancripts if t.protein_id is None]
+    
+    return jsonify(trancript_ids=transcripts_with_data, no_protein_data=transcripts_with_no_data, message=message)
 
 @bp.route('/gene/getToleranceLandscape', methods=['GET'])
 def get_tolerance_landscape():
