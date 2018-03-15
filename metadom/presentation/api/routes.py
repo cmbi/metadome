@@ -9,6 +9,7 @@ import traceback
 from metadom.domain.services.computation.gene_region_computations import compute_tolerance_landscape
 from metadom.domain.services.annotation.annotation import annotateSNVs
 from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithHGMDData, annotateTranscriptWithClinvarData
+from metadom.domain.models.entities.meta_domain import MetaDomain
 
 _log = logging.getLogger(__name__)
 
@@ -162,6 +163,29 @@ def get_ClinVar_annotation_for_transcript(transcript_id):
 
     return jsonify(ClinVar_variants)
 
+@bp.route('/pfam/getMetaDomain/<string:domain_id>', methods=['GET'])
+def get_metadomain_for_pfam_id(domain_id):
+    metadomain = MetaDomain(domain_id)
+    return jsonify(str(metadomain))
+
+@bp.route('/gene/getMetaDomain/<string:transcript_id>/<string:domain_id>', methods=['GET'])
+def get_metadomains_for_transcript(transcript_id, domain_id):
+    # Retrieve the gene from the database
+    gene = GeneRepository.retrieve_gene(transcript_id)
+    
+    return_value = {}
+    
+    # check if we got a gene from the database
+    if not gene is None:
+        metadomain = MetaDomain(domain_id)
+        
+        protein_to_consensus_positions = metadomain.consensus_pos_per_protein[gene.protein_id]
+        
+        for pos in protein_to_consensus_positions:
+            return_value[pos] = str(metadomain.mappings_per_consensus_pos[protein_to_consensus_positions[pos]])
+    
+    return jsonify(return_value)
+    
 # # GET /api/chromosome/:id
 # @bp.route('/chromosome/<string:chromosome_id>', methods=['GET'])
 # def get_mapping_via_chr_pos(chromosome_id):
