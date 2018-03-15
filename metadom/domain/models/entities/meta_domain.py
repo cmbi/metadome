@@ -35,6 +35,8 @@ class MetaDomain(object):
             # retrieve all domain occurrences for the domain_id
             domain_of_interest_occurrences = InterproRepository.get_domains_for_ext_domain_id(self.domain_id)    
             if len(domain_of_interest_occurrences) == 0:
+                raise NotEnoughOccurrencesForMetaDomain("Domain '"+str(self.domain_id)+"' does not exists in the database")
+            if len(domain_of_interest_occurrences) == 1:
                 raise NotEnoughOccurrencesForMetaDomain("There are not enough occurrences for the '"+str(self.domain_id)+"' to create a meta domain")
             
             # create the meta domain mapping
