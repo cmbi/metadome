@@ -68,10 +68,8 @@ class ProteinRepository:
 class MappingRepository:
     
     @staticmethod
-    def get_mappings_for_multiple_proteins(_proteins):
+    def get_mappings_for_multiple_protein_ids(_protein_ids):
         """Retrieves all mappings for a multiple Protein objects as {protein_id: [ Mapping ]}"""
-        _protein_ids = np.unique([x.id for x in _proteins])
-        
         _mappings_per_protein = {}
         for mapping in db.session.query(Mapping).filter(Mapping.protein_id.in_(_protein_ids)).all():
             if not mapping.protein_id in _mappings_per_protein:
