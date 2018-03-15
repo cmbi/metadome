@@ -16,14 +16,14 @@ class MetaDomain(object):
     name                       description
     domain_id                  str the id / accession code of this domain 
     consensus_length           int length of the domain consensus
-    n_genes                    int number of unique genes containing this domain
+    n_proteins                    int number of unique genes containing this domain
     n_instances                int number of unique instances containing this domain
     mappings_per_consensus_pos dictionary of mappings per metadomain consensus positions; {POS: [models.mapping.Mapping]}
     consensus_pos_per_protein  dictionary of protein ids with their uniprot positions mapped to consensus {protein_is: {uniprot_pos:<int:consensus_position>}}
     """
     domain_id = str() 
     consensus_length = int()
-    n_genes = int()
+    n_proteins = int()
     n_instances = int()
     mappings_per_consensus_pos = dict()
     consensus_pos_per_protein = dict()
@@ -37,6 +37,17 @@ class MetaDomain(object):
             if len(domain_of_interest_occurrences) == 0:
                 raise NotEnoughOccurrencesForMetaDomain("There are not enough occurrences for the '"+str(self.domain_id)+"' to create a meta domain")
             
+            # create the meta domain mapping
             self.mappings_per_consensus_pos, self.consensus_pos_per_protein = generate_pfam_alignment_mappings(self.domain_id, domain_of_interest_occurrences)
+            
+            # set the remaining values
+            self.n_instances = len(domain_of_interest_occurrences)
+            self.consensus_length = len(self.mappings_per_consensus_pos)
+            self.n_proteins = len(self.consensus_pos_per_protein)
         else:
-            raise UnsupportedMetaDomainIdentifier("Expected a Pfam domain, instead the identifier '"+str(domain_id)+"' was received")    
+            raise UnsupportedMetaDomainIdentifier("Expected a Pfam domain, instead the identifier '"+str(domain_id)+"' was received")
+    
+    def __repr__(self):
+        return "<MetaDomain(domain_id='%s', consensus_length='%s', n_proteins='%s', n_instances='%s')>" % (
+                            self.domain_id, self.consensus_length, self.n_proteins, self.n_instances)
+        
