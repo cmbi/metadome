@@ -319,8 +319,7 @@ def retrieveGeneTranslations_gencode(gene_name):
      manually annotated, '-' otherwise)|translation-name|gene_name-name|sequence-length"""
     # ensure we are dealing with the gene_name in upper characters
     if not(gene_name.isupper()):
-        _log.warning("Provided gene_name '"+gene_name+"' is not provided in upper case, parsing it to upper case")
-        gene_name = gene_name.upper()
+        _log.warning("Provided gene_name '"+gene_name+"', this may lead to duplicate gene names")
     
     _log.info("Starting search for matching translations")
     # Look up the best matching translation
