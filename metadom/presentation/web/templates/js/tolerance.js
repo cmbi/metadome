@@ -161,26 +161,7 @@ function loadDoc() {
 				xhttp.setRequestHeader("Content-type",
 						"application/x-www-form-urlencoded");
 				xhttp.send();
-
-				if ($("#domain").is(":checked")) {
-					var xhttpD = new XMLHttpRequest();
-					xhttpD.onreadystatechange = function() {
-						if (this.readyState == 4 && this.status == 200) {
-							var domains = JSON.parse(xhttpD.responseText);
-							if (isEmpty(domains)) {
-								console.log("domain array empty");
-							} else {
-								appendPfamDomains(domains);
-							}
-						}
-					}
-					xhttpD.open("GET", "{{ url_for('api.get_pfam_domains') }}"
-							+ "/" + gtID, true);
-					xhttpD.setRequestHeader("Content-type",
-							"application/x-www-form-urlencoded");
-					xhttpD.send();
-				}
-
+				
 				if ($("#hgmd").is(":checked")) {
 					var xhttpH = new XMLHttpRequest();
 					xhttpH.onreadystatechange = function() {
@@ -220,8 +201,27 @@ function loadDoc() {
 							"application/x-www-form-urlencoded");
 					xhttpC.send();
 				}
-			}
 
+				if ($("#domain").is(":checked")) {
+					var xhttpD = new XMLHttpRequest();
+					xhttpD.onreadystatechange = function() {
+						if (this.readyState == 4 && this.status == 200) {
+							var domains = JSON.parse(xhttpD.responseText);
+							if (isEmpty(domains)) {
+								console.log("domain array empty");
+							} else {
+								appendPfamDomains(domains);
+							}
+						}
+					}
+					xhttpD.open("GET", "{{ url_for('api.get_pfam_domains') }}"
+							+ "/" + gtID, true);
+					xhttpD.setRequestHeader("Content-type",
+							"application/x-www-form-urlencoded");
+					xhttpD.send();
+				}
+
+			}
 		}
 	}
 
