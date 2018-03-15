@@ -7,55 +7,13 @@ from metadom.domain.wrappers.gencode import retrieveGeneTranslations_gencode,\
     MissMatchTranscriptIDToMatchingTranscript
 from metadom.domain.wrappers.uniprot import retrieveIdenticalUniprotMatch,\
     NoUniProtACFoundException
-from metadom.domain.wrappers.interpro import retrieve_interpro_entries
 from metadom.domain.data_generation.mapping.Gene2ProteinMapping import createMappingOfGeneTranscriptionToTranslationToProtein
-from metadom.database import db
 from metadom.domain.models.gene import Gene
 from metadom.domain.models.protein import Protein
-from metadom.domain.models.interpro import Interpro
-from metadom.domain.repositories import MappingRepository, SequenceRepository
 
 import logging
 
 _log = logging.getLogger(__name__)
-
-def annotate_interpro_domains_to_proteins(protein):
-    interpro_entries = Interpro.query.join(Protein).filter(Interpro.protein_id == protein.id).all()
-    if len(interpro_entries) > 0:
-        _log.info("Protein "+str(protein.uniprot_ac)+" already annotated by Interpro. Skipping interpro annotation...")
-    else:
-        _log.info("Protein "+str(protein.uniprot_ac)+" has not yet been annotated by Interpro. Annotating...")
-        # Annotate the interpro ids
-        mappings = MappingRepository.get_mappings_for_protein(protein)
-        aa_sequence = SequenceRepository.get_aa_sequence(mappings, skip_asterix_at_end=True)
-        
-        # Query the sequence to interpro
-        interpro_results = retrieve_interpro_entries(protein.uniprot_ac, aa_sequence)
-        
-        # save the results to the database
-        with db.session.no_autoflush:
-            for interpro_result in interpro_results:
-                if interpro_result['interpro_id'] is None and interpro_result['region_name'] == '':
-                    # skip non-informative results
-                    continue
-                                
-                # create a new interpro domain
-                interpro_domain = Interpro(_interpro_id=interpro_result['interpro_id'],\
-                                      _ext_db_id=interpro_result['ext_db_id'],\
-                                      _region_name=interpro_result['region_name'],\
-                                      _start_pos=interpro_result['start_pos'],\
-                                      _end_pos=interpro_result['end_pos'])
-                 
-                # Solve the required foreign key
-                protein.interpro_domains.append(interpro_domain)
-                
-                # Add the interpro_domain to the database
-                db.session.add(interpro_domain)
-                
-        # Commit this session
-        db.session.commit()
-        
-        _log.info("Protein "+str(protein.uniprot_ac)+" was annotated with '"+str(len(interpro_results))+"' interpro domains.")
         
 def generate_gene_to_swissprot_mapping(gene_name):
     """
