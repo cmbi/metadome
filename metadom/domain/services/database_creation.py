@@ -20,11 +20,11 @@ def create_db():
 
     # the genes that are to be checked
     genes_of_interest = retrieve_all_protein_coding_gene_names()
-     
+      
     # (re-) construct the mapping database  => GENE2PROTEIN_MAPPING_DB
     generate_mappings_for_genes(genes_of_interest, batch_size=10, use_parallel=True)
-                
-    for protein in Protein.query.all():
+    
+    for protein in Protein.query.filter(Protein.evaluated_interpro_domains == False).all():
         # generate all pfam domain to swissprot mappings
         annotate_interpro_domains_to_proteins(protein)
 
@@ -57,39 +57,42 @@ def generate_mappings_for_genes(genes_of_interest, batch_size, use_parallel):
     _log.info("Finished the mapping of batched analysis of '"+str(n_genes)+"' over '"+str(n_batches)+"' batches, resulting in '"+str(succeeded_genes)+"' successful gene mappings")
 
 def annotate_interpro_domains_to_proteins(protein):
-    interpro_entries = Interpro.query.join(Protein).filter(Interpro.protein_id == protein.id).all()
-    if len(interpro_entries) > 0:
-        _log.info("Protein "+str(protein.uniprot_ac)+" already annotated by Interpro. Skipping interpro annotation...")
-    else:
-        _log.info("Protein "+str(protein.uniprot_ac)+" has not yet been annotated by Interpro. Annotating...")
-        # Annotate the interpro ids
-        mappings = MappingRepository.get_mappings_for_protein(protein)
-        aa_sequence = SequenceRepository.get_aa_sequence(mappings, skip_asterix_at_end=True)
+    _log.info("Protein "+str(protein.uniprot_ac)+" will now be annotated by Interpro...")
+    # Annotate the interpro ids
+    mappings = MappingRepository.get_mappings_for_protein(protein)
+    aa_sequence = SequenceRepository.get_aa_sequence(mappings, skip_asterix_at_end=True)
+    
+    # Query the sequence to interpro
+    interpro_results = retrieve_interpro_entries(protein.uniprot_ac, aa_sequence)
+    
+    # save the results to the database
+    with db.session.no_autoflush:
+        interpro_domains = []
+        for interpro_result in interpro_results:
+            if interpro_result['interpro_id'] is None and interpro_result['region_name'] == '':
+                # skip non-informative results
+                continue
+                            
+            # create a new interpro domain
+            interpro_domain = Interpro(_interpro_id=interpro_result['interpro_id'],\
+                                  _ext_db_id=interpro_result['ext_db_id'],\
+                                  _region_name=interpro_result['region_name'],\
+                                  _start_pos=interpro_result['start_pos'],\
+                                  _end_pos=interpro_result['end_pos'])
+             
+            # Solve the required foreign key
+            protein.interpro_domains.append(interpro_domain)
+            
+            # Add the interpro_domain to the database
+            interpro_domains.append(interpro_domain)
         
-        # Query the sequence to interpro
-        interpro_results = retrieve_interpro_entries(protein.uniprot_ac, aa_sequence)
+        # Add the interpro domains to the database
+        db.session.add_all(interpro_domains)
         
-        # save the results to the database
-        with db.session.no_autoflush:
-            for interpro_result in interpro_results:
-                if interpro_result['interpro_id'] is None and interpro_result['region_name'] == '':
-                    # skip non-informative results
-                    continue
-                                
-                # create a new interpro domain
-                interpro_domain = Interpro(_interpro_id=interpro_result['interpro_id'],\
-                                      _ext_db_id=interpro_result['ext_db_id'],\
-                                      _region_name=interpro_result['region_name'],\
-                                      _start_pos=interpro_result['start_pos'],\
-                                      _end_pos=interpro_result['end_pos'])
-                 
-                # Solve the required foreign key
-                protein.interpro_domains.append(interpro_domain)
-                
-                # Add the interpro_domain to the database
-                db.session.add(interpro_domain)
-                
-        # Commit this session
-        db.session.commit()
-        
-        _log.info("Protein "+str(protein.uniprot_ac)+" was annotated with '"+str(len(interpro_results))+"' interpro domains.")
+        # Adjust the value of the protein that it has already been evaluated
+        protein.evaluated_interpro_domains = True
+    
+    _log.info("Protein "+str(protein.uniprot_ac)+" was annotated with '"+str(len(interpro_results))+"' interpro domains.")
+    
+    # Commit this session
+    db.session.commit()
