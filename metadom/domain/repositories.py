@@ -7,6 +7,7 @@ from metadom.domain.models.protein import Protein
 from metadom.domain.models.interpro import Interpro
 
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.sql.functions import func
 
 _log = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class GeneRepository:
     @staticmethod
     def retrieve_all_transcript_ids(gene_name):
         """Retrieves all transcript ids for a gene name"""
-        return [transcript_id for transcript_id in db.session.query(Gene.gencode_transcription_id).filter(Gene.gene_name == gene_name).all()]
+        return [transcript for transcript in db.session.query(Gene).filter(func.lower(Gene.gene_name) == gene_name.lower()).all()]
     
     @staticmethod
     def retrieve_gene(transcription_id):
