@@ -43,12 +43,22 @@ function getTranscript() {
 				$("#advanced_checkbox_control").removeClass('is-hidden');
 				var dropdown = document.getElementById("gtID");
 				dropdown.setAttribute('class', 'dropdown');
-				for (var i = 0; i < transcript_id_results.trancript_ids.length; i++) {
+				var i = 0
+				for (; i < transcript_id_results.trancript_ids.length; i++) {
 					var opt = new Option();
 					opt.value = i;
 					opt.text = transcript_id_results.trancript_ids[i];
 					dropdown.options.add(opt);
 				}
+				for (var j = 0; i < transcript_id_results.trancript_ids.length + transcript_id_results.no_protein_data.length; i++) {
+					var opt = new Option();
+					opt.value = i;
+					opt.text = transcript_id_results.trancript_ids[j];
+					opt.disabled = true;
+					dropdown.options.add(opt);
+					j++;
+				}
+				no_protein_data
 
 			}
 		}
