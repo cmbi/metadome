@@ -41,7 +41,7 @@
       <div class="field has-addons">
         <div class="control is-expanded">
           <input class="input is-fullwidth" type="text" name="geneName"
-            id="geneName" size="20"
+            id="geneName" size="20" onclick="this.setSelectionRange(0, this.value.length)"
             placeholder="Type here your gene name of interest" required />
         </div>
         <div class="control">
@@ -80,7 +80,7 @@
 
   <div class="container">
     <!-- Toggling advanced mode -->
-    <div class="field is-grouped">
+    <div class="field is-grouped">    
       <div class="control is-hidden" id="advanced_checkbox_control">
         <label class="checkbox"> <input id="advanced_checkbox"
           type="checkbox" disabled onclick="toggleAdvancedOpions(this)">
@@ -101,7 +101,6 @@
 
     <!-- Advanced options -->
     <div id="advanced_options" class="field is-hidden">
-
       <!-- Implement ExAC frequency filter -->
       <div class="control">
         <div class="label">Tolerance is based on ExAC SNV variants with "<span id="exacFreq">0.00%</span>" frequency or greater </div>
@@ -122,7 +121,7 @@
       <div class="control">
         <label class="checkbox"> <input id="clinvar"
           type="checkbox" checked onclick="loadDoc()"> Annotate <a
-          href="https://www.ncbi.nlm.nih.gov/clinvar/">ClinVar</a> SNVs
+          href="https://www.ncbi.nlm.nih.gov/clinvar/" target="_blank">ClinVar</a> SNVs
           in Tolerance Landscape
         </label>
       </div>
@@ -131,7 +130,7 @@
       <div class="control">
         <label class="checkbox"> <input id="hgmd"
           type="checkbox" checked onclick="loadDoc()"> Annotate <a
-          href="http://www.hgmd.cf.ac.uk/ac/index.php">HGMD</a> SNVs in
+          href="http://www.hgmd.cf.ac.uk/ac/index.php" target="_blank">HGMD</a> SNVs in
           Tolerance Landscape
         </label>
       </div>
@@ -140,7 +139,7 @@
       <div class="control">
         <label class="checkbox"> <input id="domain"
           type="checkbox" checked onclick="loadDoc()"> Annotate <a
-          href="https://pfam.xfam.org/">PFAM</a> domains below the
+          href="https://pfam.xfam.org/" target="_blank">PFAM</a> domains below the
           Tolerance Landscape
         </label>
       </div>
