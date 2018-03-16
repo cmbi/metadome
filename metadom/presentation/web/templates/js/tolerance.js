@@ -1,6 +1,13 @@
 /**
- * Controls all responsiveness for the index.html page
+ * Controls all responsiveness for the tolerance.html page
  */
+
+$("#geneName").keyup(function(event) {
+    if (event.keyCode === 13) {
+        $("#getTranscriptsButton").click();
+    }
+});
+
 function updateSlidingwindowPercentage(slider){
 	var swpercentage = document.getElementById("swPer");
 	swpercentage.innerHTML = Math.round(slider.value * 100) + "%";

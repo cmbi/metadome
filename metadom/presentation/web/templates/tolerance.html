@@ -12,7 +12,8 @@
 <script src="{{ url_for('static', filename='js/toleranceLandscape/graphAdditions.js') }}"></script>
 <script src="{{ url_for('static', filename='js/toleranceLandscape/downloadmethods.js') }}"></script>
 <script src="{{ url_for('static', filename='js/toleranceLandscape/createGraph.js') }}"></script>
-<script src="{{ url_for('web.tolerance_js') }}"></script>
+<script src="{{ url_for('static', filename='js/toleranceLandscape/toleranceLandscapeGraph.js') }}" async></script>
+<script src="{{ url_for('web.tolerance_js') }}" async></script>
 
 <!-- Custom stylesheet for this page -->
 <link rel="stylesheet"
@@ -44,7 +45,7 @@
             placeholder="Type here your gene name of interest" required />
         </div>
         <div class="control">
-          <button class="button is-info" onclick="getTranscript()">
+          <button id="getTranscriptsButton" class="button is-info" onclick="getTranscript()">
             Get transcripts</button>
         </div>
       </div>
@@ -74,10 +75,7 @@
     <p id="geneDetails"></p>
     <svg xmlns="http://www.w3.org/2000/svg" id="svg" width="1300"
       height="700"></svg>
-    <div id="graph">
-      <script
-        src="{{ url_for('static', filename='js/toleranceLandscape/toleranceLandscapeGraph.js') }}"></script>
-    </div>
+    <div id="graph"></div>
   </div>
 
   <div class="container">
