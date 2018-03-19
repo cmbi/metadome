@@ -6,6 +6,7 @@ from metadom import get_version
 from metadom.presentation.web.forms import MetaDomForm
 from metadom.domain.repositories import MappingRepository, GeneRepository
 import json
+from metadom.presentation import api
 
 _log = logging.getLogger(__name__)
 
@@ -15,9 +16,15 @@ bp = Blueprint('web', __name__)
 def index():
     return render_template('index.html')
 
+
 @bp.route('/metadom', methods=['GET'])
 def metadom():
     return render_template('metadom.html')
+
+@bp.route('/metadom/<string:transcript_id>/<string:domain_id>', methods=['GET'])
+def metadom_with_data(transcript_id, domain_id):
+    _result = api.routes.get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=False)
+    return render_template('metadom.html', data=_result)
 
 @bp.route('/metadom_js')
 def metadom_js():
