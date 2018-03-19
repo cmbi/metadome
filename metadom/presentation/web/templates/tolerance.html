@@ -15,6 +15,17 @@
 <script src="{{ url_for('static', filename='js/toleranceLandscape/toleranceLandscapeGraph.js') }}" async></script>
 <script src="{{ url_for('web.tolerance_js') }}" async></script>
 
+<script async>
+$( function() {
+  var availableTags = [{% for item in data %} {{ item|safe }},{% endfor %}];
+  $( "#geneName" ).autocomplete({
+    minLength: 3,
+    delay: 500,
+    source: availableTags
+  });
+});
+</script>
+
 <!-- Custom stylesheet for this page -->
 <link rel="stylesheet"
   href="{{ url_for('static', filename='css/tolerance_graph.css') }}">
