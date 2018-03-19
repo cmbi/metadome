@@ -4,8 +4,8 @@ from flask import Blueprint, redirect, g, render_template, url_for, request, ses
 
 from metadom import get_version
 from metadom.presentation.web.forms import MetaDomForm
-from metadom.domain.repositories import MappingRepository,\
-    PfamDomainAlignmentRepository
+from metadom.domain.repositories import MappingRepository, GeneRepository
+import json
 
 _log = logging.getLogger(__name__)
 
@@ -26,7 +26,8 @@ def metadom_js():
 
 @bp.route('/tolerance', methods=['GET'])
 def tolerance():
-    return render_template('tolerance.html')
+    gene_names = GeneRepository.retrieve_all_gene_names_from_file()
+    return render_template('tolerance.html', data=map(json.dumps, gene_names))
 
 @bp.route('/tolerance_js')
 def tolerance_js():
@@ -46,24 +47,24 @@ def about():
     return render_template('contact.html')
 
 
-@bp.route("/input", methods=['GET', 'POST'])
-def input():
-    form = MetaDomForm()
-    if form.validate_on_submit():
-        # get result
-        mappings = MappingRepository.get_mapping_position(form.entry_id.data, 
-                                                  form.position.data)
-        
-        alignments = PfamDomainAlignmentRepository.get_msa_alignment(form.entry_id.data)
-
-        _log.debug("Redirecting to result page")
-
-        session['mappings'] = mappings
-        session['alignments'] = alignments
-        return redirect(url_for('web.result'))
-
-    _log.debug("Rendering input page")
-    return render_template("input.html", form=form)
+# @bp.route("/input", methods=['GET', 'POST'])
+# def input():
+#     form = MetaDomForm()
+#     if form.validate_on_submit():
+#         # get result
+#         mappings = MappingRepository.get_mapping_position(form.entry_id.data, 
+#                                                   form.position.data)
+#         
+#         alignments = PfamDomainAlignmentRepository.get_msa_alignment(form.entry_id.data)
+# 
+#         _log.debug("Redirecting to result page")
+# 
+#         session['mappings'] = mappings
+#         session['alignments'] = alignments
+#         return redirect(url_for('web.result'))
+# 
+#     _log.debug("Rendering input page")
+#     return render_template("input.html", form=form)
 
 
 @bp.route("/result", methods=["GET"])
