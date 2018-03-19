@@ -14,6 +14,7 @@ DEBUG_TB_ENABLED = DEBUG
 
 # local data directory
 DATA_DIR = "/usr/data/"
+GENE_NAMES_FILE = DATA_DIR+'gene_names.txt'
 
 # local executables
 BLASTP_EXECUTABLE = "/usr/externals/blast/bin/blastp"
