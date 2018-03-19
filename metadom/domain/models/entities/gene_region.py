@@ -58,6 +58,9 @@ class GeneRegion(object):
                     i = j
             yield (q[i], q[-1])
             
+    def get_domains_for_position(self, position):
+        return [domain for domain in self.interpro_domains if domain.uniprot_start-1 <= position <= domain.uniprot_stop]
+            
     def __init__(self, _gene, _region_start=None, _region_stop=None):
         if _region_start is None or _region_start < 0:
             self.protein_region_start = 0
