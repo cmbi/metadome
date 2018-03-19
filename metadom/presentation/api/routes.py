@@ -1,19 +1,38 @@
-import logging
-
-from flask import abort, Blueprint, jsonify, render_template
-from metadom.domain.repositories import GeneRepository
-from builtins import Exception
 from metadom.domain.models.entities.gene_region import GeneRegion
-from flask.globals import request
-import traceback
 from metadom.domain.services.computation.gene_region_computations import compute_tolerance_landscape
 from metadom.domain.services.annotation.annotation import annotateSNVs
 from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithHGMDData, annotateTranscriptWithClinvarData
 from metadom.domain.models.entities.meta_domain import MetaDomain
+from metadom.domain.repositories import GeneRepository
+from flask import abort, Blueprint, jsonify, render_template, session
+from flask.globals import request
+from builtins import Exception
+import traceback
+import jsonpickle
+
+import logging
 
 _log = logging.getLogger(__name__)
 
 bp = Blueprint('api', __name__)
+
+def get_or_set_current_gene_region(transcript_id):
+    if 'gene_region' in session and not session['gene_region'] is None:
+        gene_region = jsonpickle.decode(session['gene_region'])
+        if gene_region.gencode_transcription_id == transcript_id:
+            return gene_region
+    
+    # Retrieve the gene from the database
+    gene = GeneRepository.retrieve_gene(transcript_id)
+    
+    if not gene is None:
+        try:
+            # create the gene_region
+            gene_region = GeneRegion(gene)
+            session['gene_region'] = jsonpickle.encode(gene_region)
+        except:
+            session['gene_region'] = None
+    return session['gene_region']
 
 @bp.route('/', methods=['GET'])
 def api_doc():
@@ -59,13 +78,10 @@ def get_tolerance_landscape_for_transcript(transcript_id):
     else:
         frequency = float(frequency)
     
-    # Retrieve the gene from the database
-    gene = GeneRepository.retrieve_gene(transcript_id)
+    # Retrieve or create the gene region
+    gene_region = get_or_set_current_gene_region(transcript_id)
     
-    if not gene is None:
-        # build the gene region
-        gene_region = GeneRegion(gene)
-        
+    if not gene_region is None:
         region_sliding_window = compute_tolerance_landscape(gene_region, sliding_window, frequency)
         
         return jsonify([{"geneName":gene_region.gene_name}, region_sliding_window])
@@ -79,13 +95,10 @@ def get_pfam_domains():
 
 @bp.route('/gene/getPfamDomains/<transcript_id>', methods=['GET'])
 def get_pfam_domains_for_transcript(transcript_id):
-    # Retrieve the gene from the database
-    gene = GeneRepository.retrieve_gene(transcript_id)
-     
+    # Retrieve or create the gene region
+    gene_region = get_or_set_current_gene_region(transcript_id)
     Pfam_domains = []
-    if not gene is None:
-        # build the gene region
-        gene_region = GeneRegion(gene)
+    if not gene_region is None:
         
         for domain in gene_region.interpro_domains:
             if domain.ext_db_id.startswith('PF'):
@@ -108,13 +121,10 @@ def get_HGMD_annotation():
 
 @bp.route('/gene/annotateHGMD/<transcript_id>', methods=['GET'])
 def get_HGMD_annotation_for_transcript(transcript_id):
-    # Retrieve the gene from the database
-    gene = GeneRepository.retrieve_gene(transcript_id)
-     
+    # Retrieve or create the gene region
+    gene_region = get_or_set_current_gene_region(transcript_id)
     HGMD_variants = []
-    if not gene is None:
-        # build the gene region
-        gene_region = GeneRegion(gene)
+    if not gene_region is None:    
          
         HGMD_annotation = annotateSNVs(annotateTranscriptWithHGMDData, gene_region)
         
@@ -136,14 +146,10 @@ def get_ClinVar_annotation():
 
 @bp.route('/gene/annotateClinVar/<transcript_id>', methods=['GET'])
 def get_ClinVar_annotation_for_transcript(transcript_id):
-    # Retrieve the gene from the database
-    gene = GeneRepository.retrieve_gene(transcript_id)
-     
+    # Retrieve or create the gene region
+    gene_region = get_or_set_current_gene_region(transcript_id)
     ClinVar_variants = []
-    if not gene is None:
-        # build the gene region
-        gene_region = GeneRegion(gene)
-         
+    if not gene_region is None:    
         ClinVar_annotation = annotateSNVs(annotateTranscriptWithClinvarData, gene_region)
         
         for chrom_pos in ClinVar_annotation.keys():
@@ -179,7 +185,7 @@ def get_metadomains_for_transcript(transcript_id, domain_id):
             return_value[pos] = str(metadomain.mappings_per_consensus_pos[protein_to_consensus_positions[pos]])
     
     return jsonify(return_value)
-    
+
 # # GET /api/chromosome/:id
 # @bp.route('/chromosome/<string:chromosome_id>', methods=['GET'])
 # def get_mapping_via_chr_pos(chromosome_id):
