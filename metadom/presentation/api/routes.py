@@ -169,11 +169,11 @@ def get_metadomain_for_pfam_id(domain_id):
     return jsonify(str(metadomain))
 
 @bp.route('/gene/getMetaDomain/<string:transcript_id>/<string:domain_id>', methods=['GET'])
-def get_metadomains_for_transcript(transcript_id, domain_id):
+def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
     # Retrieve the gene from the database
     gene = GeneRepository.retrieve_gene(transcript_id)
     
-    return_value = {}
+    return_value = dict()
     
     # check if we got a gene from the database
     if not gene is None:
@@ -182,49 +182,46 @@ def get_metadomains_for_transcript(transcript_id, domain_id):
         protein_to_consensus_positions = metadomain.consensus_pos_per_protein[gene.protein_id]
         
         for pos in protein_to_consensus_positions:
-            return_value[pos] = str(metadomain.mappings_per_consensus_pos[protein_to_consensus_positions[pos]])
+            return_value[pos] = []
+            for mapping in metadomain.mappings_per_consensus_pos[protein_to_consensus_positions[pos]]:
+                return_value[pos].append(str(mapping.chromosome)+":"+str(mapping.chromosome_position))
+                
+            return_value[pos] = list(set(return_value[pos]))
     
-    return jsonify(return_value)
+    if _jsonify:
+        return_value = jsonify(return_value)
+    
+    return return_value
 
-# # GET /api/chromosome/:id
-# @bp.route('/chromosome/<string:chromosome_id>', methods=['GET'])
-# def get_mapping_via_chr_pos(chromosome_id):
-#     pass
-# #     if len(locus) == 0:
-# #         abort(404)
-# #     return jsonify({'locus': locus[0]})
-# 
-# # GET /api/mapping/:id
-# @bp.route('/mapping/<string:mapping_id>', methods=['GET'])
-# def get_mapping_via_id(mapping_id):
-#     pass
-# 
-# # GET /api/gene/:id
-# @bp.route('/gene/<string:gene_id>', methods=['GET'])
-# def get_mapping_via_gene_id(gene_id):
-#     pass
-# 
-# 
-# # GET /api/protein/:id
-# @bp.route('/protein/<string:protein_id>', methods=['GET'])
-# def get_mapping_via_protein_id(protein_id):
-#     pass
-# 
-# # GET /api/pfam/:id
-# @bp.route('/pfam/<string:pfam_id>', methods=['GET'])
-# def get_mapping_via_pfam_id(pfam_id):
-# #     for x in session.query(Mapping).join(Interpro).filter(Interpro.pfam_id == pfam_id):
-# #         for y in session.query(Chromosome).filter(Chromosome.id == x.chromosome_id):
-# #             print(y,x)
-#     pass
-# 
-# # GET /api/pfam/:id/:position
-# @bp.route('/pfam/<string:pfam_id>/<int:position>', methods=['GET'])
-# def get_mapping_via_pfam_position(pfam_id, position):
-# #     for x in session.query(Mapping).join(Interpro).filter(and_(Mapping.pfam_consensus_position==position, Interpro.pfam_id == pfam_id)):
-# #         for y in session.query(Chromosome).filter(Chromosome.id == x.chromosome_id):
-# #             print(y,x)
-#     pass
+@bp.route('/gene/getMetaDomainInformation/<string:transcript_id>/<int:amino_acid_position>', methods=['GET'])
+def get_metadomain_information_for_gene_position(transcript_id, amino_acid_position):
+    # Retrieve or create the gene region
+    gene_region = get_or_set_current_gene_region(transcript_id, True)
+    return_value = {}
+    if not gene_region is None:
+        interpro_domains = gene_region.get_domains_for_position(amino_acid_position)
+        
+        meta_domain_mappings = {}
+        
+        for interpro_domain in interpro_domains:
+            domain_id = interpro_domain.ext_db_id
+            metadomain = MetaDomain(domain_id)
+            
+            protein_to_consensus_positions = metadomain.consensus_pos_per_protein[gene_region.protein_id]
+            
+            if amino_acid_position in protein_to_consensus_positions:
+                meta_domain_mappings[domain_id] = metadomain.mappings_per_consensus_pos[protein_to_consensus_positions[amino_acid_position]]
+
+
+        
+        return jsonify(str(meta_domain_mappings))
+        
+#         protein_to_consensus_positions = metadomain.consensus_pos_per_protein[gene.protein_id]
+#         
+#         for pos in protein_to_consensus_positions:
+#             return_value[pos] = str(metadomain.mappings_per_consensus_pos[protein_to_consensus_positions[pos]])
+#     
+    return jsonify(return_value)
 
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover
