@@ -48,33 +48,20 @@
         </tr>
       </tfoot>
       <tbody id="domainTable">
-        <tr id="row1"
-          onclick='$("[id^=row]").removeClass("is-selected");$("#row1").addClass("is-selected")'>
-          <th>random-header</th>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-        </tr>
-        <tr id="row2"
-          onclick='$("[id^=row]").removeClass("is-selected");$("#row2").addClass("is-selected")'>
-          <th>random-header</th>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-          <td>random-data</td>
-        </tr>
-
+      {% for k,v in data.items() %}
+        <tr id="row{{k}}" onclick='$("[id^=row]").removeClass("is-selected");$("#row{{k}}").addClass("is-selected")'>
+        <th>{{k}}</th>        
+        <td> {% for value in data[k] %} {{ value }} {% endfor %} </td>
+        <td>random-data</td>
+        <td>random-data</td>
+        <td>random-data</td>
+        <td>random-data</td>
+        <td>random-data</td>
+        <td>random-data</td>
+        <td>random-data</td>
+        <td>random-data</td>
+        </tr> 
+      {% endfor %}
       </tbody>
     </table>
     <div class="field">
