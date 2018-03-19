@@ -92,8 +92,8 @@ def generate_pfam_alignment_mappings(pfam_id, domain_of_interest_occurrences):
             if not domain_occurrence.protein_id in consensus_pos_per_protein.keys():
                 consensus_pos_per_protein[domain_occurrence.protein_id] = {}
             if uniprot_pos in consensus_pos_per_protein[domain_occurrence.protein_id].keys():
-               # found a duplicate... this should not happen
-               raise Exception("duplicate uniprot position in metadomain for protein_id ='"+str(domain_occurrence.protein_id)+"' at position '"+str(uniprot_pos)+"'") 
+                # found a duplicate... this should not happen
+                raise Exception("duplicate uniprot position in metadomain for protein_id ='"+str(domain_occurrence.protein_id)+"' at position '"+str(uniprot_pos)+"'") 
             else:
                 consensus_pos_per_protein[domain_occurrence.protein_id][uniprot_pos] = domain_consensus_pos
             
