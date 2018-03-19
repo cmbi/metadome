@@ -16,8 +16,8 @@ _log = logging.getLogger(__name__)
 
 bp = Blueprint('api', __name__)
 
-def get_or_set_current_gene_region(transcript_id):
-    if 'gene_region' in session and not session['gene_region'] is None:
+def get_or_set_current_gene_region(transcript_id, force_rebuild=False):
+    if not force_rebuild and 'gene_region' in session and not session['gene_region'] is None:
         gene_region = jsonpickle.decode(session['gene_region'])
         if gene_region.gencode_transcription_id == transcript_id:
             return gene_region
@@ -32,7 +32,7 @@ def get_or_set_current_gene_region(transcript_id):
             session['gene_region'] = jsonpickle.encode(gene_region)
         except:
             session['gene_region'] = None
-    return session['gene_region']
+    return  jsonpickle.decode(session['gene_region'])
 
 @bp.route('/', methods=['GET'])
 def api_doc():
