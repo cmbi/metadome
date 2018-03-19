@@ -3,6 +3,9 @@ from metadom.domain.models.protein import Protein
 from metadom.domain.models.gene import Gene
 from sqlalchemy.sql.expression import distinct
 import logging
+from metadom.domain.repositories import GeneRepository
+from metadom.default_settings import GENE_NAMES_FILE
+import os
 
 _log = logging.getLogger(__name__)
 
@@ -26,6 +29,22 @@ def filter_gene_names_present_in_database(gene_names_of_interest):
     _session.remove()
     
     return list(gene_names_of_interest)
+
+def write_all_genes_names_to_disk():
+    # retrieve all gene names present in the database
+    gene_names = sorted(GeneRepository.retrieve_all_gene_names_from_db())
+    
+    # First attempt to remove the file present
+    try:
+        os.remove(GENE_NAMES_FILE)
+    except OSError:
+        pass
+    
+    # write all gene names to file
+    with open(GENE_NAMES_FILE, 'w') as gene_names_file:
+        for gene_name in gene_names:
+            gene_names_file.write("%s\n" % gene_name)
+        
 
 def add_gene_mapping_to_database(gene_mapping):
     _session = db.create_scoped_session()
