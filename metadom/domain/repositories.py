@@ -8,6 +8,7 @@ from metadom.domain.models.interpro import Interpro
 
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.sql.functions import func
+from metadom.default_settings import GENE_NAMES_FILE
 
 _log = logging.getLogger(__name__)
 
@@ -16,6 +17,22 @@ class MalformedAARegionException(Exception):
 
 
 class GeneRepository:
+    
+    @staticmethod
+    def retrieve_all_gene_names_from_file():
+        """Retrieves all gene names present in the static file"""
+        gene_names = []
+        try:
+            with open(GENE_NAMES_FILE, 'r') as gene_names_file:
+                gene_names = gene_names_file.read().splitlines()
+        except OSError:
+            return []
+        return gene_names
+    
+    @staticmethod
+    def retrieve_all_gene_names_from_db():
+        """Retrieves all gene names present in the database"""
+        return [gene_name for gene_name in db.session.query(Gene.gene_name).distinct(Gene.gene_name).all()]
     
     @staticmethod
     def retrieve_all_transcript_ids(gene_name):
