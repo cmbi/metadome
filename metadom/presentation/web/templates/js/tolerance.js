@@ -30,7 +30,7 @@ function getTranscript() {
 			var transcript_id_results = JSON.parse(xhttp.responseText);
 			document.getElementById("geneNameHelpMessage").innerHTML = transcript_id_results.message;
 
-			if (isEmpty(transcript_id_results.trancript_ids)) {
+			if (typeof transcript_id_results == 'undefined' || transcript_id_results == null || transcript_id_results.trancript_ids.length == 0) {
 				$("#geneName").addClass('is-danger');
 				$("#geneName").removeClass('is-success');
 				$("#geneNameHelpMessage").addClass('is-danger');
@@ -130,8 +130,8 @@ function toggleAdvancedOpions(checkbox) {
 // webserver, returning arrays with json objects.
 function loadDoc() {
 	var selection = document.getElementsByClassName("dropdown")[0];
-	if (isEmpty(selection)) {
-	} else {
+
+	if (typeof selection !== 'undefined' && selection !== null && selection.length > 0) {
 		$("#loading_overlay").addClass('is-active');
 		var input = selection.options[selection.selectedIndex].text;
 		var gtID = input.toUpperCase();
@@ -149,8 +149,8 @@ function loadDoc() {
 				if (this.readyState == 4 && this.status == 200) {
 					var obj = JSON.parse(xhttp.responseText);
 					$("#loading_overlay").removeClass('is-active');
-					if (isEmpty(obj)) {
-						alert("Error wrong gencode transcription id, please try again");
+
+					if (typeof obj == 'undefined' || obj == null || obj.length == 0) {
 						d3.select("svg").selectAll("*").remove();
 						$("#download_tsv_button").addClass('is-hidden');
 						$("#download_svg_button").addClass('is-hidden');
@@ -182,9 +182,7 @@ function loadDoc() {
 					xhttpH.onreadystatechange = function() {
 						if (this.readyState == 4 && this.status == 200) {
 							var hgmd = JSON.parse(xhttpH.responseText);
-							if (isEmpty(hgmd)) {
-								console.log("hgmd array empty");
-							} else {
+							if (typeof hgmd !== 'undefined' || hgmd !== null || hgmd.length > 0) {
 								appendHGMD(hgmd);
 							}
 						}
@@ -202,9 +200,7 @@ function loadDoc() {
 					xhttpC.onreadystatechange = function() {
 						if (this.readyState == 4 && this.status == 200) {
 							var clinvar = JSON.parse(xhttpC.responseText);
-							if (isEmpty(clinvar)) {
-								console.log("clinvar array empty");
-							} else {
+							if (typeof clinvar !== 'undefined' || clinvar !== null || clinvar.length > 0) {
 								appendClinvar(clinvar);
 							}
 						}
@@ -222,9 +218,7 @@ function loadDoc() {
 					xhttpD.onreadystatechange = function() {
 						if (this.readyState == 4 && this.status == 200) {
 							var domains = JSON.parse(xhttpD.responseText);
-							if (isEmpty(domains)) {
-								console.log("domain array empty");
-							} else {
+							if (typeof domains !== 'undefined' && domains !== null && domains.length > 0) {
 								appendPfamDomains(domains);
 							}
 						}
@@ -239,8 +233,4 @@ function loadDoc() {
 			}
 		}
 	}
-
-}
-function isEmpty(value) {
-	return (value == null || value.length === 0);
 }
