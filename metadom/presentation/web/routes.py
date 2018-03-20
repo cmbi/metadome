@@ -7,6 +7,7 @@ from metadom.presentation.web.forms import MetaDomForm
 from metadom.domain.repositories import MappingRepository, GeneRepository
 import json
 from metadom.presentation import api
+import traceback
 
 _log = logging.getLogger(__name__)
 
@@ -88,4 +89,5 @@ def before_request():
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover
     _log.error("Unhandled exception:\n{}".format(error))
-    return render_template('error.html', msg=error), 500
+    _log.error(traceback.print_exc())
+    return render_template('error.html', msg=error, stack_trace=traceback.print_exc()), 500
