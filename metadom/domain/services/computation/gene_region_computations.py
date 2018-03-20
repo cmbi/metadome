@@ -11,9 +11,12 @@ def retrieve_background_variant_counts(gene_region):
     # the value that is to be returned
     variant_type_counts = dict()
     
-    for chrom_pos in gene_region.mappings_per_chromosome.keys():
-        codon = gene_region.mappings_per_chromosome[chrom_pos].codon
-        residue_position = gene_region.mappings_per_chromosome[chrom_pos].amino_acid_position
+    # retrieve the mappings per chromosome position
+    _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()
+    
+    for chrom_pos in _mappings_per_chromosome.keys():
+        codon = _mappings_per_chromosome[chrom_pos].codon
+        residue_position = _mappings_per_chromosome[chrom_pos].amino_acid_position
     
         if not residue_position in variant_type_counts.keys():
             variant_type_counts[residue_position] = dict()
@@ -36,17 +39,20 @@ def retrieve_variant_type_counts(gene_region, annotated_region):
     # First retrieve the background for the region
     variant_type_counts = retrieve_background_variant_counts(gene_region)
     
+    # retrieve the mappings per chromosome position
+    _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()
+    
     for chrom_pos in annotated_region.keys():
-        codon = gene_region.mappings_per_chromosome[chrom_pos].codon
-        codon_pos = gene_region.mappings_per_chromosome[chrom_pos].codon_base_pair_position
-        residue = gene_region.mappings_per_chromosome[chrom_pos].amino_acid_residue
-        residue_position = gene_region.mappings_per_chromosome[chrom_pos].amino_acid_position
+        codon = _mappings_per_chromosome[chrom_pos].codon
+        codon_pos = _mappings_per_chromosome[chrom_pos].codon_base_pair_position
+        residue = _mappings_per_chromosome[chrom_pos].amino_acid_residue
+        residue_position = _mappings_per_chromosome[chrom_pos].amino_acid_position
                  
         for annotation_entry in annotated_region[chrom_pos]:
-            if gene_region.mappings_per_chromosome[chrom_pos].base_pair != annotation_entry['REF']:
+            if _mappings_per_chromosome[chrom_pos].base_pair != annotation_entry['REF']:
                 raise ExternalREFAlleleNotEqualsTranscriptionException("For transcript '"+str(gene_region.gencode_transcription_id)+
                                                    "', at chrom_pos '"+str(chrom_pos)+"' : analysis of protein region could"+
-                                                   " not be made due to: gene_region.mappings_per_chromosome[chrom_pos].base_pair"+
+                                                   " not be made due to: gene_region.retrieve_mappings_per_chromosome()[chrom_pos].base_pair"+
                                                    " != annotation_entry['REF']")
         
             alt = annotation_entry['ALT']
