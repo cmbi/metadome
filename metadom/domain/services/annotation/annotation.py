@@ -22,6 +22,8 @@ def annotateSNVs(annotateTranscriptFunction, gene_region):
 
     annotation_data = annotateTranscriptFunction(gene_region)
     
+    _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()
+    
     for annotation in annotation_data:
         # Check if we are dealing with a SNV
         if len(annotation['REF']) != 1: continue
@@ -33,7 +35,7 @@ def annotateSNVs(annotateTranscriptFunction, gene_region):
         if gene_region.strand == Strand.minus: ref = convertNucleotide(annotation['REF'])
         
         # Check if the reference in the annotation_date is correct, compared to our transcript
-        if gene_region.mappings_per_chromosome[annotation['POS']].base_pair == ref:
+        if _mappings_per_chromosome[annotation['POS']].base_pair == ref:
             SNV_correct = SNV_correct + 1
         else:
             SNV_incorrect = SNV_incorrect + 1
