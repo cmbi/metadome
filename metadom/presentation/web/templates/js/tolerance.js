@@ -65,8 +65,6 @@ function getTranscript() {
 					dropdown.options.add(opt);
 					j++;
 				}
-				no_protein_data
-
 			}
 		}
 	};
