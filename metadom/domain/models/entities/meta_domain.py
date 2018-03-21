@@ -1,10 +1,14 @@
 from metadom.domain.repositories import InterproRepository
 from metadom.domain.data_generation.mapping.meta_domain_mapping import generate_pfam_alignment_mappings
+from metadom.domain.models.entities.codon import Codon, MalformedCodonException
 
 class UnsupportedMetaDomainIdentifier(Exception):
     pass
 
 class NotEnoughOccurrencesForMetaDomain(Exception):
+    pass
+
+class MalformedMappingsForMetaDomainPosition(Exception):
     pass
 
 class MetaDomain(object):
@@ -16,11 +20,53 @@ class MetaDomain(object):
     name                       description
     domain_id                  str the id / accession code of this domain 
     consensus_length           int length of the domain consensus
-    n_proteins                    int number of unique genes containing this domain
+    n_proteins                 int number of unique genes containing this domain
     n_instances                int number of unique instances containing this domain
     mappings_per_consensus_pos dictionary of mappings per metadomain consensus positions; {POS: [models.mapping.Mapping]}
     consensus_pos_per_protein  dictionary of protein ids with their uniprot positions mapped to consensus {protein_id: {uniprot_pos:<int:consensus_position>}}
     """
+    
+    def get_codon_level_information_on_consensus_position(self, consensus_position):
+        """Retrieves codon level information for this consensus position"""
+        codons = dict()
+        
+        # first check if the consensus position is present in the mappings_per_consensus_pos
+        if consensus_position in self.mappings_per_consensus_pos.keys():
+            mapping_per_gene_per_amino_acid_pos = dict()
+            
+            # first gather all mappings for the unique gene ids in combination with the amino acid pos
+            for mapping in self.mappings_per_consensus_pos[consensus_position]:
+                if not mapping.gene_id in mapping_per_gene_per_amino_acid_pos.keys():
+                    mapping_per_gene_per_amino_acid_pos[mapping.gene_id] = dict()
+                
+                if not mapping.amino_acid_position in mapping_per_gene_per_amino_acid_pos[mapping.gene_id].keys():
+                    mapping_per_gene_per_amino_acid_pos[mapping.gene_id][mapping.amino_acid_position] = []
+                    
+                mapping_per_gene_per_amino_acid_pos[mapping.gene_id][mapping.amino_acid_position].append(mapping)
+            
+            
+            # retrieve the codons for these positions
+            for gene_id in mapping_per_gene_per_amino_acid_pos.keys():
+                for amino_acid_position in mapping_per_gene_per_amino_acid_pos[gene_id].keys():
+                    # check if all mappings cover exactly 3 mappings (thus represent a codon)
+                    try:
+                        # combine the mappings of base pairs to a codon
+                        _codon = Codon(mapping_per_gene_per_amino_acid_pos[gene_id][amino_acid_position])
+                        
+                        # aggregate duplicate chromosomal regions
+                        if not _codon.unique_str_representation() in codons.keys():
+                            codons[_codon.unique_str_representation()] = []
+                        codons[_codon.unique_str_representation()].append(_codon)
+                    except MalformedCodonException as e:
+                        raise MalformedMappingsForMetaDomainPosition("Encountered a malformed codon mapping for domain '"
+                                                                     +str(self.domain_id)+"' in gene '"+str(gene_id)
+                                                                     +"', at amino_acid_position '"+str(amino_acid_position)
+                                                                     +"':" + e)
+        # return the codons that correspond to this position
+        return codons
+            
+            
+    
     def __init__(self, domain_id):
         self.domain_id = str() 
         self.consensus_length = int()
