@@ -12,17 +12,38 @@
 <!-- Staring definition of site content -->
 <section class="section">
   <div class="container">
-    <h1>View a single meta domain based on URL; vb: http://127.0.0.1:5000/metadom/ABCA4/domain1</h1>
-    <h2>Which gene; which strand</h2>
-    <h2>protein domain length</h2>
-    <h2>domain instances in hg19</h2>
-    <h2>aligned instances</h2>
-    <h2>n_genes containing this domain</h2>
+    <div class="label"><label class="title">Meta-domain information in the context of {{data['meta_domain_info']['gene_name']}}</label></div> 
+    <div class="label">
+      <label class="label">
+        Gene: {{data['meta_domain_info']['gene_name']}} (
+        <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t={{data['meta_domain_info']['transcript']}}" target="_blank">
+          {{data['meta_domain_info']['transcript']}}
+        </a>), strand: {{data['meta_domain_info']['strand']}},  cDNA length: {{data['meta_domain_info']['cDNA_length']}}
+      </label>
+    </div>
+    <div class="label">
+      <label class="label">
+        Protein {{data['meta_domain_info']['protein_name']}} (
+        <a href="http://www.uniprot.org/uniprot/{{data['meta_domain_info']['protein_ac']}}" target="_blank">
+          {{data['meta_domain_info']['protein_ac']}}
+        </a>) protein length: {{data['meta_domain_info']['protein_length']}}
+      </label>
+    </div>
+    <div class="label">
+      <label class="label">
+        Domain 
+        <a href="http://http://pfam.xfam.org/family/{{data['meta_domain_info']['domain_id']}}" target="_blank">
+          {{data['meta_domain_info']['domain_id']}}
+        </a>, with {{data['meta_domain_info']['domain_occurrences']|length}} occurrences in this protein at {% for domain_occurrence in data['meta_domain_info']['domain_occurrences'] %} ({{domain_occurrence['start']}}-{{domain_occurrence['stop']}})  {% endfor %}
+      </label>
+    </div>
+    
+    <div class="label"><label class="title">Meta-domain data in the context of {{data['meta_domain_info']['gene_name']}}</label></div> 
     <table class="table is-hoverable is-fullwidth">
       <thead>
         <tr>
-          <th><abbr title="Chromosome positions for the codon">Chromosome positions</abbr></th>
           <th><abbr title="Position in protein">Protein position</abbr></th>
+          <th><abbr title="Chromosome positions for the codon">Chromosome positions</abbr></th>
           <th><abbr title="Position based on the Pfam protein domain">Consensus position</abbr></th>
           <th><abbr title="Percentage of positions that can be aligned throughout the human genome">Alignment %</abbr></th>
           <th><abbr title="Relative entropy as measured via Pfam full alignments">Pfam entropy</abbr></th>
@@ -35,8 +56,8 @@
       </thead>
       <tfoot>
         <tr>
-          <th><abbr title="Chromosome positions for the codon">Chromosome positions</abbr></th>
           <th><abbr title="Position in protein">Protein position</abbr></th>
+          <th><abbr title="Chromosome positions for the codon">Chromosome positions</abbr></th>
           <th><abbr title="Position based on the Pfam protein domain">Consensus position</abbr></th>
           <th><abbr title="Percentage of positions that can be aligned throughout the human genome">Alignment %</abbr></th>
           <th><abbr title="Relative entropy as measured via Pfam full alignments">Pfam entropy</abbr></th>
@@ -48,10 +69,10 @@
         </tr>
       </tfoot>
       <tbody id="domainTable">
-      {% for k,v in data.items() %}
-        <tr id="row{{k}}" onclick='$("[id^=row]").removeClass("is-selected");$("#row{{k}}").addClass("is-selected")'>
-        <th>{{k}}</th>        
-        <td> {% for value in data[k] %} {{ value }} {% endfor %} </td>
+      {% for meta_domain_entry in data['meta_domain_data'] %}
+        <tr id="row{{meta_domain_entry['protein_pos']}}" onclick='$("[id^=row]").removeClass("is-selected");$("#row{{meta_domain_entry['protein_pos']}}").addClass("is-selected")'>
+        <th>{{meta_domain_entry['protein_pos']}}</th>        
+        <td> </td>
         <td>random-data</td>
         <td>random-data</td>
         <td>random-data</td>
