@@ -195,7 +195,8 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
         return jsonify({'error': 'Transcript '+str(transcript_id)+' not present in database'}), 500
      
     # Check if the domain is present in the gene region
-    if not gene_region.domain_in_gene_region(domain_id):
+    domains_in_gene = gene_region.retrieve_specific_domains_in_gene(domain_id)
+    if len(domains_in_gene) == 0:
         return jsonify({'error': 'Domain id '+str(domain_id)+' not present in transcript '+str(transcript_id)+' in the database'}), 500
      
     # create a metadomain for this domain
@@ -203,28 +204,48 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
      
     # retrieve the context for this protein
     protein_to_consensus_positions = metadomain.consensus_pos_per_protein[gene_region.protein_id]
-     
+    
+    meta_domain_data = []
     # generate the return value
-    for consensus_pos in protein_to_consensus_positions:
+    for protein_pos in protein_to_consensus_positions:
         metadom_entry = {}
-        metadom_entry['consensus_pos'] = consensus_pos
-        metadom_entry['protein_ac'] = gene_region.uniprot_ac
-        metadom_entry['protein_name'] = gene_region.uniprot_name
-        metadom_entry['transcript'] = gene_region.gencode_transcription_id
-        metadom_entry['strand'] = gene_region.strand
-        metadom_entry['gene_name'] = gene_region.gene_name
-         
-        for mapping in metadomain.mappings_per_consensus_pos[protein_to_consensus_positions[consensus_pos]]:
-            #TODO finalize
-     
-             
-             
- 
-             
-            return_value[consensus_pos].append(str(mapping.chromosome)+":"+str(mapping.chromosome_position))
-             
-        return_value[consensus_pos] = list(set(return_value[consensus_pos]))
-     
+        metadom_entry['protein_pos'] = protein_pos
+        metadom_entry['consensus_pos'] = protein_to_consensus_positions[metadom_entry['protein_pos']]
+        metadom_entry['gene_mappings'] = []
+        metadom_entry['other_mappings'] = []
+        
+        # retrieve all mappings present at this position
+        for mapping in metadomain.mappings_per_consensus_pos[metadom_entry['consensus_pos']]:
+            if mapping.gene_id == gene_region.gene_id and mapping.amino_acid_position == metadom_entry['protein_pos']:
+                # we are dealing with the gene of interest at the same position
+                metadom_entry['gene_mappings'].append(mapping)
+            else:
+                # we are dealing with another position
+                metadom_entry['other_mappings'].append(mapping)
+        
+        # remove duplicates
+        
+        # add the metadom entry to the return value
+        meta_domain_data.append(metadom_entry)
+    
+    # Add general info on the gene, domain and protein
+    meta_domain_info = dict()
+    meta_domain_info['gene_name'] = gene_region.gene_name
+    meta_domain_info['protein_ac'] = gene_region.uniprot_ac
+    meta_domain_info['protein_name'] = gene_region.uniprot_name
+    meta_domain_info['transcript'] = gene_region.gencode_transcription_id
+    meta_domain_info['strand'] = gene_region.strand
+    meta_domain_info['protein_length'] = gene_region.protein_region_length
+    meta_domain_info['cDNA_length'] = gene_region.cDNA_region_length
+    meta_domain_info['domain_id'] = metadomain.domain_id
+    meta_domain_info['domain_occurrences'] = [{'start':domain.uniprot_start, 'stop':domain.uniprot_stop} for domain in domains_in_gene]
+    
+    ## add everything to the return value
+    # sort the return value
+    return_value['meta_domain_data'] = sorted(meta_domain_data, key=lambda k: k['protein_pos'])
+    return_value['meta_domain_info'] = meta_domain_info
+    
+    # return to caller
     return conditional_jsonify(return_value, _jsonify)
 
 @bp.route('/gene/getMetaDomainInformation/<string:transcript_id>/<int:amino_acid_position>', methods=['GET'])
