@@ -1,5 +1,5 @@
 
-def convertListOfIntegerToRanges(self, p):
+def convertListOfIntegerToRanges(p):
     """Converts a list of integer to a list of ranges.
     Source: http://stackoverflow.com/questions/4628333/converting-a-list-of-integers-into-range-in-python"""
     if len(p) > 0:
