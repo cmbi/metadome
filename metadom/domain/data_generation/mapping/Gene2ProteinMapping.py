@@ -3,6 +3,7 @@ from metadom.domain.data_generation.mapping.Protein2ProteinMapping import \
 from metadom.domain.models.mapping import Mapping
 
 import logging
+from metadom.domain.models.gene import Strand
 
 _log = logging.getLogger(__name__)
 
@@ -42,8 +43,10 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
             continue # skip this Chromosome
         if cd.strand == '-':
             custom_range = range(cd.end, cd.start-1, -1)
+            strand = Strand.minus
         else:
             custom_range = range(cd.start, cd.end+1)
+            strand = Strand.plus
         for i in custom_range:
             # create mapping object for this position
             base_pair = coding_sequence[cDNA_pos]
@@ -70,6 +73,7 @@ def createMappingOfGeneTranscriptionToTranslationToProtein(gene_transcription, m
             to_be_added_mapping.append(Mapping(
                 base_pair = base_pair,
                 cDNA_position = cDNA_pos,
+                strand = strand,
                 codon = codon,
                 codon_base_pair_position = codon_base_pair_position,
                 amino_acid_residue = amino_acid_residue,
