@@ -1,4 +1,5 @@
 from metadom.database import db
+from metadom.domain.models.gene import Strand
 
 class Mapping(db.Model):
     """
@@ -36,6 +37,7 @@ class Mapping(db.Model):
     base_pair = db.Column(db.String(1))
     codon = db.Column(db.String(3))
     codon_base_pair_position = db.Column(db.Integer)
+    strand = db.Column(db.Enum(Strand), nullable=False)
     amino_acid_residue = db.Column(db.String(1))
     amino_acid_position = db.Column(db.Integer)
     cDNA_position = db.Column(db.Integer)
