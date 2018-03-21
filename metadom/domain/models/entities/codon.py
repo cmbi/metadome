@@ -22,11 +22,14 @@ class Codon(object):
     cDNA_position_range        tuple the range of cDNA positions of this codon
     """
 
+    def unique_str_representation(self):
+        return str(self.chr)+":"+str(self.regions)+"::("+str(self.strand)+")"
+
     def __init__(self, _mappings):
         self.mapping_ids = list()
         self.gene_id = int()
         self.protein_id = int()
-        self.strand = Strand()
+        self.strand = str()
         self.base_pair_representation = str() 
         self.amino_acid_residue = str()
         self.amino_acid_position = int()
@@ -40,7 +43,7 @@ class Codon(object):
         
         # sort the mappings
         _mappings = sorted(_mappings, key=lambda k: k.codon_base_pair_position)
-        self.mapping_ids = [_mappings[0].mapping_id, _mappings[1].mapping_id, _mappings[2].mapping_id, ]
+        self.mapping_ids = [_mappings[0].id, _mappings[1].id, _mappings[2].id, ]
         
         # double check the mapping for gene ids
         if not(_mappings[0].gene_id == _mappings[1].gene_id == _mappings[2].gene_id):
@@ -86,3 +89,7 @@ class Codon(object):
         
         # Set the regions the same way as we set the regions in a gene_region
         self.regions = list(convertListOfIntegerToRanges(sorted([x.chromosome_position for x in _mappings])))
+    
+    def __repr__(self):
+        return "<Codon(representation='%s', amino_acid_residue='%s', chr='%s', chr_positions='%s', strand='%s')>" % (
+                            self.base_pair_representation, self.amino_acid_residue, self.chr, str(self.regions), self.strand )
