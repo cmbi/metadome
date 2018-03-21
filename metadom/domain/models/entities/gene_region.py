@@ -1,4 +1,5 @@
 from metadom.domain.repositories import MappingRepository, ProteinRepository, InterproRepository
+from metadom.domain.services.helper_functions import convertListOfIntegerToRanges
 
 class FailedToConstructGeneRegion(Exception):
     pass
@@ -31,18 +32,6 @@ class GeneRegion(object):
     regions                   list of regions
     mappings_per_chromosome   dictionary of mappings per chromosome positions; {POS: models.mapping.Mapping}
     """
-    
-    def convertListOfIntegerToRanges(self, p):
-        """Converts a list of integer to a list of ranges.
-        Source: http://stackoverflow.com/questions/4628333/converting-a-list-of-integers-into-range-in-python"""
-        if len(p) > 0:
-            q = sorted(p)
-            i = 0
-            for j in range(1,len(q)):
-                if q[j] > 1+q[j-1]:
-                    yield (q[i],q[j-1])
-                    i = j
-            yield (q[i], q[-1])
     
     def retrieve_specific_domains_in_gene(self, domain_id):
         """retrieves specific domains in a gene based on the 
@@ -149,7 +138,7 @@ class GeneRegion(object):
         self.cDNA_region_length = len(self.mappings_per_cDNA.keys())
 
         # convert the chromosome to ranges
-        self.regions = list(self.convertListOfIntegerToRanges(sorted(self.chromosome_pos_to_cDNA.keys())))
+        self.regions = list(convertListOfIntegerToRanges(sorted(self.chromosome_pos_to_cDNA.keys())))
 
     def __repr__(self):
         return "<GeneRegion(chr='%s', gene_name='%s', gencode_transcription_id='%s', protein_region_length='%s', cDNA_region_length='%s', strand='%s', number of chromosomal regions='%s')>" % (
