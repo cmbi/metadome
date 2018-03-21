@@ -211,19 +211,18 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
         metadom_entry = {}
         metadom_entry['protein_pos'] = protein_pos
         metadom_entry['consensus_pos'] = protein_to_consensus_positions[metadom_entry['protein_pos']]
-        metadom_entry['gene_mappings'] = []
-        metadom_entry['other_mappings'] = []
+        meta_codons = metadomain.get_codon_level_information_on_consensus_position(metadom_entry['consensus_pos'])
+        
+        ...TODO: interpret and parse metadomain positions
         
         # retrieve all mappings present at this position
-        for mapping in metadomain.mappings_per_consensus_pos[metadom_entry['consensus_pos']]:
-            if mapping.gene_id == gene_region.gene_id and mapping.amino_acid_position == metadom_entry['protein_pos']:
+        for codon_repr in metadom_entry['meta_codons']:
+            if codon.gene_id == gene_region.gene_id and codon.amino_acid_position == metadom_entry['protein_pos']:
                 # we are dealing with the gene of interest at the same position
-                metadom_entry['gene_mappings'].append(mapping)
-            else:
-                # we are dealing with another position
-                metadom_entry['other_mappings'].append(mapping)
-        
-        # remove duplicates
+                        
+
+                metadom_entry['source_codon'] = codon
+                break;
         
         # add the metadom entry to the return value
         meta_domain_data.append(metadom_entry)
