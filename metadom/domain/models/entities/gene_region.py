@@ -44,12 +44,10 @@ class GeneRegion(object):
                     i = j
             yield (q[i], q[-1])
     
-    def domain_in_gene_region(self, domain_id):
-        """Checks if a given domain id is present in the region"""
-        for domain in self.interpro_domains:
-            if domain.ext_db_id == domain_id:
-                return True
-        return False
+    def retrieve_specific_domains_in_gene(self, domain_id):
+        """retrieves specific domains in a gene based on the 
+        provided domain id, sorted by the start position"""
+        return sorted([domain for domain in self.interpro_domains if domain.ext_db_id == domain_id], key=lambda k: k.uniprot_start)
     
     def retrieve_mappings_per_chromosome(self):
         """Returns the mappings for this gene region per chromosome position"""
@@ -66,6 +64,7 @@ class GeneRegion(object):
     def __init__(self, _gene):
         self.chr = str()
         self.gene_name = str()
+        self.gene_id = str()
         self.gencode_transcription_id = str()
         self.strand = str()
         self.protein_region_start = int()
@@ -85,6 +84,7 @@ class GeneRegion(object):
     def initialize_from_gene(self, _gene):
         # First set the fields that can directly be set from the _gene
         self.gene_name = _gene.gene_name
+        self.gene_id = _gene.id
         self.protein_region_start = 0
         self.protein_region_stop = _gene.sequence_length            
         self.gencode_transcription_id = _gene.gencode_transcription_id
