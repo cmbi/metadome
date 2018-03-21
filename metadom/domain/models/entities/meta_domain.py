@@ -19,8 +19,8 @@ class MetaDomain(object):
     n_proteins                    int number of unique genes containing this domain
     n_instances                int number of unique instances containing this domain
     mappings_per_consensus_pos dictionary of mappings per metadomain consensus positions; {POS: [models.mapping.Mapping]}
-    consensus_pos_per_protein  dictionary of protein ids with their uniprot positions mapped to consensus {protein_is: {uniprot_pos:<int:consensus_position>}}
-    """    
+    consensus_pos_per_protein  dictionary of protein ids with their uniprot positions mapped to consensus {protein_id: {uniprot_pos:<int:consensus_position>}}
+    """
     def __init__(self, domain_id):
         self.domain_id = str() 
         self.consensus_length = int()
