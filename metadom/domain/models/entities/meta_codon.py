@@ -54,11 +54,7 @@ class MetaCodon(object):
             if codon.gene_id in self.codon_aggregate.keys():
                 raise MalformedAggregatedCodon("Duplicate codons of the same gene transcript '"+str(codon.gene_id)+"' received")
             
-            self.codon_aggregate[codon.gene_id] = dict()
-            self.codon_aggregate[codon.gene_id]['mapping_ids'] = codon.mapping_ids
-            self.codon_aggregate[codon.gene_id]['protein_id'] = codon.protein_id
-            self.codon_aggregate[codon.gene_id]['amino_acid_position'] = codon.amino_acid_position
-            self.codon_aggregate[codon.gene_id]['cDNA_position_range'] = codon.cDNA_position_range
+            self.codon_aggregate[codon.gene_id] = codon
     
     def __repr__(self):
         return "<MetaCodon(representation='%s', amino_acid_residue='%s', chr='%s', chr_positions='%s', strand='%s', aggregated_codons='%s')>" % (
