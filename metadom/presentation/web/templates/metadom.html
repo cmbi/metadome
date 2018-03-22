@@ -32,7 +32,7 @@
     <div class="label">
       <label class="label">
         Domain 
-        <a href="http://http://pfam.xfam.org/family/{{data['meta_domain_info']['domain_id']}}" target="_blank">
+        <a href="http://pfam.xfam.org/family/{{data['meta_domain_info']['domain_id']}}" target="_blank">
           {{data['meta_domain_info']['domain_id']}}
         </a>, with {{data['meta_domain_info']['domain_occurrences']|length}} occurrences in this protein at {% for domain_occurrence in data['meta_domain_info']['domain_occurrences'] %} ({{domain_occurrence['start']}}-{{domain_occurrence['stop']}})  {% endfor %}
       </label>
@@ -72,13 +72,13 @@
       {% for meta_domain_entry in data['meta_domain_data'] %}
         <tr id="row{{meta_domain_entry['protein_pos']}}" onclick='$("[id^=row]").removeClass("is-selected");$("#row{{meta_domain_entry['protein_pos']}}").addClass("is-selected")'>
         <th>{{meta_domain_entry['protein_pos']}}</th>        
-        <td> </td>
-        <td>random-data</td>
-        <td>random-data</td>
-        <td>random-data</td>
-        <td>random-data</td>
-        <td>random-data</td>
-        <td>random-data</td>
+        <td>{{meta_domain_entry['consensus_pos']}}</td>
+        <td>{{meta_domain_entry['chr_region']}}</td>
+        <td>{{meta_domain_entry['codon']}}</td>
+        <td>{{meta_domain_entry['amino_acid']}}</td>
+        <td>{{meta_domain_entry['other_chr_regions']}}</td>
+        <td>{{meta_domain_entry['other_codons']}}</td>
+        <td>{{meta_domain_entry['other_amino_acids']}}</td>
         <td>random-data</td>
         <td>random-data</td>
         </tr> 
