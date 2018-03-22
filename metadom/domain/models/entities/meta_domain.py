@@ -1,6 +1,7 @@
 from metadom.domain.repositories import InterproRepository
 from metadom.domain.data_generation.mapping.meta_domain_mapping import generate_pfam_alignment_mappings
 from metadom.domain.models.entities.codon import Codon, MalformedCodonException
+from metadom.domain.models.entities.meta_codon import MetaCodon, MalformedAggregatedCodon
 
 class UnsupportedMetaDomainIdentifier(Exception):
     pass
@@ -26,9 +27,9 @@ class MetaDomain(object):
     consensus_pos_per_protein  dictionary of protein ids with their uniprot positions mapped to consensus {protein_id: {uniprot_pos:<int:consensus_position>}}
     """
     
-    def get_codon_level_information_on_consensus_position(self, consensus_position):
-        """Retrieves codon level information for this consensus position"""
-        codons = dict()
+    def get_codons_aligned_to_consensus_position(self, consensus_position):
+        """Retrieves meta_codons for this consensus position"""
+        codons = []
         
         # first check if the consensus position is present in the mappings_per_consensus_pos
         if consensus_position in self.mappings_per_consensus_pos.keys():
@@ -44,24 +45,32 @@ class MetaDomain(object):
                     
                 mapping_per_gene_per_amino_acid_pos[mapping.gene_id][mapping.amino_acid_position].append(mapping)
             
-            
+            unique_codons = dict()
             # retrieve the codons for these positions
             for gene_id in mapping_per_gene_per_amino_acid_pos.keys():
                 for amino_acid_position in mapping_per_gene_per_amino_acid_pos[gene_id].keys():
-                    # check if all mappings cover exactly 3 mappings (thus represent a codon)
                     try:
-                        # combine the mappings of base pairs to a codon
-                        _codon = Codon(mapping_per_gene_per_amino_acid_pos[gene_id][amino_acid_position])
-                        
+                        codon = Codon(mapping_per_gene_per_amino_acid_pos[gene_id][amino_acid_position])
                         # aggregate duplicate chromosomal regions
-                        if not _codon.unique_str_representation() in codons.keys():
-                            codons[_codon.unique_str_representation()] = []
-                        codons[_codon.unique_str_representation()].append(_codon)
+                        if not codon.unique_str_representation() in unique_codons.keys():
+                            unique_codons[codon.unique_str_representation()] = []
+                        
+                        # add the codon to the dictionary
+                        unique_codons[codon.unique_str_representation()].append(codon)
                     except MalformedCodonException as e:
                         raise MalformedMappingsForMetaDomainPosition("Encountered a malformed codon mapping for domain '"
                                                                      +str(self.domain_id)+"' in gene '"+str(gene_id)
                                                                      +"', at amino_acid_position '"+str(amino_acid_position)
                                                                      +"':" + e)
+            
+            # Now convert the codons to meta_codons
+            try:
+                codons = [MetaCodon(unique_codons[key]) for key in unique_codons.keys()]
+            except MalformedAggregatedCodon as e:
+                raise MalformedMappingsForMetaDomainPosition("Encountered a malformed aggregation of codons for domain '"
+                                                             +str(self.domain_id)+"' at domain consensus position '"
+                                                             +str(consensus_position)+"': " + e)
+                
         # return the codons that correspond to this position
         return codons
             
