@@ -61,7 +61,7 @@ class MetaDomain(object):
                         raise MalformedMappingsForMetaDomainPosition("Encountered a malformed codon mapping for domain '"
                                                                      +str(self.domain_id)+"' in gene '"+str(gene_id)
                                                                      +"', at amino_acid_position '"+str(amino_acid_position)
-                                                                     +"':" + e)
+                                                                     +"':" + str(e))
             
             # Now convert the codons to meta_codons
             try:
@@ -69,7 +69,7 @@ class MetaDomain(object):
             except MalformedAggregatedCodon as e:
                 raise MalformedMappingsForMetaDomainPosition("Encountered a malformed aggregation of codons for domain '"
                                                              +str(self.domain_id)+"' at domain consensus position '"
-                                                             +str(consensus_position)+"': " + e)
+                                                             +str(consensus_position)+"': " + str(e))
                 
         # return the codons that correspond to this position
         return codons
