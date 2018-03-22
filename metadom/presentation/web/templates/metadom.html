@@ -43,29 +43,35 @@
       <thead>
         <tr>
           <th><abbr title="Position in protein">Protein position</abbr></th>
-          <th><abbr title="Chromosome positions for the codon">Chromosome positions</abbr></th>
           <th><abbr title="Position based on the Pfam protein domain">Consensus position</abbr></th>
-          <th><abbr title="Percentage of positions that can be aligned throughout the human genome">Alignment %</abbr></th>
+          <th><abbr title="Chromosome positions for the codon">Chromosome positions</abbr></th>
+          <th><abbr title="The codon at this position">Codon</abbr></th>
+          <th><abbr title="The amino acid residue at this position">AA residue</abbr></th>
+          <th><abbr title="Chromosome positions, that can be linked via meta-domain relations to this codon">Meta-chromosome positions</abbr></th>
+          <th><abbr title="Codons found at related meta-domain positions">Meta-codons</abbr></th>
+          <th><abbr title="Residues found in the human genome at related meta-domain positions">Meta-residues</abbr></th>
+          <th><abbr title="ExAC variation found at related meta-domain positions">Normal (ExAC) Meta-variants</abbr></th>
+          <th><abbr title="Pathogenic variation found at related meta-domain positions">Pathogenic Meta-variants</abbr></th>
           <th><abbr title="Relative entropy as measured via Pfam full alignments">Pfam entropy</abbr></th>
           <th><abbr title="Relative entropy as measured solely via homology relations in the human genome, incorporating ExAC variants">ExAC entropy</abbr></th>
-          <th><abbr title="Number of missense variants found in ExAC at this domain position">Meta ExAC missense </abbr></th>
-          <th><abbr title="Number of missense variants found in HGMD at this domain position">Meta HGMD missense </abbr></th>
-          <th><abbr title="Identifiers for the variants found in ExAC at this domain position">ExAC identifiers</abbr></th>
-          <th><abbr title="Identifiers for the variants found in HGMD at this domain position">HGMD identfiers </abbr></th>
+          <th><abbr title="Percentage of positions that can be aligned throughout the human genome">Alignment %</abbr></th>
         </tr>
       </thead>
       <tfoot>
         <tr>
           <th><abbr title="Position in protein">Protein position</abbr></th>
-          <th><abbr title="Chromosome positions for the codon">Chromosome positions</abbr></th>
           <th><abbr title="Position based on the Pfam protein domain">Consensus position</abbr></th>
-          <th><abbr title="Percentage of positions that can be aligned throughout the human genome">Alignment %</abbr></th>
+          <th><abbr title="Chromosome positions for the codon">Chromosome positions</abbr></th>
+          <th><abbr title="The codon at this position">Codon</abbr></th>
+          <th><abbr title="The amino acid residue at this position">AA residue</abbr></th>
+          <th><abbr title="Chromosome positions, that can be linked via meta-domain relations to this codon">Meta-chromosome positions</abbr></th>
+          <th><abbr title="Codons found at related meta-domain positions">Meta-codons</abbr></th>
+          <th><abbr title="Residues found in the human genome at related meta-domain positions">Meta-residues</abbr></th>
+          <th><abbr title="ExAC variation found at related meta-domain positions">Normal (ExAC) Meta-variants</abbr></th>
+          <th><abbr title="Pathogenic variation found at related meta-domain positions">Pathogenic Meta-variants</abbr></th>
           <th><abbr title="Relative entropy as measured via Pfam full alignments">Pfam entropy</abbr></th>
           <th><abbr title="Relative entropy as measured solely via homology relations in the human genome, incorporating ExAC variants">ExAC entropy</abbr></th>
-          <th><abbr title="Number of missense variants found in ExAC at this domain position">Meta ExAC missense </abbr></th>
-          <th><abbr title="Number of missense variants found in HGMD at this domain position">Meta HGMD missense </abbr></th>
-          <th><abbr title="Identifiers for the variants found in ExAC at this domain position">ExAC identifiers</abbr></th>
-          <th><abbr title="Identifiers for the variants found in HGMD at this domain position">HGMD identfiers </abbr></th>
+          <th><abbr title="Percentage of positions that can be aligned throughout the human genome">Alignment %</abbr></th>
         </tr>
       </tfoot>
       <tbody id="domainTable">
@@ -81,6 +87,9 @@
         <td>{{meta_domain_entry['other_amino_acids']}}</td>
         <td>{{meta_domain_entry['other_normal_variation']}}</td>
         <td>{{meta_domain_entry['other_pathogenic_variation']}}</td>
+        <td>TODO</td>
+        <td>TODO</td>
+        <td>TODO</td>
         </tr> 
       {% endfor %}
       </tbody>
