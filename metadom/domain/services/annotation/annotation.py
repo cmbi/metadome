@@ -14,15 +14,14 @@ def convertNucleotide(nucleotide):
     elif nucleotide == 'G': return 'C'
     else: raise NucleotideConversionException("Received nucleotide '"+str(nucleotide)+"', which could not be converted")
 
-def annotateSNVs(annotateTranscriptFunction, gene_region):
+def annotateSNVs(annotateTranscriptFunction, mappings_per_chr_pos, strand, chromosome, regions):
     SNV_correct = 0
     SNV_incorrect = 0
     
     Annotation_mapping = {}
 
-    annotation_data = annotateTranscriptFunction(gene_region)
-    
-    _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()
+    # annotate the region with provided data
+    annotation_data = annotateTranscriptFunction(chromosome, regions)
     
     for annotation in annotation_data:
         # Check if we are dealing with a SNV
@@ -32,10 +31,10 @@ def annotateSNVs(annotateTranscriptFunction, gene_region):
         # retrieve the reference
         ref = str(annotation['REF'])
         # ensure we have correct strand, otherwise convert
-        if gene_region.strand == Strand.minus: ref = convertNucleotide(annotation['REF'])
+        if strand == Strand.minus: ref = convertNucleotide(annotation['REF'])
         
         # Check if the reference in the annotation_date is correct, compared to our transcript
-        if _mappings_per_chromosome[annotation['POS']].base_pair == ref:
+        if mappings_per_chr_pos[annotation['POS']].base_pair == ref:
             SNV_correct = SNV_correct + 1
         else:
             SNV_incorrect = SNV_incorrect + 1
@@ -47,7 +46,7 @@ def annotateSNVs(annotateTranscriptFunction, gene_region):
         alt = str(alt)
         
         # ensure we have correct strand, otherwise convert
-        if gene_region.strand == Strand.minus: alt = convertNucleotide(alt)
+        if strand == Strand.minus: alt = convertNucleotide(alt)
         
         # construct SNV entry
         SNV_entry = {key:annotation['INFO'][key] for key in annotation['INFO'].keys()}

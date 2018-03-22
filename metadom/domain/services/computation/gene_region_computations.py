@@ -75,7 +75,11 @@ def retrieve_variant_type_counts(gene_region, annotated_region):
 
 def compute_tolerance_landscape(gene_region, slidingWindow, min_frequency=0.0):
     # Annotate exac information
-    full_exac_annotations = annotateSNVs(annotateTranscriptWithExacData, gene_region)
+    full_exac_annotations = annotateSNVs(annotateTranscriptWithExacData, 
+                                         mappings_per_chr_pos=gene_region.retrieve_mappings_per_chromosome(),
+                                         strand=gene_region.strand, 
+                                         chromosome=gene_region.chr,
+                                         regions=gene_region.regions)
     filtered_exac_annotations = dict()
     # filter on the minimal frequency
     for chrom_pos in full_exac_annotations.keys():

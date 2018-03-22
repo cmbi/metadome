@@ -124,7 +124,11 @@ def get_HGMD_annotation_for_transcript(transcript_id):
     
     HGMD_variants = []
     if not gene_region is None:    
-        HGMD_annotation = annotateSNVs(annotateTranscriptWithHGMDData, gene_region)
+        HGMD_annotation = annotateSNVs(annotateTranscriptWithHGMDData,
+                                         mappings_per_chr_pos=gene_region.retrieve_mappings_per_chromosome(),
+                                         strand=gene_region.strand, 
+                                         chromosome=gene_region.chr,
+                                         regions=gene_region.regions)
         
         # retrieve the mappings per chromosome position
         _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()
@@ -157,7 +161,11 @@ def get_ClinVar_annotation_for_transcript(transcript_id):
     
     ClinVar_variants = []
     if not gene_region is None:    
-        ClinVar_annotation = annotateSNVs(annotateTranscriptWithClinvarData, gene_region)
+        ClinVar_annotation = annotateSNVs(annotateTranscriptWithClinvarData,
+                                         mappings_per_chr_pos=gene_region.retrieve_mappings_per_chromosome(),
+                                         strand=gene_region.strand, 
+                                         chromosome=gene_region.chr,
+                                         regions=gene_region.regions)
         
         # retrieve the mappings per chromosome position
         _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()

@@ -3,7 +3,7 @@ from metadom.default_settings import EXAC_VCF_FILE, HGMD_VCF_FILE,\
     CLINVAR_VCF_FILE
 from metadom.domain.parsers.tabix import tabix_query, variant_coordinate_system
 
-def annotateTranscriptWithClinvarData(gene_region):
+def annotateTranscriptWithClinvarData(chromosome, regions):
     """
     Annotates variants found within the ClinVar dataset.
     Specific clinical signifcance level of interest is
@@ -35,8 +35,8 @@ def annotateTranscriptWithClinvarData(gene_region):
     RS                  dbSNP ID (i.e. rs number)
     SSR                 Variant Suspect Reason Codes. One or more of the following values may be added: 0 - unspecified, 1 - Paralog, 2 - byEST, 4 - oldAlign, 8 - Para_EST, 16 - 1kg_failed, 1024 - other
     """
-    for gene_sub_region in gene_region.regions:
-        for tabix_record in tabix_query(CLINVAR_VCF_FILE, gene_region.chr[3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based):
+    for gene_sub_region in regions:
+        for tabix_record in tabix_query(CLINVAR_VCF_FILE, chromosome[3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based):
             for _, item in enumerate(tabix_record.ALT):
                 clinvar_info = {"AF_ESP": None if "AF_ESP" not in tabix_record.INFO.keys() else tabix_record.INFO["AF_ESP"],
                             "AF_EXAC": None if "AF_EXAC" not in tabix_record.INFO.keys() else tabix_record.INFO["AF_EXAC"],
@@ -65,13 +65,13 @@ def annotateTranscriptWithClinvarData(gene_region):
                     clinvar_record['INFO']['CLNSIG'][0] in CLINVAR_CONSIDERED_CLINSIG:
                     yield clinvar_record
 
-def annotateTranscriptWithExacData(gene_region):
+def annotateTranscriptWithExacData(chromosome, regions):
     """
     Annotates variants found within the ExAC dataset with specific FILTER settings.
         PASS : passed all variant filters imposed by ExAC, all such variants are considered real variants.
     """
-    for gene_sub_region in gene_region.regions:
-        for tabix_record in tabix_query(EXAC_VCF_FILE, gene_region.chr[3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based):
+    for gene_sub_region in regions:
+        for tabix_record in tabix_query(EXAC_VCF_FILE, chromosome[3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based):
             for i, item in enumerate(tabix_record.ALT):
                 exac_filter = ''
                 if len(tabix_record.FILTER) == 0:
@@ -83,7 +83,7 @@ def annotateTranscriptWithExacData(gene_region):
                     exac_record = {'CHROM': tabix_record.CHROM, 'POS': tabix_record.POS, 'FILTER':exac_filter, 'REF':tabix_record.REF, 'ALT':item, 'INFO':{'AC':tabix_record.INFO['AC'][i], 'AF':tabix_record.INFO['AF'][i], 'AN':tabix_record.INFO['AN']}}
                     yield exac_record
     
-def annotateTranscriptWithHGMDData(gene_region):
+def annotateTranscriptWithHGMDData(chromosome, regions):
     """
     Annotates variants found within the HGMD dataset with CLASS:
         DM: Disease-causing mutations are entered into HGMD where the authors of the corresponding report(s) have demonstrated that the reported mutation(s) are involved in conferring the associated clinical phenotype upon the individuals concerned.
@@ -93,8 +93,8 @@ def annotateTranscriptWithHGMDData(gene_region):
         DFP: Disease-associated polymorphisms with supporting functional evidence meet both of the criteria in FP and DP that the polymorphism should not only be reported to be significantly associated with disease but should also display evidence of being of direct functional relevance.
         R: An entry retired from HGMD due to being found to have been erroneously included ab initio, or subject to correction in the literature resulting in the record becoming obsolete, merged or otherwise invalid.
     """
-    for gene_sub_region in gene_region.regions:
-        for tabix_record in tabix_query(HGMD_VCF_FILE, gene_region.chr[3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based, encoding='utf-8'):
+    for gene_sub_region in regions:
+        for tabix_record in tabix_query(HGMD_VCF_FILE, chromosome[3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based, encoding='utf-8'):
             for _, item in enumerate(tabix_record.ALT): 
                 if tabix_record.INFO['CLASS'] in HGMD_CONSIDERED_CLASSES:
                     hgmd_info = {'CLASS':tabix_record.INFO['CLASS'], 'PHEN':tabix_record.INFO['PHEN'], 
