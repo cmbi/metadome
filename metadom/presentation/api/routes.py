@@ -211,18 +211,38 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
         metadom_entry = {}
         metadom_entry['protein_pos'] = protein_pos
         metadom_entry['consensus_pos'] = protein_to_consensus_positions[metadom_entry['protein_pos']]
-        meta_codons = metadomain.get_codon_level_information_on_consensus_position(metadom_entry['consensus_pos'])
+        metadom_entry['other_chr_regions'] = []
+        metadom_entry['other_codons'] = []
+        metadom_entry['other_amino_acids'] = []
         
-        ...TODO: interpret and parse metadomain positions
+        # Retrieve the meta codons for this position
+        meta_codons = metadomain.get_codons_aligned_to_consensus_position(metadom_entry['consensus_pos'])
         
-        # retrieve all mappings present at this position
-        for codon_repr in metadom_entry['meta_codons']:
-            if codon.gene_id == gene_region.gene_id and codon.amino_acid_position == metadom_entry['protein_pos']:
-                # we are dealing with the gene of interest at the same position
-                        
-
-                metadom_entry['source_codon'] = codon
-                break;
+        # iterate over meta_codons and add to metadom_entry
+        for meta_codon in meta_codons:
+            # Check if we are dealing with the gene and protein_pos of interest
+            if gene_region.gene_id in meta_codon.codon_aggregate.keys() \
+                and metadom_entry['protein_pos'] == meta_codon.codon_aggregate[gene_region.gene_id]['amino_acid_position']:
+                # yes we are
+                metadom_entry['chr_region'] = meta_codon.chr+":"+str(meta_codon.regions)+"(strand: "+str(meta_codon.strand)+")"
+                metadom_entry['codon'] = meta_codon.base_pair_representation
+                metadom_entry['amino_acid'] = meta_codon.amino_acid_residue
+            else:
+                # no we are not
+                metadom_entry['other_chr_regions'].append(meta_codon.chr+":"+str(meta_codon.regions)+"(strand: "+str(meta_codon.strand)+")")
+                metadom_entry['other_codons'].append(meta_codon.base_pair_representation)
+                metadom_entry['other_amino_acids'].append(meta_codon.amino_acid_residue)
+        
+        # ensure uniqueness
+        metadom_entry['other_chr_regions'] = list(set(metadom_entry['other_chr_regions']))
+        metadom_entry['other_codons'] = list(set(metadom_entry['other_codons']))
+        metadom_entry['other_amino_acids'] = list(set(metadom_entry['other_amino_acids']))
+            
+        # annotate missense from exac/gnomad
+        # ...
+        
+        # annotate pathogenic missense from clinvar/hgmd
+        # ...
         
         # add the metadom entry to the return value
         meta_domain_data.append(metadom_entry)
