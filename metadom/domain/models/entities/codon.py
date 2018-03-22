@@ -24,6 +24,13 @@ class Codon(object):
 
     def unique_str_representation(self):
         return str(self.chr)+":"+str(self.regions)+"::("+str(self.strand)+")"
+    
+    def retrieve_mappings_per_chromosome(self):
+        """Returns the mappings for this codon per chromosome position"""
+        mappings_per_chromosome = dict()
+        for mapping in self.mappings:
+            mappings_per_chromosome[mapping.chromosome_position] = mapping
+        return mappings_per_chromosome
 
     def __init__(self, _mappings):
         self.mappings = list()
