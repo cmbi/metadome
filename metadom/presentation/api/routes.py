@@ -222,7 +222,7 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
         for meta_codon in meta_codons:
             # Check if we are dealing with the gene and protein_pos of interest
             if gene_region.gene_id in meta_codon.codon_aggregate.keys() \
-                and metadom_entry['protein_pos'] == meta_codon.codon_aggregate[gene_region.gene_id]['amino_acid_position']:
+                and metadom_entry['protein_pos'] == meta_codon.codon_aggregate[gene_region.gene_id].amino_acid_position:
                 # yes we are
                 metadom_entry['chr_region'] = meta_codon.chr+":"+str(meta_codon.regions)+"(strand: "+str(meta_codon.strand)+")"
                 metadom_entry['codon'] = meta_codon.base_pair_representation
