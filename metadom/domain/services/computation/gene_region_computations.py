@@ -1,77 +1,7 @@
 from metadom.domain.services.annotation.annotation import annotateSNVs
 from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithExacData    
 from metadom.domain.metrics.GeneticTolerance import background_corrected_mosy_score
-from metadom.domain.metrics.codon_statistics import codon_background_rates
-from Bio.Seq import translate
-
-class ExternalREFAlleleNotEqualsTranscriptionException(Exception):
-    pass
-
-def retrieve_background_variant_counts(gene_region):
-    # the value that is to be returned
-    variant_type_counts = dict()
-    
-    # retrieve the mappings per chromosome position
-    _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()
-    
-    for chrom_pos in _mappings_per_chromosome.keys():
-        codon = _mappings_per_chromosome[chrom_pos].codon
-        residue_position = _mappings_per_chromosome[chrom_pos].amino_acid_position
-    
-        if not residue_position in variant_type_counts.keys():
-            variant_type_counts[residue_position] = dict()
-            
-            # Add the background mutation type rates for this codon        
-            variant_type_counts[residue_position]['background_missense'] = codon_background_rates[codon]['missense']
-            variant_type_counts[residue_position]['background_nonsense'] = codon_background_rates[codon]['nonsense']
-            variant_type_counts[residue_position]['background_synonymous'] = codon_background_rates[codon]['synonymous']
-            
-            # Add the background mutation type rates for this codon        
-            variant_type_counts[residue_position]['missense'] = 0
-            variant_type_counts[residue_position]['nonsense'] = 0
-            variant_type_counts[residue_position]['synonymous'] = 0
-    
-    # return the variant type counts
-    return variant_type_counts
-            
-def retrieve_variant_type_counts(gene_region, annotated_region):
-    """Given an annotated region, returns a per position count"""
-    # First retrieve the background for the region
-    variant_type_counts = retrieve_background_variant_counts(gene_region)
-    
-    # retrieve the mappings per chromosome position
-    _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()
-    
-    for chrom_pos in annotated_region.keys():
-        codon = _mappings_per_chromosome[chrom_pos].codon
-        codon_pos = _mappings_per_chromosome[chrom_pos].codon_base_pair_position
-        residue = _mappings_per_chromosome[chrom_pos].amino_acid_residue
-        residue_position = _mappings_per_chromosome[chrom_pos].amino_acid_position
-                 
-        for annotation_entry in annotated_region[chrom_pos]:
-            if _mappings_per_chromosome[chrom_pos].base_pair != annotation_entry['REF']:
-                raise ExternalREFAlleleNotEqualsTranscriptionException("For transcript '"+str(gene_region.gencode_transcription_id)+
-                                                   "', at chrom_pos '"+str(chrom_pos)+"' : analysis of protein region could"+
-                                                   " not be made due to: gene_region.retrieve_mappings_per_chromosome()[chrom_pos].base_pair"+
-                                                   " != annotation_entry['REF']")
-        
-            alt = annotation_entry['ALT']
-            alt_codon =""
-            for i in range(len(codon)):
-                if i == codon_pos:
-                    alt_codon+= alt
-                else:
-                    alt_codon+= codon[i]
-            
-            alt_residue = translate(alt_codon)
-            if alt_residue == '*':
-                variant_type_counts[residue_position]['nonsense']+=1
-            elif alt_residue != residue:
-                variant_type_counts[residue_position]['missense']+=1
-            else:
-                variant_type_counts[residue_position]['synonymous']+=1
-                
-    return variant_type_counts
+from metadom.domain.services.computation.codon_computations import retrieve_variant_type_counts
 
 def compute_tolerance_landscape(gene_region, slidingWindow, min_frequency=0.0):
     # Annotate exac information
@@ -89,7 +19,7 @@ def compute_tolerance_landscape(gene_region, slidingWindow, min_frequency=0.0):
                     filtered_exac_annotations[chrom_pos] = []
                 filtered_exac_annotations[chrom_pos].append(exac_variant)
         
-    variant_type_counts = retrieve_variant_type_counts(gene_region, filtered_exac_annotations)
+    variant_type_counts = retrieve_variant_type_counts(gene_region.retrieve_mappings_per_chromosome(), filtered_exac_annotations)
 
     # compute the sliding window size
     sliding_window_size = float(gene_region.protein_region_length)*slidingWindow
