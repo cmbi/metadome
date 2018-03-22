@@ -14,15 +14,17 @@ class MetaCodon(object):
     amino_acid_residue         str the amino acid residue of this codon
     base_pair_representation   str the base pair representation of this codon (e.g. ATG)
     unique_str_representation  str unique string representation of the chromosomal region of this codon
-    codon_aggregate            dict containing the duplicate chromosomal regions sorted as:
-                                {codon.gene_id: 
-                                    {'mapping_ids' : codon.mapping_ids,
-                                     'protein_id' : codon.protein_id,
-                                     'amino_acid_position': codon.amino_acid_position,
-                                     'cDNA_position_range' : codon.cDNA_position_range,
-                                    }
-                                }
+    codon_aggregate            dict containing the duplicate chromosomal regions as:
+                                {codon.gene_id: models.entities.codon.Codon}
     """
+
+    def retrieve_mappings_per_chromosome(self):
+        """Returns the first set of mappings for this meta_codon
+        found in the aggregate_codons"""
+        mappings_per_chromosome = dict()
+        for codon in self.codon_aggregate.values():
+            return codon.retrieve_mappings_per_chromosome()
+        return mappings_per_chromosome
     
     def __init__(self, codons):
         self.chr = str()
