@@ -1,7 +1,10 @@
 from metadom.domain.models.entities.gene_region import GeneRegion
 from metadom.domain.services.computation.gene_region_computations import compute_tolerance_landscape
 from metadom.domain.services.annotation.annotation import annotateSNVs
-from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithHGMDData, annotateTranscriptWithClinvarData
+from metadom.domain.services.computation.codon_computations import retieve_empty_variant_type_counter, retrieve_variant_type_counts,\
+    retrieve_aggregated_variant_type_counts
+from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithHGMDData, annotateTranscriptWithClinvarData,\
+    annotateTranscriptWithExacData
 from metadom.domain.models.entities.meta_domain import MetaDomain
 from metadom.domain.repositories import GeneRepository
 from flask import abort, Blueprint, jsonify, render_template, session
@@ -222,9 +225,15 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
         metadom_entry['other_chr_regions'] = []
         metadom_entry['other_codons'] = []
         metadom_entry['other_amino_acids'] = []
+        metadom_entry['other_normal_variation'] = retieve_empty_variant_type_counter()
+        metadom_entry['other_pathogenic_variation'] = retieve_empty_variant_type_counter()
         
         # Retrieve the meta codons for this position
         meta_codons = metadomain.get_codons_aligned_to_consensus_position(metadom_entry['consensus_pos'])
+        
+        # create the variant annotations
+        normal_variant_annotation = []
+        pathogenic_variant_annotation = []
         
         # iterate over meta_codons and add to metadom_entry
         for meta_codon in meta_codons:
@@ -240,17 +249,33 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
                 metadom_entry['other_chr_regions'].append(meta_codon.chr+":"+str(meta_codon.regions)+"(strand: "+str(meta_codon.strand)+")")
                 metadom_entry['other_codons'].append(meta_codon.base_pair_representation)
                 metadom_entry['other_amino_acids'].append(meta_codon.amino_acid_residue)
+                
+                # annotate missense from exac/gnomad
+                normal_variant_annotation.append({'mappings_per_chromosome':meta_codon.retrieve_mappings_per_chromosome(), 
+                                        'annotated_region':annotateSNVs(annotateTranscriptWithExacData,
+                                         mappings_per_chr_pos=meta_codon.retrieve_mappings_per_chromosome(),
+                                         strand=meta_codon.strand, 
+                                         chromosome=meta_codon.chr,
+                                         regions=meta_codon.regions)})
+                
+                # annotate pathogenic missense from clinvar/hgmd
+                pathogenic_variant_annotation.append({'mappings_per_chromosome':meta_codon.retrieve_mappings_per_chromosome(), 
+                                        'annotated_region':annotateSNVs(annotateTranscriptWithHGMDData,
+                                         mappings_per_chr_pos=meta_codon.retrieve_mappings_per_chromosome(),
+                                         strand=meta_codon.strand, 
+                                         chromosome=meta_codon.chr,
+                                         regions=meta_codon.regions)})
+        
+        # count the number of normal and pathogenic missense
+        for normal_variants in normal_variant_annotation:
+            metadom_entry['other_normal_variation'].update(retrieve_aggregated_variant_type_counts(retrieve_variant_type_counts(normal_variants['mappings_per_chromosome'], normal_variants['annotated_region'])))
+        for pathogenic_variants in pathogenic_variant_annotation:
+            metadom_entry['other_pathogenic_variation'].update(retrieve_aggregated_variant_type_counts(retrieve_variant_type_counts(pathogenic_variants['mappings_per_chromosome'], pathogenic_variants['annotated_region'])))
         
         # ensure uniqueness
         metadom_entry['other_chr_regions'] = list(set(metadom_entry['other_chr_regions']))
         metadom_entry['other_codons'] = list(set(metadom_entry['other_codons']))
         metadom_entry['other_amino_acids'] = list(set(metadom_entry['other_amino_acids']))
-            
-        # annotate missense from exac/gnomad
-        # ...
-        
-        # annotate pathogenic missense from clinvar/hgmd
-        # ...
         
         # add the metadom entry to the return value
         meta_domain_data.append(metadom_entry)
