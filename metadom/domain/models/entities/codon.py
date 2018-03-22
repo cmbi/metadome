@@ -1,4 +1,3 @@
-from metadom.domain.models.gene import Strand
 from metadom.domain.services.helper_functions import convertListOfIntegerToRanges
 class MalformedCodonException(Exception):
     pass
