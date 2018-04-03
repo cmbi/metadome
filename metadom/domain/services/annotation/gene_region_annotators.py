@@ -1,6 +1,5 @@
-from metadom.default_settings import EXAC_VCF_FILE, HGMD_VCF_FILE,\
-    HGMD_CONSIDERED_CLASSES, EXAC_ACCEPTED_FILTERS, CLINVAR_CONSIDERED_CLINSIG,\
-    CLINVAR_VCF_FILE
+from metadom.default_settings import EXAC_VCF_FILE, EXAC_ACCEPTED_FILTERS,\
+ CLINVAR_CONSIDERED_CLINSIG, CLINVAR_VCF_FILE
 from metadom.domain.parsers.tabix import tabix_query, variant_coordinate_system
 
 def annotateTranscriptWithClinvarData(chromosome, regions):
@@ -82,26 +81,3 @@ def annotateTranscriptWithExacData(chromosome, regions):
                 if exac_filter in EXAC_ACCEPTED_FILTERS:
                     exac_record = {'CHROM': tabix_record.CHROM, 'POS': tabix_record.POS, 'FILTER':exac_filter, 'REF':tabix_record.REF, 'ALT':item, 'INFO':{'AC':tabix_record.INFO['AC'][i], 'AF':tabix_record.INFO['AF'][i], 'AN':tabix_record.INFO['AN']}}
                     yield exac_record
-    
-def annotateTranscriptWithHGMDData(chromosome, regions):
-    """
-    Annotates variants found within the HGMD dataset with CLASS:
-        DM: Disease-causing mutations are entered into HGMD where the authors of the corresponding report(s) have demonstrated that the reported mutation(s) are involved in conferring the associated clinical phenotype upon the individuals concerned.
-        DM?: A probable/possible pathological mutation, reported to be pathogenic in the corresponding report, but where (1) the author has indicated that there may be some degree of uncertainty; (2) the HGMD curators believe greater interpretational caution is warranted; or (3) subsequent evidence has appeared in the literature which has called the putatively deleterious nature of the variant into question.
-        DP: Disease-associated polymorphisms are entered into HGMD where there is evidence for a significant association with a disease/clinical phenotype along with additional evidence that the polymorphism is itself likely to be of functional relevance (e.g. as a consequence of genic/genomic location, evolutionary conservation, transcription factor binding potential, etc.), although there may be no direct evidence (e.g. from an expression study) of a functional effect.
-        FP: Functional polymorphisms are included in HGMD where the reporting authors have shown that the polymorphism in question exerts a direct functional effect (e.g. by means of an in vitro reporter gene assay or alternatively by protein structure, function or expression studies), but with no disease association reported as yet.
-        DFP: Disease-associated polymorphisms with supporting functional evidence meet both of the criteria in FP and DP that the polymorphism should not only be reported to be significantly associated with disease but should also display evidence of being of direct functional relevance.
-        R: An entry retired from HGMD due to being found to have been erroneously included ab initio, or subject to correction in the literature resulting in the record becoming obsolete, merged or otherwise invalid.
-    """
-    for gene_sub_region in regions:
-        for tabix_record in tabix_query(HGMD_VCF_FILE, chromosome[3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based, encoding='utf-8'):
-            for _, item in enumerate(tabix_record.ALT): 
-                if tabix_record.INFO['CLASS'] in HGMD_CONSIDERED_CLASSES:
-                    hgmd_info = {'CLASS':tabix_record.INFO['CLASS'], 'PHEN':tabix_record.INFO['PHEN'], 
-                                  'PROT': None if 'PROT' not in tabix_record.INFO.keys() else tabix_record.INFO['PROT'], 
-                                  'DNA': None if 'DNA' not in tabix_record.INFO.keys() else tabix_record.INFO['DNA'],
-                                  'MUT': None if 'MUT' not in tabix_record.INFO.keys() else tabix_record.INFO['MUT'], 
-                                  'GENE':tabix_record.INFO['GENE'], 'STRAND':tabix_record.INFO['STRAND'], 
-                                  'ID':tabix_record.ID}
-                    hgmd_record = {'CHROM': tabix_record.CHROM, 'POS': tabix_record.POS, 'REF':tabix_record.REF, 'ALT':item, 'INFO':hgmd_info}
-                    yield hgmd_record
