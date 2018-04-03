@@ -38,18 +38,6 @@ var clinvarTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
 			}
 			return "<span style='color:red'>" + variantString + "</span>";
 		});
-// define tooltip for hgmd
-var hgmdTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
-		function(d) {
-			var variantString = "HGMD<br>";
-			var i = 0;
-			while (i < d.alt.length) {
-				variantString = variantString
-						+ ("p." + d.pos + d.ref + ">" + d.alt[i] + "<br>");
-				i++;
-			}
-			return "<span style='color:red'>" + variantString + "</span>";
-		});
 
 // define tooltip for pfamdomains
 var domainTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
