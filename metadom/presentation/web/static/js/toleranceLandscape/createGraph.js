@@ -1,6 +1,6 @@
 // creating the tolerance graph and setting the main elements of the graph
 function createGraph(obj){	
-	$("#geneName").html(obj[0].geneName);
+	$("#geneName").html(obj.geneName);
 	
 	svg.selectAll("*").remove();
 	svg = d3.select("svg");
@@ -63,7 +63,7 @@ function createGraph(obj){
 	
 	
 	// the tolerance data
-	var tolerance = obj[1];
+	var tolerance = obj.sliding_window;
 	
 	// setting x/y domain according to data
 	x.domain(d3.extent(tolerance, function(d) { return d.pos; }));
