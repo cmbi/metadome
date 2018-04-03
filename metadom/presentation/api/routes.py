@@ -70,31 +70,12 @@ def get_tolerance_landscape_for_transcript(transcript_id):
     # Retrieve the gene from the database
     gene = GeneRepository.retrieve_gene(transcript_id)
     
+    Pfam_domains = []
     if not gene is None:
         # build the gene region
         gene_region = GeneRegion(gene)
         region_sliding_window = compute_tolerance_landscape(gene_region, sliding_window, frequency)
         
-        return jsonify([{"geneName":gene_region.gene_name}, region_sliding_window])
-    else:
-        return jsonify({'error': 'No gene region could be build for transcript '+str(transcript_id)}), 500
-
-@bp.route('/gene/getPfamDomains', methods=['GET'])
-def get_pfam_domains():
-    """This endpoint is a stub, to ensure deeper endpoints may be used"""
-    pass
-
-@bp.route('/gene/getPfamDomains/<transcript_id>', methods=['GET'])
-def get_pfam_domains_for_transcript(transcript_id):
-    # Retrieve the gene from the database
-    gene = GeneRepository.retrieve_gene(transcript_id)
-    
-    if not gene is None:
-        # build the gene region
-        gene_region = GeneRegion(gene)
-    
-    Pfam_domains = []
-    if not gene_region is None:
         
         for domain in gene_region.interpro_domains:
             if domain.ext_db_id.startswith('PF'):
@@ -107,83 +88,31 @@ def get_pfam_domains_for_transcript(transcript_id):
                 pfam_domain["domID"] = domain.id
                 
                 Pfam_domains.append(pfam_domain)
+        
+        ClinVar_variants = []
+        if not gene_region is None:    
+            ClinVar_annotation = annotateSNVs(annotateTranscriptWithClinvarData,
+                                             mappings_per_chr_pos=gene_region.retrieve_mappings_per_chromosome(),
+                                             strand=gene_region.strand, 
+                                             chromosome=gene_region.chr,
+                                             regions=gene_region.regions)
+            
+            # retrieve the mappings per chromosome position
+            _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()
+            
+            for chrom_pos in ClinVar_annotation.keys():
+                for variant in ClinVar_annotation[chrom_pos]:
+                    ClinVar_variant = {}
+                    ClinVar_variant['pos'] = _mappings_per_chromosome[chrom_pos].uniprot_position
+                    ClinVar_variant['ref'] = variant['REF']
+                    ClinVar_variant['alt'] = variant['ALT']
+                    
+                    ClinVar_variants.append(ClinVar_variant)
+#         return jsonify(ClinVar_variants)
+        
+        return jsonify({"geneName":gene_region.gene_name, "sliding_window":region_sliding_window, "domains":Pfam_domains, "clinvar":ClinVar_variants})
     else:
         return jsonify({'error': 'No gene region could be build for transcript '+str(transcript_id)}), 500
-    return jsonify(Pfam_domains)
-
-@bp.route('/gene/annotateHGMD', methods=['GET'])
-def get_HGMD_annotation():
-    """This endpoint is a stub, to ensure deeper endpoints may be used"""
-    pass
-
-@bp.route('/gene/annotateHGMD/<transcript_id>', methods=['GET'])
-def get_HGMD_annotation_for_transcript(transcript_id):
-    # Retrieve the gene from the database
-    gene = GeneRepository.retrieve_gene(transcript_id)
-    
-    if not gene is None:
-        # build the gene region
-        gene_region = GeneRegion(gene)
-    
-    HGMD_variants = []
-    if not gene_region is None:    
-        HGMD_annotation = annotateSNVs(annotateTranscriptWithHGMDData,
-                                         mappings_per_chr_pos=gene_region.retrieve_mappings_per_chromosome(),
-                                         strand=gene_region.strand, 
-                                         chromosome=gene_region.chr,
-                                         regions=gene_region.regions)
-        
-        # retrieve the mappings per chromosome position
-        _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()
-        
-        for chrom_pos in HGMD_annotation.keys():
-            for variant in HGMD_annotation[chrom_pos]:
-                HGMD_variant = {}
-                HGMD_variant['pos'] = _mappings_per_chromosome[chrom_pos].uniprot_position
-                HGMD_variant['ref'] = variant['REF']
-                HGMD_variant['alt'] = variant['ALT']
-                
-                HGMD_variants.append(HGMD_variant)
-    else:
-        return jsonify({'error': 'No gene region could be build for transcript '+str(transcript_id)}), 500
-    return jsonify(HGMD_variants)
-
-@bp.route('/gene/annotateClinVar', methods=['GET'])
-def get_ClinVar_annotation():
-    """This endpoint is a stub, to ensure deeper endpoints may be used"""
-    pass
-
-@bp.route('/gene/annotateClinVar/<transcript_id>', methods=['GET'])
-def get_ClinVar_annotation_for_transcript(transcript_id):
-    # Retrieve the gene from the database
-    gene = GeneRepository.retrieve_gene(transcript_id)
-    
-    if not gene is None:
-        # build the gene region
-        gene_region = GeneRegion(gene)
-    
-    ClinVar_variants = []
-    if not gene_region is None:    
-        ClinVar_annotation = annotateSNVs(annotateTranscriptWithClinvarData,
-                                         mappings_per_chr_pos=gene_region.retrieve_mappings_per_chromosome(),
-                                         strand=gene_region.strand, 
-                                         chromosome=gene_region.chr,
-                                         regions=gene_region.regions)
-        
-        # retrieve the mappings per chromosome position
-        _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()
-        
-        for chrom_pos in ClinVar_annotation.keys():
-            for variant in ClinVar_annotation[chrom_pos]:
-                ClinVar_variant = {}
-                ClinVar_variant['pos'] = _mappings_per_chromosome[chrom_pos].uniprot_position
-                ClinVar_variant['ref'] = variant['REF']
-                ClinVar_variant['alt'] = variant['ALT']
-                
-                ClinVar_variants.append(ClinVar_variant)
-    else:
-        return jsonify({'error': 'No gene region could be build for transcript '+str(transcript_id)}), 500
-    return jsonify(ClinVar_variants)
 
 @bp.route('/pfam/getMetaDomain/<string:domain_id>', methods=['GET'])
 def get_metadomain_for_pfam_id(domain_id):
@@ -286,7 +215,7 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
     meta_domain_info['protein_ac'] = gene_region.uniprot_ac
     meta_domain_info['protein_name'] = gene_region.uniprot_name
     meta_domain_info['transcript'] = gene_region.gencode_transcription_id
-    meta_domain_info['strand'] = gene_region.strand
+    meta_domain_info['strand'] = str(gene_region.strand)
     meta_domain_info['protein_length'] = gene_region.protein_region_length
     meta_domain_info['cDNA_length'] = gene_region.cDNA_region_length
     meta_domain_info['domain_id'] = metadomain.domain_id
