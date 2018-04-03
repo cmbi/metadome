@@ -3,7 +3,7 @@ function appendClinvar(variants){
 	svg.select("g.focus").selectAll(".lines")
 		.data(variants)
 		.enter().append("line")
-		.attr("class", "pathline")
+		.attr("class", "clinvar")
 		.attr("x1", function(d) { return x(d.pos);})
 		.attr("y1", 0 + margin.top + margin.bottom)
 		.attr("x2", function(d) { return x(d.pos);})
@@ -19,28 +19,6 @@ function appendClinvar(variants){
 			clinvarTip.hide(d)
 			d3.select(this).style("stroke", "green");
 		});
-}
-// creating and adding hgmd variant lines to the graph
-function appendHGMD(hgmdVariants){
-	svg.select("g.focus").selectAll(".lines")
-		.data(hgmdVariants)
-		.enter().append("line")
-		.attr("class", "hgmdline")
-		.attr("x1", function(d) { return x(d.pos);})
-		.attr("y1", 0 + margin.top + margin.bottom)
-		.attr("x2", function(d) { return x(d.pos);})
-		.attr("y2", height)
-		.style("stroke", "grey")
-		.style("stroke-width", 3)
-		.style("clip-path", "url(#clip)")
-		.on("mouseover", function(d) {		
-			hgmdTip.show(d)
-			d3.select(this).style("stroke", "blue");
-		})
-		.on("mouseout", function(d) {		
-			hgmdTip.hide(d)
-			d3.select(this).style("stroke", "grey");
-		});	
 }
 
 // creating and adding pfamdomains to domain view
