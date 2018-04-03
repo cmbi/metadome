@@ -30,6 +30,8 @@ $( function() {
 <link rel="stylesheet"
   href="{{ url_for('static', filename='css/tolerance_graph.css') }}">
 
+
+
 <!-- Staring definition of site content -->
 <section class="section">
   <div class="container">
@@ -99,7 +101,7 @@ $( function() {
       height="700"></svg>
     <div id="graph"></div>
   </div>
-
+  
   <div class="container">
     <!-- Toggling advanced mode -->
     <div class="field is-grouped">    
@@ -137,33 +139,6 @@ $( function() {
         </div>
         <input type="range" name="slidingWindow" id="slidingWindow"
           value="0.05" min="0" max="0.2" step="0.01" required oninput="updateSlidingwindowPercentage(this)" onmouseup="loadDoc()"/>
-      </div>
-
-      <!-- Toggle ClinVar variant annotation -->
-      <div class="control">
-        <label class="checkbox"> <input id="clinvar"
-          type="checkbox" checked onclick="loadDoc()"> Annotate <a
-          href="https://www.ncbi.nlm.nih.gov/clinvar/" target="_blank">ClinVar</a> SNVs
-          in Tolerance Landscape
-        </label>
-      </div>
-
-      <!-- Toggle HGMD variant annotation -->
-      <div class="control">
-        <label class="checkbox"> <input id="hgmd"
-          type="checkbox" checked onclick="loadDoc()"> Annotate <a
-          href="http://www.hgmd.cf.ac.uk/ac/index.php" target="_blank">HGMD</a> SNVs in
-          Tolerance Landscape
-        </label>
-      </div>
-
-      <!-- Toggle PFAM domain annotation -->
-      <div class="control">
-        <label class="checkbox"> <input id="domain"
-          type="checkbox" checked onclick="loadDoc()"> Annotate <a
-          href="https://pfam.xfam.org/" target="_blank">PFAM</a> domains below the
-          Tolerance Landscape
-        </label>
       </div>
     </div>
   </div>
