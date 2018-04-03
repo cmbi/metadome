@@ -68,15 +68,16 @@ def get_tolerance_landscape_for_transcript(transcript_id):
         frequency = float(frequency)
     
     # Retrieve the gene from the database
-    gene = GeneRepository.retrieve_gene(transcript_id)
+    gene = get_or_set_current_gene_region(transcript_id)
+    # build the gene region
+    gene_region = GeneRegion(gene)
     
-    Pfam_domains = []
-    if not gene is None:
-        # build the gene region
-        gene_region = GeneRegion(gene)
+    if not gene_region is None:
+        # generate the sliding window for this gene
         region_sliding_window = compute_tolerance_landscape(gene_region, sliding_window, frequency)
         
-        
+        # Annotate Pfam domains
+        Pfam_domains = []
         for domain in gene_region.interpro_domains:
             if domain.ext_db_id.startswith('PF'):
                 # we have a Pfam domain
@@ -89,26 +90,25 @@ def get_tolerance_landscape_for_transcript(transcript_id):
                 
                 Pfam_domains.append(pfam_domain)
         
+        # Annotate the clinvar variants
         ClinVar_variants = []
-        if not gene_region is None:    
-            ClinVar_annotation = annotateSNVs(annotateTranscriptWithClinvarData,
-                                             mappings_per_chr_pos=gene_region.retrieve_mappings_per_chromosome(),
-                                             strand=gene_region.strand, 
-                                             chromosome=gene_region.chr,
-                                             regions=gene_region.regions)
-            
-            # retrieve the mappings per chromosome position
-            _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()
-            
-            for chrom_pos in ClinVar_annotation.keys():
-                for variant in ClinVar_annotation[chrom_pos]:
-                    ClinVar_variant = {}
-                    ClinVar_variant['pos'] = _mappings_per_chromosome[chrom_pos].uniprot_position
-                    ClinVar_variant['ref'] = variant['REF']
-                    ClinVar_variant['alt'] = variant['ALT']
-                    
-                    ClinVar_variants.append(ClinVar_variant)
-#         return jsonify(ClinVar_variants)
+        ClinVar_annotation = annotateSNVs(annotateTranscriptWithClinvarData,
+                                         mappings_per_chr_pos=gene_region.retrieve_mappings_per_chromosome(),
+                                         strand=gene_region.strand, 
+                                         chromosome=gene_region.chr,
+                                         regions=gene_region.regions)
+        
+        # retrieve the mappings per chromosome position
+        _mappings_per_chromosome = gene_region.retrieve_mappings_per_chromosome()
+        
+        for chrom_pos in ClinVar_annotation.keys():
+            for variant in ClinVar_annotation[chrom_pos]:
+                ClinVar_variant = {}
+                ClinVar_variant['pos'] = _mappings_per_chromosome[chrom_pos].uniprot_position
+                ClinVar_variant['ref'] = variant['REF']
+                ClinVar_variant['alt'] = variant['ALT']
+                
+                ClinVar_variants.append(ClinVar_variant)
         
         return jsonify({"geneName":gene_region.gene_name, "sliding_window":region_sliding_window, "domains":Pfam_domains, "clinvar":ClinVar_variants})
     else:
@@ -279,13 +279,13 @@ def exception_error_handler(error):  # pragma: no cover
 #         gene_region = jsonpickle.decode(session['gene_region'])
 #         if not gene_region is None and gene_region.gencode_transcription_id == transcript_id:
 #             return gene_region
-#     
+#      
 #     # new transcript, lets clear the session
 #     session.clear()
-#     
+#      
 #     # Retrieve the gene from the database
 #     gene = GeneRepository.retrieve_gene(transcript_id)
-#     
+#      
 #     if not gene is None:
 #         try:
 #             # create the gene_region
