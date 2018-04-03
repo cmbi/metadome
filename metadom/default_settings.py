@@ -61,14 +61,6 @@ EXAC_VCF_FILE = EXAC_DIR + "ExAC.r1.sites.vep.vcf.gz"
 EXAC_ACCEPTED_FILTERS = ['PASS']
 
 ## TODO: create filter based on ExAC r1.0
-#HGMD specific files
-HGMD_DIR = DATA_DIR + 'HGMD/HGMD_PRO_2016.2/2016.2/'
-HGMD_ORIGINAL_VCF_FILE = HGMD_DIR + "HGMD_PRO_2016.2_hg19_edited_format_errors.vcf.gz"
-HGMD_FILTERED_VCF_FILE = HGMD_DIR + 'HGMD_PRO_2016.2_hg19.snv.filtered_ExAC.r0.3.1.pass.0.001AF.vcf.gz'
-HGMD_VCF_FILE = HGMD_FILTERED_VCF_FILE
-HGMD_CONSIDERED_CLASSES = ['DM']
-
-## TODO: create filter based on ExAC r1.0
 # ClinVar specific files
 CLINVAR_DIR = DATA_DIR + 'ClinVar/GRCh37/20170615_vcf_2.0/'
 CLINVAR_ORIGINAL_VCF_FILE = CLINVAR_DIR + 'clinvar.vcf.gz'
