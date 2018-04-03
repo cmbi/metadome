@@ -164,6 +164,9 @@ function loadDoc() {
 						geneDetails.innerHTML = '<div class="label"><label class="label">'+geneName+' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='+gtID+'" target="_blank">'+gtID+'</a>)</label></div>';
 						
 						createGraph(obj);
+						appendPfamDomains(obj.domains);
+						appendClinvar(obj.clinvar);
+
 					}
 				}
 			};
@@ -176,60 +179,6 @@ function loadDoc() {
 				xhttp.setRequestHeader("Content-type",
 						"application/x-www-form-urlencoded");
 				xhttp.send();
-				
-				if ($("#hgmd").is(":checked")) {
-					var xhttpH = new XMLHttpRequest();
-					xhttpH.onreadystatechange = function() {
-						if (this.readyState == 4 && this.status == 200) {
-							var hgmd = JSON.parse(xhttpH.responseText);
-							if (typeof hgmd !== 'undefined' || hgmd !== null || hgmd.length > 0) {
-								appendHGMD(hgmd);
-							}
-						}
-					}
-					xhttpH.open("GET",
-							"{{ url_for('api.get_HGMD_annotation') }}" + "/"
-									+ gtID, true);
-					xhttpH.setRequestHeader("Content-type",
-							"application/x-www-form-urlencoded");
-					xhttpH.send();
-				}
-
-				if ($("#clinvar").is(":checked")) {
-					var xhttpC = new XMLHttpRequest();
-					xhttpC.onreadystatechange = function() {
-						if (this.readyState == 4 && this.status == 200) {
-							var clinvar = JSON.parse(xhttpC.responseText);
-							if (typeof clinvar !== 'undefined' || clinvar !== null || clinvar.length > 0) {
-								appendClinvar(clinvar);
-							}
-						}
-					}
-					xhttpC.open("GET",
-							"{{ url_for('api.get_ClinVar_annotation') }}" + "/"
-									+ gtID, true);
-					xhttpC.setRequestHeader("Content-type",
-							"application/x-www-form-urlencoded");
-					xhttpC.send();
-				}
-
-				if ($("#domain").is(":checked")) {
-					var xhttpD = new XMLHttpRequest();
-					xhttpD.onreadystatechange = function() {
-						if (this.readyState == 4 && this.status == 200) {
-							var domains = JSON.parse(xhttpD.responseText);
-							if (typeof domains !== 'undefined' && domains !== null && domains.length > 0) {
-								appendPfamDomains(domains);
-							}
-						}
-					}
-					xhttpD.open("GET", "{{ url_for('api.get_pfam_domains') }}"
-							+ "/" + gtID, true);
-					xhttpD.setRequestHeader("Content-type",
-							"application/x-www-form-urlencoded");
-					xhttpD.send();
-				}
-
 			}
 		}
 	}
