@@ -59,7 +59,6 @@ function createGraph(obj){
 	
 	svg.call(clinvarTip);
 	svg.call(domainTip);
-	svg.call(hgmdTip);
 	
 	
 	// the tolerance data
@@ -82,11 +81,11 @@ function createGraph(obj){
 	// set the gradient
 	svg.append("linearGradient")				
 		.attr("id", "area-gradient")			
-		.attr("gradientUnits", "userSpaceOnUse")	
+		.attr("gradientUnits", "userSpaceOnUse")
 		.attr("x1", 0).attr("y1", y(0))			
 		.attr("x2", 0).attr("y2", y(ymax))		
 		.selectAll("stop")						
-		.data([								
+		.data([
 			{offset: "0%", color: "#d7191c"}, 
 			{offset: "12.5%", color: "#e76818"},  
 			{offset: "25%", color: "#f29e2e"}, 
@@ -97,8 +96,8 @@ function createGraph(obj){
 			{offset: "87.5%", color: "#00a6ca"},        
 			{offset: "100%", color: "#2c7bb6"}
 			])					
-		.enter().append("stop")			
-		.attr("offset", function(d) { return d.offset; })	
+		.enter().append("stop")
+		.attr("offset", function(d) { return d.offset; })
 		.attr("stop-color", function(d) { return d.color; });
 	
 	// append tolerance area
@@ -163,8 +162,7 @@ function createGraph(obj){
 		x.domain(s.map(x2.invert, x2));
 		focus.select(".area").attr("d", area);
 		focus.select(".axis--x").call(xAxis);
-		focus.selectAll(".pathline").attr("x1", function(d){ return x(d.pos);}).attr("x2", function(d){ return x(d.pos);});
-		focus.selectAll(".hgmdline").attr("x1", function(d){ return x(d.pos);}).attr("x2", function(d){ return x(d.pos);});
+		focus.selectAll(".clinvar").attr("x1", function(d){ return x(d.pos);}).attr("x2", function(d){ return x(d.pos);});
 		domains.select(".axis--x").call(xAxis);
 		domains.selectAll(".pfamDomains").attr("x", function(d){ return x(d.start);}).attr("width", function(d){ return x(d.stop) - x(d.start);});
 		svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
@@ -179,8 +177,7 @@ function createGraph(obj){
 		x.domain(t.rescaleX(x2).domain());
 		focus.select(".area").attr("d", area);
 		focus.select(".axis--x").call(xAxis);
-		focus.selectAll(".pathline").attr("x1", function(d){ return x(d.pos);}).attr("x2", function(d){ return x(d.pos);});
-		focus.selectAll(".hgmdline").attr("x1", function(d){ return x(d.pos);}).attr("x2", function(d){ return x(d.pos);});
+		focus.selectAll(".clinvar").attr("x1", function(d){ return x(d.pos);}).attr("x2", function(d){ return x(d.pos);});
 		domains.select(".axis--x").call(xAxis);
 		domains.selectAll(".pfamDomains").attr("x", function(d){ return x(d.start);}).attr("width", function(d){ return x(d.stop) - x(d.start);});
 		context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
@@ -298,7 +295,7 @@ function createGraph(obj){
 			startExport = 0;
 		}
 		
-		svg.select("g.focus").selectAll("line.pathline")
+		svg.select("g.focus").selectAll("line.clinvar")
 			.each(function (d){
 				variants.push(d);
 			});
