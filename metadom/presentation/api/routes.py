@@ -3,7 +3,7 @@ from metadom.domain.services.computation.gene_region_computations import compute
 from metadom.domain.services.annotation.annotation import annotateSNVs
 from metadom.domain.services.computation.codon_computations import retieve_empty_variant_type_counter, retrieve_variant_type_counts,\
     retrieve_aggregated_variant_type_counts
-from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithHGMDData, annotateTranscriptWithClinvarData,\
+from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithClinvarData,\
     annotateTranscriptWithExacData
 from metadom.domain.models.entities.meta_domain import MetaDomain
 from metadom.domain.repositories import GeneRepository
@@ -187,9 +187,9 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
                                          chromosome=meta_codon.chr,
                                          regions=meta_codon.regions)})
                 
-                # annotate pathogenic missense from clinvar/hgmd
+                # annotate pathogenic missense from clinvar
                 pathogenic_variant_annotation.append({'mappings_per_chromosome':meta_codon.retrieve_mappings_per_chromosome(), 
-                                        'annotated_region':annotateSNVs(annotateTranscriptWithHGMDData,
+                                        'annotated_region':annotateSNVs(annotateTranscriptWithClinvarData,
                                          mappings_per_chr_pos=meta_codon.retrieve_mappings_per_chromosome(),
                                          strand=meta_codon.strand, 
                                          chromosome=meta_codon.chr,
