@@ -68,7 +68,7 @@ def get_tolerance_landscape_for_transcript(transcript_id):
         frequency = float(frequency)
     
     # Retrieve the gene from the database
-    gene = get_or_set_current_gene_region(transcript_id)
+    gene = GeneRepository.retrieve_gene(transcript_id)
     # build the gene region
     gene_region = GeneRegion(gene)
     
