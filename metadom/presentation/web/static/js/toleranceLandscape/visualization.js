@@ -15,11 +15,10 @@ margin = {
 	right : 20,
 	bottom : 30,
 	left : 100
-}, width = +svg.attr("width") - margin.left - margin.right, height = +svg
-		.attr("height")
-		- margin.top - margin.bottom, height2 = +svg.attr("height")
-		- margin2.top - margin2.bottom, height3 = +svg.attr("height")
-		- margin3.top - margin3.bottom;
+}, width = +svg.attr("width") - margin.left - margin.right, 
+height = +svg.attr("height") - margin.top - margin.bottom, 
+height2 = +svg.attr("height") - margin2.top - margin2.bottom, 
+height3 = +svg.attr("height") - margin3.top - margin3.bottom;
 
 // Scaling axis
 var x = d3.scaleLinear().range([ 0, width ]), x2 = d3.scaleLinear().range(
@@ -45,25 +44,6 @@ var domainTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
 			return "<span style='color:red'>" + d.Name + "</span>";
 		});
 
-var metadomTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
-		function(d) {
-			return "<span style='color:red'> Frequency:<br>" + d.freq
-					+ "</span>";
-		});
-
-var metadomPosTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
-		function(d, start, score) {
-			if (d.pos != "gene doesn't contain this position") {
-				return "<span style='color:red'> DCP*: " + d.dcp
-						+ "<br> Gene pos: " + (d.pos + start) + "<br> Score: "
-						+ score + "</span>";
-			} else {
-				return "<span style='color:red'> DCP*: " + d.dcp
-						+ "<br> Gene pos: " + d.pos + "<br> Score: " + score
-						+ "</span>";
-			}
-		});
-
 //creating the tolerance graph and setting the main elements of the graph
 function createGraph(obj){	
 	$("#geneName").html(obj.geneName);
@@ -85,8 +65,7 @@ function createGraph(obj){
 	var zoom = d3.zoom()
 		.scaleExtent([1, 30])
 		.translateExtent([[0, 0], [width, height]])
-		.extent([[0, 0], [width, height]])
-		.on("zoom", zoomed);
+		.extent([[0, 0], [width, height]]);
 
 	// define the focus area
 	var	area = d3.area()	
@@ -234,19 +213,6 @@ function createGraph(obj){
 		svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
 			.scale(width / (s[1] - s[0]))
 			.translate(-s[0], 0));
-	}
-	
-	// zoomed function
-	function zoomed() {
-		if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
-		var t = d3.event.transform;
-		x.domain(t.rescaleX(x2).domain());
-		focus.select(".area").attr("d", area);
-		focus.select(".axis--x").call(xAxis);
-		focus.selectAll(".clinvar").attr("x1", function(d){ return x(d.pos);}).attr("x2", function(d){ return x(d.pos);});
-		domains.select(".axis--x").call(xAxis);
-		domains.selectAll(".pfamDomains").attr("x", function(d){ return x(d.start);}).attr("width", function(d){ return x(d.stop) - x(d.start);});
-		context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
 	}
 
 	function type(d) {
