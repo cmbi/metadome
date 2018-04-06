@@ -143,9 +143,6 @@ function createGraph(obj) {
 	// drawing rectangles
 	dataGroup.forEach(function(group, i) {
 		if (i < dataGroup.length - 1) {
-			console.log(group);
-			console.log(i);
-
 			group.values.push(dataGroup[i + 1].values[0]);
 		}
 	})
