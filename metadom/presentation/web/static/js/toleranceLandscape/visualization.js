@@ -49,19 +49,19 @@ var domainTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
 function tolerance_color(score) {
 	if (score <= 0.15) {
 		return "#d7191c";
-	} else if(score <= 0.3){
+	} else if (score <= 0.3) {
 		return "#e76818";
-	} else if(score <= 0.45){
+	} else if (score <= 0.45) {
 		return "#f29e2e";
-	} else if(score <= 0.6){
+	} else if (score <= 0.6) {
 		return "#f9d057";
-	} else if(score <= 0.75){
+	} else if (score <= 0.75) {
 		return "#ffff8c";
-	} else if(score <= 0.9){
+	} else if (score <= 0.9) {
 		return "#90eb9d";
-	} else if(score <= 1.05){ 
+	} else if (score <= 1.05) {
 		return "#00ccbc";
-	} else if(score <= 1.2){
+	} else if (score <= 1.2) {
 		return "#00a6ca";
 	} else {
 		return "#2c7bb6";
@@ -142,21 +142,38 @@ function createGraph(obj) {
 	// add two consecutive data values per group, so these can be used in
 	// drawing rectangles
 	dataGroup.forEach(function(group, i) {
-		if (i < dataGroup.length - 1) {
+		if (i + 1 < dataGroup.length) {
 			group.values.push(dataGroup[i + 1].values[0]);
+		} else if (i < dataGroup.length) {
+			group.values.push(dataGroup[i].values[0]);
 		}
 	})
 
 	// draw the tolerance area graph, base on the grouped consecutive data
 	// values
 	dataGroup.forEach(function(d) {
+		// add the area specific for this position
 		focus.append("path").datum(d.values).attr("class", "area").attr("d",
 				area);
+
+		// create a linear gradient, specific for this position
+		var lineargradient = svg.append("linearGradient").attr("id",
+				"area-gradient_" + d.values[0].pos + "-" + d.values[1].pos)
+				.attr("x1", "0%").attr("y1", "0%")
+				.attr("x2", "100%").attr("y2", "0%");
+		
+		// calculate the offset start score
+		lineargradient.append("stop").attr("class", "start").attr("offset",
+				"0%").attr("stop-color", tolerance_color(d.values[0].score));
+		
+		// calculate the offset stop score
+		lineargradient.append("stop").attr("class", "end").attr("offset",
+				"100%").attr("stop-color", tolerance_color(d.values[1].score));
 	});
 
 	// color the area under the curve in contrast to the tolerance score
 	focus.selectAll(".area").style("fill", function(d, i) {
-		return tolerance_color(d[0].score);
+		return "url(#area-gradient_" + d[0].pos + "-" + d[1].pos + ")";
 	});
 
 	// append xAxis for focus view
