@@ -44,6 +44,17 @@ var domainTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
 			return "<span style='color:red'>" + d.Name + "</span>";
 		});
 
+// the color coding for specific tolerance scores
+function tolerance_color(score){
+	if (score > 0.8) {
+		return "green";
+	}
+	else{
+		return "red";
+	}
+}
+
+
 //creating the tolerance graph and setting the main elements of the graph
 function createGraph(obj){	
 	$("#geneName").html(obj.geneName);
@@ -67,7 +78,7 @@ function createGraph(obj){
 		.translateExtent([[0, 0], [width, height]])
 		.extent([[0, 0], [width, height]]);
 
-	// define the focus area
+	// define the tolerance landscape area plot
 	var	area = d3.area()	
 		.x(function(d) { return x(d.pos); })	
 		.y0(height)					
@@ -101,11 +112,7 @@ function createGraph(obj){
 	var domains = svg.append("g")
 		.attr("class", "domains")
 		.attr("transform", "translate(" + margin3.left + "," + margin3.top + ")");
-	
-	svg.call(clinvarTip);
-	svg.call(domainTip);
-	
-	
+
 	// the tolerance data
 	var tolerance = obj.sliding_window;
 	
@@ -115,47 +122,38 @@ function createGraph(obj){
 	x2.domain(x.domain());
 	y2.domain(y.domain());
 	
-	// setting the legend and heatmap to correct mean
-	if (parseFloat($("#frequency").val()) >= 0.0001){
-		var  ymax = 0.85;
-	}
-	else{
-		var ymax = 1.3;
-	}
+	// Call the tooltips
+	svg.call(clinvarTip);
+	svg.call(domainTip);
 	
-	// set the gradient
-	svg.append("linearGradient")				
-		.attr("id", "area-gradient")			
-		.attr("gradientUnits", "userSpaceOnUse")
-		.attr("x1", 0).attr("y1", y(0))			
-		.attr("x2", 0).attr("y2", y(ymax))		
-		.selectAll("stop")						
-		.data([
-			{offset: "0%", color: "#d7191c"}, 
-			{offset: "12.5%", color: "#e76818"},  
-			{offset: "25%", color: "#f29e2e"}, 
-			{offset: "37.5%", color: "#f9d057"}, 
-			{offset: "50%", color: "#ffff8c"}, 
-			{offset: "62.5%", color: "#90eb9d"}, 
-			{offset: "75%", color: "#00ccbc"},      
-			{offset: "87.5%", color: "#00a6ca"},        
-			{offset: "100%", color: "#2c7bb6"}
-			])					
-		.enter().append("stop")
-		.attr("offset", function(d) { return d.offset; })
-		.attr("stop-color", function(d) { return d.color; });
+	// create a group from the tolerance data	
+	var dataGroup = d3.nest()
+	    .key(function(d) {
+	    	return d.pos;
+	    })
+	    .entries(tolerance);
 	
-	// append tolerance area
-	focus.append("path")
-		.datum(tolerance)
+	// add two consecutive data values per group, so these can be used in drawing rectangles
+	dataGroup.forEach(function(group, i) {
+		if(i < dataGroup.length - 1) {
+			console.log(group);
+			console.log(i);
+			
+			group.values.push(dataGroup[i+1].values[0]);
+		}
+	})
+
+	// draw the tolerance area graph, base on the grouped consecutive data values
+	dataGroup.forEach(function(d) {
+        focus.append("path")
+        .datum(d.values)
 		.attr("class", "area")
-		.attr("fill", "none")
-		.attr("stroke", "#006991")
-		.attr("stroke-linejoin", "round")
-		.attr("stroke-linecap", "round")
-		.attr("stroke-width", 1.5)
-		.style("clip-path", "url(#clip)")
-		.attr("d", area);
+        .attr("d", area);
+        });
+	
+	// color the area under the curve in contrast to the tolerance score
+    focus.selectAll(".area")
+        .style("fill", function(d, i) { return tolerance_color(d[0].score); });
 	
 	// append xAxis for focus view
 	focus.append("g")
@@ -205,7 +203,7 @@ function createGraph(obj){
 		if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
 		var s = d3.event.selection || x2.range();
 		x.domain(s.map(x2.invert, x2));
-		focus.select(".area").attr("d", area);
+		focus.selectAll(".area").attr("d", area);
 		focus.select(".axis--x").call(xAxis);
 		focus.selectAll(".clinvar").attr("x1", function(d){ return x(d.pos);}).attr("x2", function(d){ return x(d.pos);});
 		domains.select(".axis--x").call(xAxis);
@@ -225,11 +223,11 @@ function createGraph(obj){
 	var defs = svg.append("defs");
 	
 	// append gradient to defs
-	var linearGradient = defs.append("linearGradient")
+	var legendGradient = defs.append("linearGradient")
 		.attr("id", "legendGradient");
 	
-	// set gradient
-	linearGradient.selectAll("stop") 
+	// set legend of the tolerance score
+	legendGradient.selectAll("stop") 
 		.data([                             
 			{offset: "0%", color: "#d7191c"}, 
 			{offset: "12.5%", color: "#e76818"},  
@@ -252,7 +250,7 @@ function createGraph(obj){
 		.attr("y", 20)
 		.attr("width", 470)
 		.attr("height", 40)
-		.style("fill","url(#legendGradient)") ;
+		.style("fill","url(#legendGradient)");
 	
 	// append legend text
 	svg.append("text")
@@ -381,7 +379,7 @@ function appendClinvar(variants){
 			d3.select(this).style("stroke", "blue");
 		})
 		.on("mouseout", function(d) {		
-			clinvarTip.hide(d)
+			clinvarTip.hide(d);
 			d3.select(this).style("stroke", "green");
 		});
 }
