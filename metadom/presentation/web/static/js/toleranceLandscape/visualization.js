@@ -15,16 +15,17 @@ margin = {
 	right : 20,
 	bottom : 30,
 	left : 100
-}, width = +svg.attr("width") - margin.left - margin.right, height = +svg
-		.attr("height")
-		- margin.top - margin.bottom, height2 = +svg.attr("height")
-		- margin2.top - margin2.bottom, height3 = +svg.attr("height")
-		- margin3.top - margin3.bottom;
+};
+var width = +svg.attr("width") - margin.left - margin.right;
+var height = +svg.attr("height") - margin.top - margin.bottom; 
+var height2 = +svg.attr("height") - margin2.top - margin2.bottom;
+var height3 = +svg.attr("height") - margin3.top - margin3.bottom;
 
 // Scaling axis
-var x = d3.scaleLinear().range([ 0, width ]), x2 = d3.scaleLinear().range(
-		[ 0, width ]), y = d3.scaleLinear().range([ height, 0 ]), y2 = d3
-		.scaleLinear().range([ height2, 0 ]);
+var x = d3.scaleLinear().range([ 0, width ]);
+var x2 = d3.scaleLinear().range([ 0, width ]);
+var y = d3.scaleLinear().range([ height, 0 ]);
+var y2 = d3.scaleLinear().range([ height2, 0 ]);
 
 // define tooltip for clinvar
 var clinvarTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
@@ -87,6 +88,12 @@ function createGraph(obj) {
 			[ [ 0, 0 ], [ width, height ] ]).extent(
 			[ [ 0, 0 ], [ width, height ] ]);
 
+
+	// define the tolerance landscape line plot
+	var ToleranceLine = d3.line()
+		.x(function(d) {return x(d.pos);})
+		.y(function(d) {return y(d.score);});
+	
 	// define the tolerance landscape area plot
 	var area = d3.area().x(function(d) {
 		return x(d.pos);
@@ -175,13 +182,22 @@ function createGraph(obj) {
 	focus.selectAll(".area").style("fill", function(d, i) {
 		return "url(#area-gradient_" + d[0].pos + "-" + d[1].pos + ")";
 	});
-
+	
 	// append xAxis for focus view
 	focus.append("g").attr("class", "axis axis--x").attr("transform",
 			"translate(0," + height + ")").call(xAxis);
 
 	// append yAxis for focus view
 	focus.append("g").attr("class", "axis axis--y").call(yAxis);
+
+	// add tolerance line
+	focus.append('path')
+	    .datum(tolerance)
+	    .attr('class', 'line')
+	    .attr('fill', 'none')
+	    .attr("stroke", "steelblue")
+	    .attr('stroke-width',  "2px")
+	    .attr('d', ToleranceLine);
 
 	// append context area
 	context.append("path").datum(tolerance).style("fill", "grey").attr("d",
@@ -211,6 +227,7 @@ function createGraph(obj) {
 		var s = d3.event.selection || x2.range();
 		x.domain(s.map(x2.invert, x2));
 		focus.selectAll(".area").attr("d", area);
+		focus.select(".line").attr("d", ToleranceLine);
 		focus.select(".axis--x").call(xAxis);
 		focus.selectAll(".clinvar").attr("x1", function(d) {
 			return x(d.pos);
