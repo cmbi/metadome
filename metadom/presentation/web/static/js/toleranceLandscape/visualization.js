@@ -47,10 +47,24 @@ var domainTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
 
 // the color coding for specific tolerance scores
 function tolerance_color(score) {
-	if (score > 0.8) {
-		return "green";
+	if (score <= 0.15) {
+		return "#d7191c";
+	} else if(score <= 0.3){
+		return "#e76818";
+	} else if(score <= 0.45){
+		return "#f29e2e";
+	} else if(score <= 0.6){
+		return "#f9d057";
+	} else if(score <= 0.75){
+		return "#ffff8c";
+	} else if(score <= 0.9){
+		return "#90eb9d";
+	} else if(score <= 1.05){ 
+		return "#00ccbc";
+	} else if(score <= 1.2){
+		return "#00a6ca";
 	} else {
-		return "red";
+		return "#2c7bb6";
 	}
 }
 
