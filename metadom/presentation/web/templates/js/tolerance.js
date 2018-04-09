@@ -164,9 +164,55 @@ function loadDoc() {
 						geneDetails.innerHTML = '<div class="label"><label class="label">'+geneName+' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='+gtID+'" target="_blank">'+gtID+'</a>)</label></div>';
 						
 						createGraph(obj);
-						appendPfamDomains(obj.domains);
-						appendClinvar(obj.clinvar);
+						// Download tsv with tolerance, variants and domains
+						d3.select('#dlJSON').on(
+								'click',
+								function() {
+									var selectionWindow = x.domain();
+									var startIP = selectionWindow[0];
+									var endIP = selectionWindow[1];
+									var slidingW = parseInt(obj.sliding_window[1].pos);
+									var startExport = startIP - slidingW + 1;
+									var endExport = endIP - slidingW + 2;
+									var variants = [];
+									var hgmd = [];
+									var protDomain = [];
+									if (startIP < slidingW) {
+										startExport = 0;
+									}
 
+									svg.select("g.focus").selectAll("line.clinvar").each(
+											function(d) {
+												variants.push(d);
+											});
+
+									svg.select("g.domains").selectAll("rect.pfamDomains").each(
+											function(d) {
+												protDomain.push(d);
+											});
+
+									var clinDomArray = convertToArray(variants, hgmd, protDomain,
+											startIP, endIP);
+									var jsonse = JSON.stringify(obj.sliding_window.slice(startExport,
+											endExport));
+									var convertJS = convertToTSV(jsonse, clinDomArray);
+									var blob = new Blob([ convertJS ], {
+										type : "text/plain"
+									});
+									var selection = document.getElementsByClassName("dropdown")[0];
+									var fileName = selection.options[selection.selectedIndex].text;
+									saveAs(blob, fileName + "_" + startIP + "_" + endIP + ".tsv");
+								});
+
+						// Download for the whole svg as svg
+						d3.select('#dlSVG').on('click', function() {
+							var selection = document.getElementsByClassName("dropdown")[0];
+							var fileName = selection.options[selection.selectedIndex].text;
+							var config = {
+								filename : fileName,
+							}
+							d3_save_svg.save(d3.select('svg').node(), config);
+						});
 					}
 				}
 			};
