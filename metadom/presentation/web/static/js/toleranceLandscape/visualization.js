@@ -1,5 +1,10 @@
+/*******************************************************************************
+ * Global variables
+ ******************************************************************************/
+
 var svg = d3.select("svg");
-// setting basic variables
+
+// Declare margins
 margin = {
 	top : 20,
 	right : 20,
@@ -16,18 +21,53 @@ margin = {
 	bottom : 30,
 	left : 100
 };
+
+// Declare various UI widths and heights
 var width = +svg.attr("width") - margin.left - margin.right;
-var height = +svg.attr("height") - margin.top - margin.bottom; 
+var height = +svg.attr("height") - margin.top - margin.bottom;
 var height2 = +svg.attr("height") - margin2.top - margin2.bottom;
 var height3 = +svg.attr("height") - margin3.top - margin3.bottom;
 
-// Scaling axis
+// Scale the axis
 var x = d3.scaleLinear().range([ 0, width ]);
 var x2 = d3.scaleLinear().range([ 0, width ]);
 var y = d3.scaleLinear().range([ height, 0 ]);
 var y2 = d3.scaleLinear().range([ height2, 0 ]);
 
-// define tooltip for clinvar
+// Set axis
+var xAxis = d3.axisBottom(x);
+var yAxis = d3.axisLeft(y);
+
+/*******************************************************************************
+ * Basic user interface elements
+ ******************************************************************************/
+
+// Define Area of Tolerance landscape graph
+var toleranceArea = d3.area().x(function(d) {
+	return x(d.pos);
+}).y0(height).y1(function(d) {
+	return y(d.score);
+});
+
+// Define Line of Tolerance landscape line plot
+var toleranceLine = d3.line().x(function(d) {
+	return x(d.pos);
+}).y(function(d) {
+	return y(d.score);
+});
+
+// Define Area of the context area
+var contextArea = d3.area().curve(d3.curveMonotoneX).x(function(d) {
+	return x2(d.pos);
+}).y0(height2).y1(function(d) {
+	return y2(d.score);
+});
+
+/*******************************************************************************
+ * Additional user interface elements
+ ******************************************************************************/
+
+// Define tooltip for clinvar
 var clinvarTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
 		function(d) {
 			var variantString = "Clinvar<br>";
@@ -40,92 +80,55 @@ var clinvarTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
 			return "<span style='color:red'>" + variantString + "</span>";
 		});
 
-// define tooltip for pfamdomains
+// Define tooltip for pfamdomains
 var domainTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
 		function(d) {
 			return "<span style='color:red'>" + d.Name + "</span>";
 		});
 
-// the color coding for specific tolerance scores
-function tolerance_color(score) {
-	if (score <= 0.15) {
-		return "#d7191c";
-	} else if (score <= 0.3) {
-		return "#e76818";
-	} else if (score <= 0.45) {
-		return "#f29e2e";
-	} else if (score <= 0.6) {
-		return "#f9d057";
-	} else if (score <= 0.75) {
-		return "#ffff8c";
-	} else if (score <= 0.9) {
-		return "#90eb9d";
-	} else if (score <= 1.05) {
-		return "#00ccbc";
-	} else if (score <= 1.2) {
-		return "#00a6ca";
-	} else {
-		return "#2c7bb6";
-	}
-}
+/*******************************************************************************
+ * Main draw function
+ ******************************************************************************/
 
-// creating the tolerance graph and setting the main elements of the graph
+// Creates all graph elements based on the obj
 function createGraph(obj) {
 	$("#geneName").html(obj.geneName);
 
 	svg.selectAll("*").remove();
 	svg = d3.select("svg");
-	// setting axis
-	var xAxis = d3.axisBottom(x), xAxis2 = d3.axisBottom(x2), xAxis3 = d3
-			.axisBottom(x), yAxis = d3.axisLeft(y);
 
-	// 
-	var brush = d3.brushX().extent([ [ 0, 0 ], [ width, height2 ] ]).on(
-			"brush end", brushed);
+	// Add defs to the svg
+	var defs = svg.append("defs").attr('class', 'defs');
 
-	// 
-	var zoom = d3.zoom().scaleExtent([ 1, 30 ]).translateExtent(
-			[ [ 0, 0 ], [ width, height ] ]).extent(
-			[ [ 0, 0 ], [ width, height ] ]);
-
-
-	// define the tolerance landscape line plot
-	var ToleranceLine = d3.line()
-		.x(function(d) {return x(d.pos);})
-		.y(function(d) {return y(d.score);});
-	
-	// define the tolerance landscape area plot
-	var area = d3.area().x(function(d) {
-		return x(d.pos);
-	}).y0(height).y1(function(d) {
-		return y(d.score);
-	});
-
-	// define the context area
-	var area2 = d3.area().curve(d3.curveMonotoneX).x(function(d) {
-		return x2(d.pos);
-	}).y0(height2).y1(function(d) {
-		return y2(d.score);
-	});
-
-	// 
-	svg.append("defs").append("clipPath").attr("id", "clip").append("rect")
+	// Add clipping to defs
+	svg.select('.defs').append("clipPath").attr("id", "clip").append("rect")
 			.attr("width", width).attr("height", height);
 
+	// Extract the various data
+	var tolerance_data = obj.sliding_window;
+	var domain_data = obj.domains;
+	var variant_data = obj.clinvar;
+	
+	// Draw all individual user interface elements based on the data
+	createToleranceGraph(tolerance_data);
+	createToleranceGraphLegend();
+	annotateDomains(domain_data);
+	appendClinvar(variant_data);
+
+	// Finally draw the context zoom
+	addContextZoomView(tolerance_data);
+}
+
+/*******************************************************************************
+ * Drawing user interface component
+ ******************************************************************************/
+
+// Draw the tolerance graph
+function createToleranceGraph(tolerance) {
 	// append focus view
-	var focus = svg.append("g").attr("class", "focus").attr("transform",
+	var focus = svg.append("g").attr("class", "focus").attr("id",
+			"tolerance_graph").attr("transform",
 			"translate(" + margin.left + "," + margin.top + ")");
-
-	// append context view
-	var context = svg.append("g").attr("class", "context").attr("transform",
-			"translate(" + margin2.left + "," + margin2.top + ")");
-
-	// append domain view
-	var domains = svg.append("g").attr("class", "domains").attr("transform",
-			"translate(" + margin3.left + "," + margin3.top + ")");
-
-	// the tolerance data
-	var tolerance = obj.sliding_window;
 
 	// setting x/y domain according to data
 	x.domain(d3.extent(tolerance, function(d) {
@@ -136,10 +139,6 @@ function createGraph(obj) {
 	}) ]);
 	x2.domain(x.domain());
 	y2.domain(y.domain());
-
-	// Call the tooltips
-	svg.call(clinvarTip);
-	svg.call(domainTip);
 
 	// create a group from the tolerance data
 	var dataGroup = d3.nest().key(function(d) {
@@ -161,18 +160,18 @@ function createGraph(obj) {
 	dataGroup.forEach(function(d) {
 		// add the area specific for this position
 		focus.append("path").datum(d.values).attr("class", "area").attr("d",
-				area);
+				toleranceArea);
 
 		// create a linear gradient, specific for this position
 		var lineargradient = svg.append("linearGradient").attr("id",
 				"area-gradient_" + d.values[0].pos + "-" + d.values[1].pos)
-				.attr("x1", "0%").attr("y1", "0%")
-				.attr("x2", "100%").attr("y2", "0%");
-		
+				.attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr(
+						"y2", "0%");
+
 		// calculate the offset start score
 		lineargradient.append("stop").attr("class", "start").attr("offset",
 				"0%").attr("stop-color", tolerance_color(d.values[0].score));
-		
+
 		// calculate the offset stop score
 		lineargradient.append("stop").attr("class", "end").attr("offset",
 				"100%").attr("stop-color", tolerance_color(d.values[1].score));
@@ -182,58 +181,156 @@ function createGraph(obj) {
 	focus.selectAll(".area").style("fill", function(d, i) {
 		return "url(#area-gradient_" + d[0].pos + "-" + d[1].pos + ")";
 	});
-	
+
+	// add tolerance line
+	focus.append('path').datum(tolerance).attr('class', 'line').attr('id',
+			'toleranceLine').attr('fill', 'none').attr("stroke", "steelblue")
+			.attr('stroke-width', "2px").style("clip-path", "url(#clip)").attr(
+					'd', toleranceLine);
+
 	// append xAxis for focus view
 	focus.append("g").attr("class", "axis axis--x").attr("transform",
 			"translate(0," + height + ")").call(xAxis);
 
 	// append yAxis for focus view
 	focus.append("g").attr("class", "axis axis--y").call(yAxis);
+}
 
-	// add tolerance line
-	focus.append('path')
-	    .datum(tolerance)
-	    .attr('class', 'line')
-	    .attr('fill', 'none')
-	    .attr("stroke", "steelblue")
-	    .attr('stroke-width',  "2px")
-	    .attr('d', ToleranceLine);
+// Draw the domain annotation
+function annotateDomains(protDomain) {
+	// append domain view
+	var domains = svg.append("g").attr("class", "domains").attr("id",
+			"domain_annotation").attr("transform",
+			"translate(" + margin3.left + "," + margin3.top + ")");
+
+	// Adding subview for proteindomains
+	domains.append("g").attr("class", "axis axis--x").attr("transform",
+			"translate(0," + height3 + ")").call(xAxis);
+
+	// Add text to the ui element
+	svg.append("text").attr("text-anchor", "left").attr("x", 0).attr("y", 650)
+			.attr("dy", 0).attr("font-size", "14px").text("Pfam domains");
+
+	// Call the tooltips
+	svg.call(domainTip);
+
+	// Fill the ui element
+	domains.selectAll(".rect").data(protDomain).enter().append("rect").attr(
+			"class", "pfamDomains").attr("x", function(d) {
+		return x(d.start);
+	}).attr("y", height3 - margin3.bottom).attr("width", function(d) {
+		return x(d.stop) - x(d.start);
+	}).attr("height", margin3.bottom).attr("rx", 10).attr("ry", 10).style(
+			'opacity', 0.5).style('fill', '#c014e2').style('stroke', 'black')
+			.style("clip-path", "url(#clip)").on("mouseover", function(d) {
+				domainTip.show(d)
+				d3.select(this).style("fill", "yellow");
+				d3.select(this).moveToFront();
+			}).on("mouseout", function(d) {
+				domainTip.hide(d)
+				d3.select(this).style("fill", "#c014e2");
+				d3.select(this).moveToBack();
+			}).on(
+					"click",
+					function(d) {
+						window.open("http://pfam.xfam.org/family/" + d.ID + "",
+								"_blank");
+					});
+
+	// function to move item to front of svg
+	d3.selection.prototype.moveToFront = function() {
+		return this.each(function() {
+			this.parentNode.appendChild(this);
+		});
+	};
+
+	// function to move item to back of svg
+	d3.selection.prototype.moveToBack = function() {
+		return this.each(function() {
+			var firstChild = this.parentNode.firstChild;
+			if (firstChild) {
+				this.parentNode.insertBefore(this, firstChild);
+			}
+		});
+	};
+}
+
+// draw the ClinVar variants
+function appendClinvar(variants) {
+	// Call the tooltips
+	svg.call(clinvarTip);
+
+	// Fill the ui element
+	svg.select("g.focus").selectAll(".lines").data(variants).enter().append(
+			"line").attr("class", "clinvar").attr("x1", function(d) {
+		return x(d.pos);
+	}).attr("y1", 0 + margin.top + margin.bottom).attr("x2", function(d) {
+		return x(d.pos);
+	}).attr("y2", height).style("stroke", "green").style("stroke-width", 3)
+			.style("clip-path", "url(#clip)").on("mouseover", function(d) {
+				clinvarTip.show(d)
+				d3.select(this).style("stroke", "blue");
+			}).on("mouseout", function(d) {
+				clinvarTip.hide(d);
+				d3.select(this).style("stroke", "green");
+			});
+}
+
+// Draw the context area for zooming
+function addContextZoomView(tolerance) {
+	// add the brush element
+	var brush = d3.brushX().extent([ [ 0, 0 ], [ width, height2 ] ]).on(
+			"brush end", brushed);
+
+	// add the zoom element
+	var zoom = d3.zoom().scaleExtent([ 1, 30 ]).translateExtent(
+			[ [ 0, 0 ], [ width, height ] ]).extent(
+			[ [ 0, 0 ], [ width, height ] ]);
+
+	// append context view
+	var context = svg.append("g").attr("class", "context").attr("id",
+			"zoom_landscape").attr("transform",
+			"translate(" + margin2.left + "," + margin2.top + ")");
 
 	// append context area
 	context.append("path").datum(tolerance).style("fill", "grey").attr("d",
-			area2);
+			contextArea);
 
 	// append xAxis for context view
 	context.append("g").attr("class", "axis axis--x").attr("transform",
-			"translate(0," + height2 + ")").call(xAxis2);
+			"translate(0," + height2 + ")").call(xAxis);
 
 	// append yAxis for context view
 	context.append("g").attr("class", "brush").call(brush).call(brush.move,
 			x.range());
-
-	// Adding subview for proteindomains
-	domains.append("g").attr("class", "axis axis--x").attr("transform",
-			"translate(0," + height3 + ")").call(xAxis3);
 
 	// append rect for zoom
 	svg.append("rect").attr("class", "zoom").attr("width", width).attr(
 			"height", height).attr("transform",
 			"translate(" + margin.left + "," + margin.top + ")").call(zoom);
 
-	// brushed function
+	svg.append("text").attr("text-anchor", "left").attr("x", 0).attr("y", 575)
+			.attr("dy", 0).attr("font-size", "14px").text("Zoom view");
+
+	// Define the brushed function
 	function brushed() {
 		if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom")
 			return; // ignore brush-by-zoom
+
 		var s = d3.event.selection || x2.range();
 		x.domain(s.map(x2.invert, x2));
-		focus.selectAll(".area").attr("d", area);
-		focus.select(".line").attr("d", ToleranceLine);
+		var focus = d3.select("#tolerance_graph");
+		focus.selectAll(".area").attr("d", toleranceArea);
+		focus.select(".line").attr("d", toleranceLine);
 		focus.select(".axis--x").call(xAxis);
 		focus.selectAll(".clinvar").attr("x1", function(d) {
 			return x(d.pos);
 		}).attr("x2", function(d) {
 			return x(d.pos);
 		});
+
+		var domains = d3.select("#domain_annotation")
+
 		domains.select(".axis--x").call(xAxis);
 		domains.selectAll(".pfamDomains").attr("x", function(d) {
 			return x(d.start);
@@ -245,19 +342,13 @@ function createGraph(obj) {
 				d3.zoomIdentity.scale(width / (s[1] - s[0]))
 						.translate(-s[0], 0));
 	}
+}
 
-	function type(d) {
-		d.pos = +d.pos;
-		d.score = +d.score;
-		return d;
-	}
-
-	// append defs for gradient
-	var defs = svg.append("defs");
-
+// Draw the legend for the Tolerance graph
+function createToleranceGraphLegend() {
 	// append gradient to defs
-	var legendGradient = defs.append("linearGradient").attr("id",
-			"legendGradient");
+	var legendGradient = svg.select('.defs').append("linearGradient").attr(
+			"id", "legendGradient");
 
 	// set legend of the tolerance score
 	legendGradient.selectAll("stop").data([ {
@@ -307,155 +398,32 @@ function createGraph(obj) {
 	svg.append("text").attr("text-anchor", "middle").attr("x", -450).attr("y",
 			15).attr("dy", 0).attr("font-size", "14px").attr("transform",
 			"rotate(-90)").text("Intolerant");
-
-	svg.append("text").attr("text-anchor", "left").attr("x", 0).attr("y", 575)
-			.attr("dy", 0).attr("font-size", "14px").text("Zoom view");
-
-	svg.append("text").attr("text-anchor", "left").attr("x", 0).attr("y", 650)
-			.attr("dy", 0).attr("font-size", "14px").text("Pfam domains");
-
-	// var customVariants = [{"pos": 49, "ref": "S", "alt":
-	// ["I","N","R"]},{"pos": 50, "ref": "P", "alt": ["T","S","Q","L"]},{"pos":
-	// 87, "ref": "R", "alt": ["C"]},{"pos": 88, "ref": "P", "alt":
-	// ["S"]},{"pos": 144, "ref": "A", "alt": ["P"]},{"pos": 172, "ref": "H",
-	// "alt": ["HX"]},{"pos": 175, "ref": "W", "alt": ["L"]},{"pos": 182, "ref":
-	// "N", "alt": ["S"]},{"pos": 216, "ref": "V", "alt": ["G"]},{"pos": 21,
-	// "ref": "E", "alt": ["EX"]},{"pos": 23, "ref": "Q", "alt": ["QP"]},{"pos":
-	// 29, "ref": "P", "alt": ["L"]}];
-	// var customVariants = [{"pos": 13, "ref": "G", "alt": ["A"]}];
-	// svg.select("g.focus").selectAll(".lines")
-	// .data(customVariants)
-	// .enter().append("line")
-	// .attr("class", "customVariants")
-	// .attr("x1", function(d) { return x(d.pos);})
-	// .attr("y1", 0 + margin.top + margin.bottom)
-	// .attr("x2", function(d) { return x(d.pos);})
-	// .attr("y2", height)
-	// .style("stroke", "black")
-	// .style("stroke-width", 3)
-	// .style("clip-path", "url(#clip)")
-	// .on("mouseover", function(d) {
-	// hgmdTip.show(d)
-	// d3.select(this).style("stroke", "yellow");
-	// })
-	// .on("mouseout", function(d) {
-	// hgmdTip.hide(d)
-	// d3.select(this).style("stroke", "black");
-	// });
-
-	// Download tsv with tolerance, variants and domains
-	d3.select('#dlJSON').on(
-			'click',
-			function() {
-				var selectionWindow = x.domain();
-				var startIP = selectionWindow[0];
-				var endIP = selectionWindow[1];
-				var slidingW = parseInt(tolerance[1].pos);
-				var startExport = startIP - slidingW + 1;
-				var endExport = endIP - slidingW + 2;
-				var variants = [];
-				var hgmd = [];
-				var protDomain = [];
-				if (startIP < slidingW) {
-					startExport = 0;
-				}
-
-				svg.select("g.focus").selectAll("line.clinvar").each(
-						function(d) {
-							variants.push(d);
-						});
-
-				svg.select("g.focus").selectAll("line.hgmdline").each(
-						function(d) {
-							hgmd.push(d);
-						});
-
-				svg.select("g.domains").selectAll("rect.pfamDomains").each(
-						function(d) {
-							protDomain.push(d);
-						});
-
-				var clinDomArray = convertToArray(variants, hgmd, protDomain,
-						startIP, endIP);
-				var jsonse = JSON.stringify(tolerance.slice(startExport,
-						endExport));
-				var convertJS = convertToTSV(jsonse, clinDomArray);
-				var blob = new Blob([ convertJS ], {
-					type : "text/plain"
-				});
-				var selection = document.getElementsByClassName("dropdown")[0];
-				var fileName = selection.options[selection.selectedIndex].text;
-				saveAs(blob, fileName + "_" + startIP + "_" + endIP + ".tsv");
-			});
-
-	// Download for the whole svg as svg
-	d3.select('#dlSVG').on('click', function() {
-		var selection = document.getElementsByClassName("dropdown")[0];
-		var fileName = selection.options[selection.selectedIndex].text;
-		var config = {
-			filename : fileName,
-		}
-		d3_save_svg.save(d3.select('svg').node(), config);
-	});
-
 }
 
-// creating and adding the lines for clinvar variants to the graph
-function appendClinvar(variants) {
-	svg.select("g.focus").selectAll(".lines").data(variants).enter().append(
-			"line").attr("class", "clinvar").attr("x1", function(d) {
-		return x(d.pos);
-	}).attr("y1", 0 + margin.top + margin.bottom).attr("x2", function(d) {
-		return x(d.pos);
-	}).attr("y2", height).style("stroke", "green").style("stroke-width", 3)
-			.style("clip-path", "url(#clip)").on("mouseover", function(d) {
-				clinvarTip.show(d)
-				d3.select(this).style("stroke", "blue");
-			}).on("mouseout", function(d) {
-				clinvarTip.hide(d);
-				d3.select(this).style("stroke", "green");
-			});
-}
+/*******************************************************************************
+ * Static interface functions
+ ******************************************************************************/
 
-// creating and adding pfamdomains to domain view
-// and adding metadomain functions to the onclick function of a domain
-function appendPfamDomains(protDomain) {
-	svg.select("g.domains").selectAll(".rect").data(protDomain).enter().append(
-			"rect").attr("class", "pfamDomains").attr("x", function(d) {
-		return x(d.start);
-	}).attr("y", height3 - margin3.bottom).attr("width", function(d) {
-		return x(d.stop) - x(d.start);
-	}).attr("height", margin3.bottom).attr("rx", 10).attr("ry", 10).style(
-			'opacity', 0.5).style('fill', '#c014e2').style('stroke', 'black')
-			.style("clip-path", "url(#clip)").on("mouseover", function(d) {
-				domainTip.show(d)
-				d3.select(this).style("fill", "yellow");
-				d3.select(this).moveToFront();
-			}).on("mouseout", function(d) {
-				domainTip.hide(d)
-				d3.select(this).style("fill", "#c014e2");
-				d3.select(this).moveToBack();
-			}).on(
-					"click",
-					function(d) {
-						window.open("http://pfam.xfam.org/family/" + d.ID + "",
-								"_blank");
-					});
-
-	// function to move item to front of svg
-	d3.selection.prototype.moveToFront = function() {
-		return this.each(function() {
-			this.parentNode.appendChild(this);
-		});
-	};
-
-	// function to move item to back of svg
-	d3.selection.prototype.moveToBack = function() {
-		return this.each(function() {
-			var firstChild = this.parentNode.firstChild;
-			if (firstChild) {
-				this.parentNode.insertBefore(this, firstChild);
-			}
-		});
-	};
+// the color coding for specific tolerance scores
+// color #f29e2e indicates the average dn/ds tolerance score over all genes
+function tolerance_color(score) {
+	if (score <= 0.175) {
+		return "#d7191c";
+	} else if (score <= 0.35) {
+		return "#e76818";
+	} else if (score <= 0.525) {
+		return "#f29e2e";
+	} else if (score <= 0.7) {
+		return "#f9d057";
+	} else if (score <= 0.875) {
+		return "#ffff8c";
+	} else if (score <= 1.025) {
+		return "#90eb9d";
+	} else if (score <= 1.2) {
+		return "#00ccbc";
+	} else if (score <= 1.375) {
+		return "#00a6ca";
+	} else {
+		return "#2c7bb6";
+	}
 }
