@@ -168,7 +168,7 @@ function createToleranceGraph(tolerance) {
 	x.domain(d3.extent(tolerance, function(d) {
 		return d.pos;
 	}));
-	y.domain([ 0, max_tolerance_y(tolerance) ]);
+	y.domain([ 0, maxTolerance ]);
 	x2.domain(x.domain());
 	y2.domain(y.domain());
 
@@ -409,12 +409,6 @@ function createToleranceGraphLegend() {
 /*******************************************************************************
  * Static interface functions
  ******************************************************************************/
-
-function max_tolerance_y(tolerance) {
-	return d3.min([ d3.max(tolerance, function(d) {
-		return d.score;
-	}), maxTolerance ]);
-}
 
 // the color coding for specific tolerance scores
 // color #f29e2e indicates the average dn/ds tolerance score over all genes
