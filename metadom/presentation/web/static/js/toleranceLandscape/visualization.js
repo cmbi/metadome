@@ -39,6 +39,40 @@ var xAxis = d3.axisBottom(x);
 var yAxis = d3.axisLeft(y);
 
 /*******************************************************************************
+ * Config variables for visuals
+ ******************************************************************************/
+
+var maxTolerance = 1.8;
+var toleranceColorGradient = [ {
+	offset : "0%",
+	color : "#d7191c"
+}, {
+	offset : "12.5%",
+	color : "#e76818"
+}, {
+	offset : "25%",
+	color : "#f29e2e"
+}, {
+	offset : "37.5%",
+	color : "#f9d057"
+}, {
+	offset : "50%",
+	color : "#ffff8c"
+}, {
+	offset : "62.5%",
+	color : "#90eb9d"
+}, {
+	offset : "75%",
+	color : "#00ccbc"
+}, {
+	offset : "87.5%",
+	color : "#00a6ca"
+}, {
+	offset : "100%",
+	color : "#2c7bb6"
+} ]
+
+/*******************************************************************************
  * Basic user interface elements
  ******************************************************************************/
 
@@ -108,7 +142,7 @@ function createGraph(obj) {
 	var tolerance_data = obj.sliding_window;
 	var domain_data = obj.domains;
 	var variant_data = obj.clinvar;
-	
+
 	// Draw all individual user interface elements based on the data
 	createToleranceGraph(tolerance_data);
 	createToleranceGraphLegend();
@@ -134,9 +168,7 @@ function createToleranceGraph(tolerance) {
 	x.domain(d3.extent(tolerance, function(d) {
 		return d.pos;
 	}));
-	y.domain([ 0, d3.max(tolerance, function(d) {
-		return d.score;
-	}) ]);
+	y.domain([ 0, max_tolerance_y(tolerance) ]);
 	x2.domain(x.domain());
 	y2.domain(y.domain());
 
@@ -293,8 +325,8 @@ function addContextZoomView(tolerance) {
 			"translate(" + margin2.left + "," + margin2.top + ")");
 
 	// append context area
-	context.append("path").datum(tolerance).style("fill", "grey").attr("d",
-			contextArea);
+	context.append("path").datum(tolerance).style("fill", "grey").style(
+			"clip-path", "url(#clip)").attr("d", contextArea);
 
 	// append xAxis for context view
 	context.append("g").attr("class", "axis axis--x").attr("transform",
@@ -351,38 +383,12 @@ function createToleranceGraphLegend() {
 			"id", "legendGradient");
 
 	// set legend of the tolerance score
-	legendGradient.selectAll("stop").data([ {
-		offset : "0%",
-		color : "#d7191c"
-	}, {
-		offset : "12.5%",
-		color : "#e76818"
-	}, {
-		offset : "25%",
-		color : "#f29e2e"
-	}, {
-		offset : "37.5%",
-		color : "#f9d057"
-	}, {
-		offset : "50%",
-		color : "#ffff8c"
-	}, {
-		offset : "62.5%",
-		color : "#90eb9d"
-	}, {
-		offset : "75%",
-		color : "#00ccbc"
-	}, {
-		offset : "87.5%",
-		color : "#00a6ca"
-	}, {
-		offset : "100%",
-		color : "#2c7bb6"
-	} ]).enter().append("stop").attr("offset", function(d) {
-		return d.offset;
-	}).attr("stop-color", function(d) {
-		return d.color;
-	});
+	legendGradient.selectAll("stop").data(toleranceColorGradient).enter()
+			.append("stop").attr("offset", function(d) {
+				return d.offset;
+			}).attr("stop-color", function(d) {
+				return d.color;
+			});
 
 	// append heatmap legend
 	svg.append("rect").attr("transform", "rotate(-90)").attr("x", -490).attr(
@@ -404,26 +410,32 @@ function createToleranceGraphLegend() {
  * Static interface functions
  ******************************************************************************/
 
+function max_tolerance_y(tolerance) {
+	return d3.min([ d3.max(tolerance, function(d) {
+		return d.score;
+	}), maxTolerance ]);
+}
+
 // the color coding for specific tolerance scores
 // color #f29e2e indicates the average dn/ds tolerance score over all genes
 function tolerance_color(score) {
 	if (score <= 0.175) {
-		return "#d7191c";
+		return toleranceColorGradient[0].color;
 	} else if (score <= 0.35) {
-		return "#e76818";
+		return toleranceColorGradient[1].color;
 	} else if (score <= 0.525) {
-		return "#f29e2e";
+		return toleranceColorGradient[2].color;
 	} else if (score <= 0.7) {
-		return "#f9d057";
+		return toleranceColorGradient[3].color;
 	} else if (score <= 0.875) {
-		return "#ffff8c";
+		return toleranceColorGradient[4].color;
 	} else if (score <= 1.025) {
-		return "#90eb9d";
+		return toleranceColorGradient[5].color;
 	} else if (score <= 1.2) {
-		return "#00ccbc";
+		return toleranceColorGradient[6].color;
 	} else if (score <= 1.375) {
-		return "#00a6ca";
+		return toleranceColorGradient[7].color;
 	} else {
-		return "#2c7bb6";
+		return toleranceColorGradient[8].color;
 	}
 }
