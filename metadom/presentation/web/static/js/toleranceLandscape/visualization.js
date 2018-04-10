@@ -23,6 +23,12 @@ var marginAnnotations = {
 	bottom : 30,
 	left : 100
 };
+var marginLegend = {
+	y : 20,
+	x : 20,
+	height : 470,
+	width : 40
+};
 
 // Declare various UI widths and heights
 var width = +svg.attr("width") - marginLandscape.left - marginLandscape.right;
@@ -368,19 +374,24 @@ function addContextZoomView(tolerance) {
 function createToleranceGraphLegend() {
 	// append gradient to defs
 	var legendGradient = svg.select('.defs').append("linearGradient").attr(
-			"id", "legendGradient");
+			"id", "legendGradient")
+		    .attr("x1", "0%")
+		    .attr("y1", "0%")
+		    .attr("x2", "0%")
+		    .attr("y2", "100%");
 
 	// set legend of the tolerance score
-	legendGradient.selectAll("stop").data(toleranceColorGradient).enter()
+	legendGradient.selectAll("stop")
+			.data(toleranceColorGradient).enter()
 			.append("stop").attr("offset", function(d) {
 				return d.offset;
 			}).attr("stop-color", function(d) {
 				return d.color;
 			});
-
+	
 	// append heatmap legend
-	svg.append("rect").attr("transform", "rotate(-90)").attr("x", -490).attr(
-			"y", 20).attr("width", 470).attr("height", 40).style("fill",
+	svg.append("rect").attr("x", marginLegend.x).attr(
+			"y", marginLegend.y).attr("width", marginLegend.width).attr("height", marginLegend.height).style("fill",
 			"url(#legendGradient)");
 
 	var context = svg.append("g").attr("class", "context").attr("id",
