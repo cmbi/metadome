@@ -10,7 +10,7 @@ $("#geneName").keyup(function(event) {
 
 function updateSlidingwindowPercentage(slider){
 	var swpercentage = document.getElementById("swPer");
-	swpercentage.innerHTML = Math.round(slider.value * 100) + "%";
+	swpercentage.innerHTML = slider.value;
 }
 
 function updateExACFrequencySlider(slider){
