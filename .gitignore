@@ -4,3 +4,4 @@
 .settings/*
 env_metadom/*
 **/__pycache__/
+.externalToolBuilders/*
