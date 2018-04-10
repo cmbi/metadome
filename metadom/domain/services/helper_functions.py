@@ -10,3 +10,28 @@ def convertListOfIntegerToRanges(p):
                 yield (q[i],q[j-1])
                 i = j
         yield (q[i], q[-1])
+        
+def create_sliding_window(total_length, sliding_window_size):
+    region_sliding_window = []
+    for i in range(total_length):
+        if sliding_window_size <= 0:
+            region_i_start=i
+            region_i_stop=i
+            
+            windowrange = range(region_i_start, region_i_stop)
+            region_sliding_window.append({'sw_range':windowrange, 'sw_coverage':1.0})
+        
+        else:
+            region_i_start = i-(sliding_window_size)
+            region_i_stop = i+(sliding_window_size)+1
+        
+            if region_i_start < 0:
+                region_i_start = 0
+            if region_i_stop >= total_length:
+                region_i_stop = total_length;
+            
+            windowrange = range(region_i_start, region_i_stop)
+            region_sliding_window.append({'sw_range':windowrange, 'sw_coverage':len(windowrange)/((sliding_window_size*2)+1)})
+    
+        
+    return region_sliding_window
