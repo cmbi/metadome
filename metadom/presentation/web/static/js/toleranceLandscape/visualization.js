@@ -9,19 +9,19 @@ var marginLandscape = {
 	top : 20,
 	right : 20,
 	bottom : 210,
-	left : 100
+	left : 80
 };
 var marginContext = {
 	top : 530,
 	right : 20,
 	bottom : 100,
-	left : 100
+	left : 80
 };
 var marginAnnotations = {
 	top : 530,
 	right : 20,
 	bottom : 30,
-	left : 100
+	left : 80
 };
 var marginLegend = {
 	y : 20,
@@ -32,19 +32,19 @@ var marginLegend = {
 
 // Declare various UI widths and heights
 var width = +svg.attr("width") - marginLandscape.left - marginLandscape.right;
-var height = +svg.attr("height") - marginLandscape.top - marginLandscape.bottom;
-var height2 = +svg.attr("height") - marginContext.top - marginContext.bottom;
-var height3 = +svg.attr("height") - marginAnnotations.top - marginAnnotations.bottom;
+var heightLandscape = +svg.attr("height") - marginLandscape.top - marginLandscape.bottom;
+var heightContext = +svg.attr("height") - marginContext.top - marginContext.bottom;
+var heightAnnotations = +svg.attr("height") - marginAnnotations.top - marginAnnotations.bottom;
 
 // Scale the axis
 var x = d3.scaleLinear().range([ 0, width ]);
 var x2 = d3.scaleLinear().range([ 0, width ]);
-var y = d3.scaleLinear().range([ height, 0 ]);
-var y2 = d3.scaleLinear().range([ height2, 0 ]);
+var y = d3.scaleLinear().range([ heightLandscape, 0 ]);
+var y2 = d3.scaleLinear().range([ heightContext, 0 ]);
 
 // Set axis
-var xAxis = d3.axisBottom(x);
-var yAxis = d3.axisLeft(y);
+var xAxis = d3.axisBottom(x).ticks(0);
+var yAxis = d3.axisLeft(y).ticks(0);
 
 /*******************************************************************************
  * Config variables for visuals
@@ -90,7 +90,7 @@ var toleranceColorGradient = [ {
 // Define Area of Tolerance landscape graph
 var toleranceArea = d3.area().x(function(d) {
 	return x(d.pos);
-}).y0(height).y1(function(d) {
+}).y0(heightLandscape).y1(function(d) {
 	return y(d.score);
 });
 
@@ -104,7 +104,7 @@ var toleranceLine = d3.line().x(function(d) {
 // Define Area of the context area
 var contextArea = d3.area().curve(d3.curveMonotoneX).x(function(d) {
 	return x2(d.pos);
-}).y0(height2).y1(function(d) {
+}).y0(heightContext).y1(function(d) {
 	return y2(d.score);
 });
 
@@ -147,7 +147,7 @@ function createGraph(obj) {
 
 	// Add clipping to defs
 	svg.select('.defs').append("clipPath").attr("id", "clip").append("rect")
-			.attr("width", width).attr("height", height);
+			.attr("width", width).attr("height", heightLandscape);
 
 	// Extract the various data
 	var tolerance_data = obj.sliding_window;
@@ -233,7 +233,7 @@ function createToleranceGraph(tolerance) {
 
 	// append xAxis for focus view
 	focus.append("g").attr("class", "axis axis--x").attr("transform",
-			"translate(0," + height + ")").call(xAxis);
+			"translate(0," + heightLandscape + ")").call(xAxis).selectAll("text").remove();
 
 	// append yAxis for focus view
 	focus.append("g").attr("class", "axis axis--y").call(yAxis);
@@ -248,7 +248,7 @@ function annotateDomains(protDomain) {
 
 	// Adding subview for proteindomains
 	domains.append("g").attr("class", "axis axis--x").attr("transform",
-			"translate(0," + height3 + ")").call(xAxis);
+			"translate(0," + heightAnnotations + ")").call(xAxis);
 
 	// Add text to the ui element
 	svg.append("text").attr("text-anchor", "left").attr("x", 0).attr("y", 650)
@@ -261,7 +261,7 @@ function annotateDomains(protDomain) {
 	domains.selectAll(".rect").data(protDomain).enter().append("rect").attr(
 			"class", "pfamDomains").attr("x", function(d) {
 		return x(d.start);
-	}).attr("y", height3 - marginAnnotations.bottom).attr("width", function(d) {
+	}).attr("y", heightAnnotations - marginAnnotations.bottom).attr("width", function(d) {
 		return x(d.stop) - x(d.start);
 	}).attr("height", marginAnnotations.bottom).attr("rx", 10).attr("ry", 10).style(
 			'opacity', 0.5).style('fill', '#c014e2').style('stroke', 'black')
@@ -304,13 +304,14 @@ function appendClinvar(variants) {
 	svg.call(clinvarTip);
 
 	// Fill the ui element
-	svg.select("g.focus").selectAll(".lines").data(variants).enter().append(
+	svg.select("g.domains").selectAll(".lines").data(variants).enter().append(
 			"line").attr("class", "clinvar").attr("x1", function(d) {
 		return x(d.pos);
-	}).attr("y1", 0 + marginLandscape.top + marginLandscape.bottom).attr("x2", function(d) {
+	}).attr("y1",  heightAnnotations - marginAnnotations.bottom).attr("x2", function(d) {
 		return x(d.pos);
-	}).attr("y2", height).style("stroke", "green").style("stroke-width", 3)
-			.style("clip-path", "url(#clip)").on("mouseover", function(d) {
+	}).attr("y2",  heightAnnotations).style("stroke", "green").style("stroke-width", 3)
+			.style("clip-path", "url(#clip)")
+			.on("mouseover", function(d) {
 				clinvarTip.show(d)
 				d3.select(this).style("stroke", "blue");
 			}).on("mouseout", function(d) {
@@ -322,7 +323,7 @@ function appendClinvar(variants) {
 // Draw the context area for zooming
 function addContextZoomView(tolerance) {
 	// add the brush element
-	var brush = d3.brushX().extent([ [ 0, 0 ], [ width, height2 ] ]).on(
+	var brush = d3.brushX().extent([ [ 0, 0 ], [ width, heightContext ] ]).on(
 			"brush end", brushed);
 
 	// append context view
@@ -336,7 +337,7 @@ function addContextZoomView(tolerance) {
 
 	// append xAxis for context view
 	context.append("g").attr("class", "axis axis--x").attr("transform",
-			"translate(0," + height2 + ")").call(xAxis);
+			"translate(0," + heightContext + ")").call(xAxis);
 
 	// append yAxis for context view
 	context.append("g").attr("class", "brush").call(brush).call(brush.move,
@@ -352,20 +353,19 @@ function addContextZoomView(tolerance) {
 		var focus = d3.select("#tolerance_graph");
 		focus.selectAll(".area").attr("d", toleranceArea);
 		focus.select(".line").attr("d", toleranceLine);
-		focus.select(".axis--x").call(xAxis);
-		focus.selectAll(".clinvar").attr("x1", function(d) {
-			return x(d.pos);
-		}).attr("x2", function(d) {
-			return x(d.pos);
-		});
+		focus.select(".axis--x").call(xAxis).selectAll("text").remove();
 
 		var domains = d3.select("#domain_annotation")
-
 		domains.select(".axis--x").call(xAxis);
 		domains.selectAll(".pfamDomains").attr("x", function(d) {
 			return x(d.start);
 		}).attr("width", function(d) {
 			return x(d.stop) - x(d.start);
+		});
+		domains.selectAll(".clinvar").attr("x1", function(d) {
+			return x(d.pos);
+		}).attr("x2", function(d) {
+			return x(d.pos);
 		});
 	}
 }
@@ -402,6 +402,11 @@ function createToleranceGraphLegend() {
 	svg.append("text").attr("text-anchor", "middle").attr("x", -50).attr("y",
 			15).attr("dy", 0).attr("font-size", "14px").attr("transform",
 			"rotate(-90)").text("Tolerant");
+
+	// append legend text
+	svg.append("text").attr("text-anchor", "middle").attr("x", -250).attr("y",
+			15).attr("dy", 0).attr("font-size", "14px").attr("transform",
+			"rotate(-90)").text("Neutral");
 
 	// append legend text
 	svg.append("text").attr("text-anchor", "middle").attr("x", -450).attr("y",
