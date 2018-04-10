@@ -5,17 +5,19 @@
 var svg = d3.select("svg");
 
 // Declare margins
-margin = {
+var marginLandscape = {
 	top : 20,
 	right : 20,
 	bottom : 210,
 	left : 100
-}, margin2 = {
+};
+var marginContext = {
 	top : 530,
 	right : 20,
 	bottom : 100,
 	left : 100
-}, margin3 = {
+};
+var marginAnnotations = {
 	top : 530,
 	right : 20,
 	bottom : 30,
@@ -23,10 +25,10 @@ margin = {
 };
 
 // Declare various UI widths and heights
-var width = +svg.attr("width") - margin.left - margin.right;
-var height = +svg.attr("height") - margin.top - margin.bottom;
-var height2 = +svg.attr("height") - margin2.top - margin2.bottom;
-var height3 = +svg.attr("height") - margin3.top - margin3.bottom;
+var width = +svg.attr("width") - marginLandscape.left - marginLandscape.right;
+var height = +svg.attr("height") - marginLandscape.top - marginLandscape.bottom;
+var height2 = +svg.attr("height") - marginContext.top - marginContext.bottom;
+var height3 = +svg.attr("height") - marginAnnotations.top - marginAnnotations.bottom;
 
 // Scale the axis
 var x = d3.scaleLinear().range([ 0, width ]);
@@ -42,7 +44,10 @@ var yAxis = d3.axisLeft(y);
  * Config variables for visuals
  ******************************************************************************/
 
+// indicates the maximum tolerance score
 var maxTolerance = 1.8;
+
+// indicates the various colors to indicate the tolerance
 var toleranceColorGradient = [ {
 	offset : "0%",
 	color : "#d7191c"
@@ -162,7 +167,7 @@ function createToleranceGraph(tolerance) {
 	// append focus view
 	var focus = svg.append("g").attr("class", "focus").attr("id",
 			"tolerance_graph").attr("transform",
-			"translate(" + margin.left + "," + margin.top + ")");
+			"translate(" + marginLandscape.left + "," + marginLandscape.top + ")");
 
 	// setting x/y domain according to data
 	x.domain(d3.extent(tolerance, function(d) {
@@ -233,7 +238,7 @@ function annotateDomains(protDomain) {
 	// append domain view
 	var domains = svg.append("g").attr("class", "domains").attr("id",
 			"domain_annotation").attr("transform",
-			"translate(" + margin3.left + "," + margin3.top + ")");
+			"translate(" + marginAnnotations.left + "," + marginAnnotations.top + ")");
 
 	// Adding subview for proteindomains
 	domains.append("g").attr("class", "axis axis--x").attr("transform",
@@ -250,9 +255,9 @@ function annotateDomains(protDomain) {
 	domains.selectAll(".rect").data(protDomain).enter().append("rect").attr(
 			"class", "pfamDomains").attr("x", function(d) {
 		return x(d.start);
-	}).attr("y", height3 - margin3.bottom).attr("width", function(d) {
+	}).attr("y", height3 - marginAnnotations.bottom).attr("width", function(d) {
 		return x(d.stop) - x(d.start);
-	}).attr("height", margin3.bottom).attr("rx", 10).attr("ry", 10).style(
+	}).attr("height", marginAnnotations.bottom).attr("rx", 10).attr("ry", 10).style(
 			'opacity', 0.5).style('fill', '#c014e2').style('stroke', 'black')
 			.style("clip-path", "url(#clip)").on("mouseover", function(d) {
 				domainTip.show(d)
@@ -296,7 +301,7 @@ function appendClinvar(variants) {
 	svg.select("g.focus").selectAll(".lines").data(variants).enter().append(
 			"line").attr("class", "clinvar").attr("x1", function(d) {
 		return x(d.pos);
-	}).attr("y1", 0 + margin.top + margin.bottom).attr("x2", function(d) {
+	}).attr("y1", 0 + marginLandscape.top + marginLandscape.bottom).attr("x2", function(d) {
 		return x(d.pos);
 	}).attr("y2", height).style("stroke", "green").style("stroke-width", 3)
 			.style("clip-path", "url(#clip)").on("mouseover", function(d) {
@@ -314,15 +319,10 @@ function addContextZoomView(tolerance) {
 	var brush = d3.brushX().extent([ [ 0, 0 ], [ width, height2 ] ]).on(
 			"brush end", brushed);
 
-	// add the zoom element
-	var zoom = d3.zoom().scaleExtent([ 1, 30 ]).translateExtent(
-			[ [ 0, 0 ], [ width, height ] ]).extent(
-			[ [ 0, 0 ], [ width, height ] ]);
-
 	// append context view
 	var context = svg.append("g").attr("class", "context").attr("id",
 			"zoom_landscape").attr("transform",
-			"translate(" + margin2.left + "," + margin2.top + ")");
+			"translate(" + marginContext.left + "," + marginContext.top + ")");
 
 	// append context area
 	context.append("path").datum(tolerance).style("fill", "grey").style(
@@ -336,19 +336,11 @@ function addContextZoomView(tolerance) {
 	context.append("g").attr("class", "brush").call(brush).call(brush.move,
 			x.range());
 
-	// append rect for zoom
-	svg.append("rect").attr("class", "zoom").attr("width", width).attr(
-			"height", height).attr("transform",
-			"translate(" + margin.left + "," + margin.top + ")").call(zoom);
-
 	svg.append("text").attr("text-anchor", "left").attr("x", 0).attr("y", 575)
 			.attr("dy", 0).attr("font-size", "14px").text("Zoom view");
 
 	// Define the brushed function
 	function brushed() {
-		if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom")
-			return; // ignore brush-by-zoom
-
 		var s = d3.event.selection || x2.range();
 		x.domain(s.map(x2.invert, x2));
 		var focus = d3.select("#tolerance_graph");
@@ -369,10 +361,6 @@ function addContextZoomView(tolerance) {
 		}).attr("width", function(d) {
 			return x(d.stop) - x(d.start);
 		});
-		svg.select(".zoom").call(
-				zoom.transform,
-				d3.zoomIdentity.scale(width / (s[1] - s[0]))
-						.translate(-s[0], 0));
 	}
 }
 
@@ -394,6 +382,10 @@ function createToleranceGraphLegend() {
 	svg.append("rect").attr("transform", "rotate(-90)").attr("x", -490).attr(
 			"y", 20).attr("width", 470).attr("height", 40).style("fill",
 			"url(#legendGradient)");
+
+	var context = svg.append("g").attr("class", "context").attr("id",
+			"zoom_landscape").attr("transform",
+			"translate(" + marginContext.left + "," + marginContext.top + ")");
 
 	// append legend text
 	svg.append("text").attr("text-anchor", "middle").attr("x", -50).attr("y",
