@@ -57,9 +57,9 @@ def get_tolerance_landscape():
 def get_tolerance_landscape_for_transcript(transcript_id):
     sliding_window = request.args.get('slidingwindow')
     if sliding_window is None:
-        sliding_window = 0.0
+        sliding_window = 10
     else:
-        sliding_window = float(sliding_window)
+        sliding_window = int(sliding_window)
     
     frequency = request.args.get('frequency')
     if frequency is None:
