@@ -376,9 +376,9 @@ function createToleranceGraphLegend() {
 	var legendGradient = svg.select('.defs').append("linearGradient").attr(
 			"id", "legendGradient")
 		    .attr("x1", "0%")
-		    .attr("y1", "0%")
+		    .attr("y1", "100%")
 		    .attr("x2", "0%")
-		    .attr("y2", "100%");
+		    .attr("y2", "0%");
 
 	// set legend of the tolerance score
 	legendGradient.selectAll("stop")
