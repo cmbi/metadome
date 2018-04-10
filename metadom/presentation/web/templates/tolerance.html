@@ -80,6 +80,7 @@ $( function() {
         </div>
       </div>
       <!-- Transcript selection -->
+      <!--
       <div class="field">
         <div class="control">
           Please insert here DNA or Protein variants according to the <a href="http://varnomen.hgvs.org/" target="_blank">HGVS</a> variant nomenclature
@@ -90,6 +91,7 @@ $( function() {
                 Annotate variants</button>
         </div>  
       </div>
+       -->
     </div>
   </div>
 
@@ -133,10 +135,10 @@ $( function() {
       <!-- Change the sliding window size -->
       <div class="control">
         <div class="label">
-          Sliding window (<span id="swPer">5%</span> of total protein sequence length)
+          Sliding window: <span id="swPer">10</span> amino-acid residues (changing this will make the colouring inaccurate)
         </div>
         <input type="range" name="slidingWindow" id="slidingWindow"
-          value="0.05" min="0" max="0.2" step="0.01" required oninput="updateSlidingwindowPercentage(this)" onmouseup="loadDoc()"/>
+          value="10" min="1" max="100" step="1" required oninput="updateSlidingwindowPercentage(this)" onmouseup="loadDoc()"/>
       </div>
     </div>
   </div>
