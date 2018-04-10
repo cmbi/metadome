@@ -2,7 +2,7 @@ version: '2'
 services:
     app:
         build: .
-        command: watchmedo auto-restart -d /usr/src/app -p "*" -D -R -- flask run -h 0.0.0.0
+        command: watchmedo auto-restart -d /usr/src/app -p "*" --ignore-pattern "*.log;*.project;*.pydevproject;*.coverage*;*.cpython*;*/__pycache__*.git/*;dbschema.png" -D -R -- flask run -h 0.0.0.0
         environment:
             - FLASK_APP=metadom/application.py
         ports:
