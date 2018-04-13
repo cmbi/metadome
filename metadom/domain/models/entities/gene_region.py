@@ -1,5 +1,6 @@
 from metadom.domain.repositories import MappingRepository, ProteinRepository, InterproRepository
 from metadom.domain.services.helper_functions import convertListOfIntegerToRanges
+from metadom.domain.models.entities.codon import Codon
 
 class FailedToConstructGeneRegion(Exception):
     pass
@@ -37,6 +38,17 @@ class GeneRegion(object):
         """retrieves specific domains in a gene based on the 
         provided domain id, sorted by the start position"""
         return sorted([domain for domain in self.interpro_domains if domain.ext_db_id == domain_id], key=lambda k: k.uniprot_start)
+    
+    def retrieve_codon_for_protein_position(self, protein_pos):
+        """Returns the codon for this gene region at the protein position"""
+        _codon = None
+        # retrieve te mappings
+        _mappings = []
+        for cDNA_pos in self.protein_pos_to_cDNA[protein_pos]:
+            _mappings.append(self.mappings_per_cDNA[cDNA_pos])
+        # create the codon
+        _codon = Codon(_mappings)
+        return _codon
     
     def retrieve_mappings_per_chromosome(self):
         """Returns the mappings for this gene region per chromosome position"""
