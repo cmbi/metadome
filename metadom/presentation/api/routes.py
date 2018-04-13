@@ -76,10 +76,6 @@ def get_tolerance_landscape_for_transcript(transcript_id):
         # generate the sliding window for this gene
         region_sliding_window = compute_tolerance_landscape(gene_region, sliding_window, frequency)
         
-        # update the positions to abide the users' expectation (start at 1, not zero
-        for d in region_sliding_window:
-            d.update((k, v+1) for k, v in d.items() if k == "pos")
-            
         # Annotate Pfam domains
         Pfam_domains = []
         for domain in gene_region.interpro_domains:
@@ -108,12 +104,18 @@ def get_tolerance_landscape_for_transcript(transcript_id):
         for chrom_pos in ClinVar_annotation.keys():
             for variant in ClinVar_annotation[chrom_pos]:
                 ClinVar_variant = {}
-                ClinVar_variant['pos'] = _mappings_per_chromosome[chrom_pos].uniprot_position
+                ClinVar_variant['protein_pos'] = _mappings_per_chromosome[chrom_pos].uniprot_position
                 ClinVar_variant['ref'] = variant['REF']
                 ClinVar_variant['alt'] = variant['ALT']
                 
                 ClinVar_variants.append(ClinVar_variant)
-        
+                
+        # update the positions to abide the users' expectation (start at 1, not zero
+        for d in ClinVar_variants:
+            d.update((k, v+1) for k, v in d.items() if k == "protein_pos")        
+        for d in region_sliding_window:
+            d.update((k, v+1) for k, v in d.items() if k == "protein_pos")
+            
         return jsonify({"protein_ac":gene_region.uniprot_ac, "geneName":gene_region.gene_name, "sliding_window":region_sliding_window, "domains":Pfam_domains, "clinvar":ClinVar_variants})
     else:
         return jsonify({'error': 'No gene region could be build for transcript '+str(transcript_id)}), 500
@@ -174,12 +176,12 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
             if gene_region.gene_id in meta_codon.codon_aggregate.keys() \
                 and metadom_entry['protein_pos'] == meta_codon.codon_aggregate[gene_region.gene_id].amino_acid_position:
                 # yes we are
-                metadom_entry['chr_region'] = meta_codon.chr+":"+str(meta_codon.regions)+"(strand: "+str(meta_codon.strand)+")"
+                metadom_entry['chr_region'] = meta_codon.chr+":"+str(meta_codon.regions)+"(strand: "+meta_codon.strand.value+")"
                 metadom_entry['codon'] = meta_codon.base_pair_representation
                 metadom_entry['amino_acid'] = meta_codon.amino_acid_residue
             else:
                 # no we are not
-                metadom_entry['other_chr_regions'].append(meta_codon.chr+":"+str(meta_codon.regions)+"(strand: "+str(meta_codon.strand)+")")
+                metadom_entry['other_chr_regions'].append(meta_codon.chr+":"+str(meta_codon.regions)+"(strand: "+meta_codon.strand.value+")")
                 metadom_entry['other_codons'].append(meta_codon.base_pair_representation)
                 metadom_entry['other_amino_acids'].append(meta_codon.amino_acid_residue)
                 
@@ -219,7 +221,7 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
     meta_domain_info['protein_ac'] = gene_region.uniprot_ac
     meta_domain_info['protein_name'] = gene_region.uniprot_name
     meta_domain_info['transcript'] = gene_region.gencode_transcription_id
-    meta_domain_info['strand'] = str(gene_region.strand)
+    meta_domain_info['strand'] = gene_region.strand.value
     meta_domain_info['protein_length'] = gene_region.protein_region_length
     meta_domain_info['cDNA_length'] = gene_region.cDNA_region_length
     meta_domain_info['domain_id'] = metadomain.domain_id
