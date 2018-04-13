@@ -110,7 +110,7 @@ def get_tolerance_landscape_for_transcript(transcript_id):
                 
                 ClinVar_variants.append(ClinVar_variant)
         
-        return jsonify({"geneName":gene_region.gene_name, "sliding_window":region_sliding_window, "domains":Pfam_domains, "clinvar":ClinVar_variants})
+        return jsonify({"protein_ac":gene_region.uniprot_ac, "geneName":gene_region.gene_name, "sliding_window":region_sliding_window, "domains":Pfam_domains, "clinvar":ClinVar_variants})
     else:
         return jsonify({'error': 'No gene region could be build for transcript '+str(transcript_id)}), 500
 
