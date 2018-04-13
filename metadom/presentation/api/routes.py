@@ -76,6 +76,10 @@ def get_tolerance_landscape_for_transcript(transcript_id):
         # generate the sliding window for this gene
         region_sliding_window = compute_tolerance_landscape(gene_region, sliding_window, frequency)
         
+        # update the positions to abide the users' expectation (start at 1, not zero
+        for d in region_sliding_window:
+            d.update((k, v+1) for k, v in d.items() if k == "pos")
+            
         # Annotate Pfam domains
         Pfam_domains = []
         for domain in gene_region.interpro_domains:
