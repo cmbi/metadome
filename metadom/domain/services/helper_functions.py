@@ -10,6 +10,11 @@ def convertListOfIntegerToRanges(p):
                 yield (q[i],q[j-1])
                 i = j
         yield (q[i], q[-1])
+    
+def list_of_stringified_of_ranges(p):
+    """Creates a list of strings representing the ranges built in convertListOfIntegerToRanges
+    used for pretty printing"""
+    return [str(y[0])+"-"+str(y[1]) if y[0]!=y[1] else str(y[0]) for y in p]
         
 def create_sliding_window(total_length, sliding_window_size):
     region_sliding_window = []
