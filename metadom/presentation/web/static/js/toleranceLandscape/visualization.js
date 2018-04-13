@@ -94,23 +94,23 @@ var toleranceColorGradient = [ {
 
 // Define Area of Tolerance landscape graph
 var toleranceArea = d3.area().x(function(d) {
-	return x(d.pos);
+	return x(d.protein_pos);
 }).y0(heightLandscape).y1(function(d) {
-	return y(d.score);
+	return y(d.sw_dn_ds);
 });
 
 // Define Line of Tolerance landscape line plot
 var toleranceLine = d3.line().x(function(d) {
-	return x(d.pos);
+	return x(d.protein_pos);
 }).y(function(d) {
-	return y(d.score);
+	return y(d.sw_dn_ds);
 });
 
 // Define Area of the context area
 var contextArea = d3.area().curve(d3.curveMonotoneX).x(function(d) {
-	return x2(d.pos);
+	return x2(d.protein_pos);
 }).y0(heightContext).y1(function(d) {
-	return y2(d.score);
+	return y2(d.sw_dn_ds);
 });
 
 /*******************************************************************************
@@ -124,7 +124,7 @@ var clinvarTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
 			var i = 0;
 			while (i < d.alt.length) {
 				variantString = variantString
-						+ ("p." + d.pos + d.ref + ">" + d.alt[i] + "<br>");
+						+ ("p." + d.protein_pos + d.ref + ">" + d.alt[i] + "<br>");
 				i++;
 			}
 			return "<span style='color:red'>" + variantString + "</span>";
@@ -184,7 +184,7 @@ function createToleranceGraph(tolerance) {
 
 	// setting x/y domain according to data
 	x.domain(d3.extent(tolerance, function(d) {
-		return d.pos;
+		return d.protein_pos;
 	}));
 	y.domain([ 0, maxTolerance ]);
 	x2.domain(x.domain());
@@ -192,7 +192,7 @@ function createToleranceGraph(tolerance) {
 
 	// create a group from the tolerance data
 	var dataGroup = d3.nest().key(function(d) {
-		return d.pos;
+		return d.protein_pos;
 	}).entries(tolerance);
 
 	// add two consecutive data values per group, so these can be used in
@@ -214,22 +214,22 @@ function createToleranceGraph(tolerance) {
 
 		// create a linear gradient, specific for this position
 		var lineargradient = svg.append("linearGradient").attr("id",
-				"area-gradient_" + d.values[0].pos + "-" + d.values[1].pos)
+				"area-gradient_" + d.values[0].protein_pos + "-" + d.values[1].protein_pos)
 				.attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr(
 						"y2", "0%");
 
 		// calculate the offset start score
 		lineargradient.append("stop").attr("class", "start").attr("offset",
-				"0%").attr("stop-color", tolerance_color(d.values[0].score));
+				"0%").attr("stop-color", tolerance_color(d.values[0].sw_dn_ds));
 
 		// calculate the offset stop score
 		lineargradient.append("stop").attr("class", "end").attr("offset",
-				"100%").attr("stop-color", tolerance_color(d.values[1].score));
+				"100%").attr("stop-color", tolerance_color(d.values[1].sw_dn_ds));
 	});
 
 	// color the area under the curve in contrast to the tolerance score
 	focus.selectAll(".area").style("fill", function(d, i) {
-		return "url(#area-gradient_" + d[0].pos + "-" + d[1].pos + ")";
+		return "url(#area-gradient_" + d[0].protein_pos + "-" + d[1].protein_pos + ")";
 	});
 
 	// add tolerance line
@@ -318,9 +318,9 @@ function appendClinvar(variants) {
 	// Fill the ui element
 	svg.select("g.domains").selectAll(".lines").data(variants).enter().append(
 			"line").attr("class", "clinvar").attr("x1", function(d) {
-		return x(d.pos);
+		return x(d.protein_pos);
 	}).attr("y1", heightAnnotations).attr("x2", function(d) {
-		return x(d.pos);
+		return x(d.protein_pos);
 	}).attr("y2", heightAnnotations / 2).style("stroke", "red").style(
 			"stroke-width", 8).style("clip-path", "url(#clip)").on("mouseover",
 			function(d) {
@@ -377,9 +377,9 @@ function addContextZoomView(tolerance) {
 			return x(d.stop) - x(d.start);
 		});
 		domains.selectAll(".clinvar").attr("x1", function(d) {
-			return x(d.pos);
+			return x(d.protein_pos);
 		}).attr("x2", function(d) {
-			return x(d.pos);
+			return x(d.protein_pos);
 		});
 	}
 }
