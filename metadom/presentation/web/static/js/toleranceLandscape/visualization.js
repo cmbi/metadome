@@ -1,40 +1,45 @@
 /*******************************************************************************
  * Global variables
  ******************************************************************************/
-
-var svg = d3.select("svg");
+var outerWidth = 1300;
+var outerHeight = 700;
+var svg = d3.select("svg")
+	.attr("width", outerWidth)
+	.attr("height", outerHeight);
 
 // Declare margins
 var marginLandscape = {
-	top : 20,
-	right : 20,
-	bottom : 210,
-	left : 80
-};
-var marginContext = {
-	top : 530,
-	right : 20,
-	bottom : 100,
-	left : 80
-};
-var marginAnnotations = {
-	top : 530,
-	right : 20,
-	bottom : 30,
-	left : 80
-};
+		top : 20,
+		right : 20,
+		bottom : 210,
+		left : 80
+	};
 var marginLegend = {
-	y : 20,
-	x : 20,
-	height : 470,
-	width : 40
-};
+		top : 20,
+		right : 1240,
+		bottom : 210,
+		left : 20
+	};
+var marginAnnotations = {
+		top : 510,
+		right : 20,
+		bottom : 130,
+		left : 80
+	};
+var marginContext = {
+		top : 590,
+		right : 20,
+		bottom : 50,
+		left : 80
+	};
+
 
 // Declare various UI widths and heights
-var width = +svg.attr("width") - marginLandscape.left - marginLandscape.right;
-var heightLandscape = +svg.attr("height") - marginLandscape.top - marginLandscape.bottom;
-var heightContext = +svg.attr("height") - marginContext.top - marginContext.bottom;
-var heightAnnotations = +svg.attr("height") - marginAnnotations.top - marginAnnotations.bottom;
+var width = outerWidth - marginLandscape.left - marginLandscape.right;
+var widthLegend = outerWidth - marginLegend.left - marginLegend.right;
+var heightLandscape = outerHeight - marginLandscape.top - marginLandscape.bottom;
+var heightContext = outerHeight - marginContext.top - marginContext.bottom;
+var heightAnnotations = outerHeight - marginAnnotations.top - marginAnnotations.bottom;
 
 // Scale the axis
 var x = d3.scaleLinear().range([ 0, width ]);
@@ -251,8 +256,8 @@ function annotateDomains(protDomain) {
 			"translate(0," + heightAnnotations + ")").call(xAxis);
 
 	// Add text to the ui element
-	svg.append("text").attr("text-anchor", "left").attr("x", 0).attr("y", 650)
-			.attr("dy", 0).attr("font-size", "14px").text("Pfam domains");
+	svg.append("text").attr("text-anchor", "left").attr("x", 0).attr("y", marginAnnotations.top+(heightAnnotations/2))
+			.attr("dy", 0).attr("font-size", "14px").text("Annotation");
 
 	// Call the tooltips
 	svg.call(domainTip);
@@ -261,9 +266,9 @@ function annotateDomains(protDomain) {
 	domains.selectAll(".rect").data(protDomain).enter().append("rect").attr(
 			"class", "pfamDomains").attr("x", function(d) {
 		return x(d.start);
-	}).attr("y", heightAnnotations - marginAnnotations.bottom).attr("width", function(d) {
+	}).attr("y", 0).attr("width", function(d) {
 		return x(d.stop) - x(d.start);
-	}).attr("height", marginAnnotations.bottom).attr("rx", 10).attr("ry", 10).style(
+	}).attr("height", heightAnnotations/2).attr("rx", 10).attr("ry", 10).style(
 			'opacity', 0.5).style('fill', '#c014e2').style('stroke', 'black')
 			.style("clip-path", "url(#clip)").on("mouseover", function(d) {
 				domainTip.show(d)
@@ -307,16 +312,16 @@ function appendClinvar(variants) {
 	svg.select("g.domains").selectAll(".lines").data(variants).enter().append(
 			"line").attr("class", "clinvar").attr("x1", function(d) {
 		return x(d.pos);
-	}).attr("y1",  heightAnnotations - marginAnnotations.bottom).attr("x2", function(d) {
+	}).attr("y1", heightAnnotations).attr("x2", function(d) {
 		return x(d.pos);
-	}).attr("y2",  heightAnnotations).style("stroke", "green").style("stroke-width", 3)
+	}).attr("y2", heightAnnotations/2 ).style("stroke", "red").style("stroke-width", 8)
 			.style("clip-path", "url(#clip)")
 			.on("mouseover", function(d) {
 				clinvarTip.show(d)
 				d3.select(this).style("stroke", "blue");
 			}).on("mouseout", function(d) {
 				clinvarTip.hide(d);
-				d3.select(this).style("stroke", "green");
+				d3.select(this).style("stroke", "red");
 			});
 }
 
@@ -337,14 +342,14 @@ function addContextZoomView(tolerance) {
 
 	// append xAxis for context view
 	context.append("g").attr("class", "axis axis--x").attr("transform",
-			"translate(0," + heightContext + ")").call(xAxis);
+			"translate(0," + heightContext+marginContext.top + ")").call(xAxis);
 
 	// append yAxis for context view
 	context.append("g").attr("class", "brush").call(brush).call(brush.move,
-			x.range());
+			x2.range());
 
-	svg.append("text").attr("text-anchor", "left").attr("x", 0).attr("y", 575)
-			.attr("dy", 0).attr("font-size", "14px").text("Zoom view");
+	svg.append("text").attr("text-anchor", "left").attr("x", 0).attr("y", marginContext.top+50)
+			.attr("dy", 0).attr("font-size", "14px").text("Zoom-in");
 
 	// Define the brushed function
 	function brushed() {
@@ -390,9 +395,9 @@ function createToleranceGraphLegend() {
 			});
 	
 	// append heatmap legend
-	svg.append("rect").attr("x", marginLegend.x).attr(
-			"y", marginLegend.y).attr("width", marginLegend.width).attr("height", marginLegend.height).style("fill",
-			"url(#legendGradient)");
+	svg.append("rect").attr("width", widthLegend).attr("height", heightLandscape)
+			.attr("transform", "translate("+marginLegend.left+","+marginLegend.top+")")
+			.style("fill", "url(#legendGradient)");
 
 	var context = svg.append("g").attr("class", "context").attr("id",
 			"zoom_landscape").attr("transform",
