@@ -26,11 +26,10 @@ def compute_tolerance_landscape(gene_region, sliding_window_size, min_frequency=
     sliding_window = create_sliding_window(gene_region.protein_region_length, sliding_window_size)
 
     # Calculate the sliding window over the gene region
-    region_sliding_window = []
+    tolerance_landscape = []
     for i in range(len(sliding_window)):
-        # correct for gene region start
-        protein_pos = i + gene_region.protein_region_start
-        
+        tolerance_landscape_entry = {}
+                
         total_missense_region_i = 0
         total_missense_background_region_i = 0
         total_synonymous_region_i = 0
@@ -49,6 +48,27 @@ def compute_tolerance_landscape(gene_region, sliding_window_size, min_frequency=
                                                          synonymous=total_synonymous_region_i,
                                                          synonymous_background=total_synonymous_background_region_i)
 
-        region_sliding_window.append({'pos':protein_pos, 'score':region_i_dn_ds, 'sw_coverage':sliding_window[i]['sw_coverage']})
+        # Add tolerance data
+        tolerance_landscape_entry['sw_dn_ds'] = region_i_dn_ds
+        tolerance_landscape_entry['sw_coverage']  = sliding_window[i]['sw_coverage']
+        tolerance_landscape_entry['sw_size']  = sliding_window_size
+        
+        # retrieve codon
+        protein_pos = i + gene_region.protein_region_start # correct for gene region start
+        current_codon = gene_region.retrieve_codon_for_protein_position(protein_pos)
+        
+        # Add positional information
+        tolerance_landscape_entry['strand'] = current_codon.strand.value
+        tolerance_landscape_entry['protein_pos'] = current_codon.amino_acid_position
+        tolerance_landscape_entry['cdna_pos'] = current_codon.pretty_print_cDNA_region()
+        tolerance_landscape_entry['chr'] = current_codon.chr
+        tolerance_landscape_entry['chr_positions'] = current_codon.pretty_print_chr_region()
+        
+        # Add residue and nucleotide information
+        tolerance_landscape_entry['ref_aa'] = current_codon.amino_acid_residue
+        tolerance_landscape_entry['ref_codon'] = current_codon.base_pair_representation
 
-    return region_sliding_window
+        # Add information to landscape
+        tolerance_landscape.append(tolerance_landscape_entry)
+
+    return tolerance_landscape
