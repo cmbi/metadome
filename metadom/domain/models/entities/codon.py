@@ -1,4 +1,4 @@
-from metadom.domain.services.helper_functions import convertListOfIntegerToRanges
+from metadom.domain.services.helper_functions import convertListOfIntegerToRanges, list_of_stringified_of_ranges
 class MalformedCodonException(Exception):
     pass
 
@@ -31,6 +31,13 @@ class Codon(object):
         for mapping in self.mappings:
             mappings_per_chromosome[mapping.chromosome_position] = mapping
         return mappings_per_chromosome
+    
+    def pretty_print_cDNA_region(self):
+        return "c."+str(self.cDNA_position_range[0])+"-"+str(self.cDNA_position_range[2])
+    
+    def pretty_print_chr_region(self):
+        _stringified_list = list_of_stringified_of_ranges(self.regions)
+        return "".join("g."+_stringified_list[i] if i+1 == len(_stringified_list) else "g."+_stringified_list[i]+", " for i in range(len(_stringified_list)))
 
     def __init__(self, _mappings):
         self.mappings = list()
