@@ -1,4 +1,5 @@
 from metadom.domain.services.helper_functions import convertListOfIntegerToRanges, list_of_stringified_of_ranges
+from Bio.Data.IUPACData import protein_letters_1to3
 class MalformedCodonException(Exception):
     pass
 
@@ -31,6 +32,10 @@ class Codon(object):
         for mapping in self.mappings:
             mappings_per_chromosome[mapping.chromosome_position] = mapping
         return mappings_per_chromosome
+    
+    def three_letter_amino_acid_residue(self):
+        """Returns a three letter representation of the amino acid residue for this codon"""
+        return protein_letters_1to3[self.amino_acid_residue];
     
     def pretty_print_cDNA_region(self):
         return "c."+str(self.cDNA_position_range[0])+"-"+str(self.cDNA_position_range[2])
