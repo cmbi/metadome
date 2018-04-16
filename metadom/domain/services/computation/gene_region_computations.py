@@ -66,6 +66,7 @@ def compute_tolerance_landscape(gene_region, sliding_window_size, min_frequency=
         
         # Add residue and nucleotide information
         tolerance_landscape_entry['ref_aa'] = current_codon.amino_acid_residue
+        tolerance_landscape_entry['ref_aa_triplet'] = current_codon.three_letter_amino_acid_residue()
         tolerance_landscape_entry['ref_codon'] = current_codon.base_pair_representation
 
         # Add information to landscape
