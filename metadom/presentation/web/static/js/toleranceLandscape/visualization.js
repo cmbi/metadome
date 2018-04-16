@@ -19,16 +19,22 @@ var marginLegend = {
 	bottom : 210,
 	left : 20
 };
-var marginAnnotations = {
-	top : 510,
+var marginPositionInfo = {
+	top : 495,
 	right : 20,
-	bottom : 130,
+	bottom : 180,
+	left : 80
+};
+var marginAnnotations = {
+	top : 530,
+	right : 20,
+	bottom : 120,
 	left : 80
 };
 var marginContext = {
-	top : 590,
+	top : 610,
 	right : 20,
-	bottom : 50,
+	bottom : 30,
 	left : 80
 };
 
@@ -37,6 +43,8 @@ var width = outerWidth - marginLandscape.left - marginLandscape.right;
 var widthLegend = outerWidth - marginLegend.left - marginLegend.right;
 var heightLandscape = outerHeight - marginLandscape.top
 		- marginLandscape.bottom;
+var heightMarginPositionInfo = outerHeight - marginPositionInfo.top
+- marginPositionInfo.bottom;
 var heightContext = outerHeight - marginContext.top - marginContext.bottom;
 var heightAnnotations = outerHeight - marginAnnotations.top
 		- marginAnnotations.bottom;
@@ -136,6 +144,17 @@ var domainTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
 			return "<span style='color:red'>" + d.Name + "</span>";
 		});
 
+//Define tooltip for positions
+var positionTip = d3.tip().attr('class', 'd3-tip').offset([ -10, 0 ]).html(
+		function(d,i) {
+			positionTip_str = "<span>";
+			positionTip_str += "Position: p."+ d.values[0].protein_pos + " "+ d.values[0].cdna_pos +"</br>";
+			positionTip_str += "Codon: "+d.values[0].ref_codon + "</br>";
+			positionTip_str += "Residue: "+ d.values[0].ref_aa_triplet; 
+			positionTip_str +="</span>";
+			return positionTip_str;
+		});
+
 /*******************************************************************************
  * Main draw function
  ******************************************************************************/
@@ -203,6 +222,7 @@ function createToleranceGraph(tolerance) {
 		} else if (i < dataGroup.length) {
 			group.values.push(dataGroup[i].values[0]);
 		}
+		group.values[0].selected = false;
 	})
 
 	// draw the tolerance area graph, base on the grouped consecutive data
@@ -211,7 +231,7 @@ function createToleranceGraph(tolerance) {
 		// add the area specific for this position
 		focus.append("path").datum(d.values).attr("class", "area").attr("d",
 				toleranceArea);
-
+		
 		// create a linear gradient, specific for this position
 		var lineargradient = svg.append("linearGradient").attr("id",
 				"area-gradient_" + d.values[0].protein_pos + "-" + d.values[1].protein_pos)
@@ -245,6 +265,76 @@ function createToleranceGraph(tolerance) {
 
 	// append yAxis for focus view
 	focus.append("g").attr("class", "axis axis--y").call(yAxis);
+	
+	// Add custom Axis
+	addCustomAxis(dataGroup)
+}
+
+// Draw the axis and labels
+function addCustomAxis(groupedTolerance){
+	// Add the Axis
+	var focusAxis = svg.append("g").attr("class", "focusAxis").attr("id",	"tolerance_axis");
+	
+	// Add the elements that will be drawn
+	var focusAxiselements = focusAxis.selectAll("g")
+    .data(groupedTolerance)
+    .enter().append("g").attr("class", "focusAxisElement").attr(
+	"transform",
+	"translate(" + marginPositionInfo.left + "," + marginPositionInfo.top
+			+ ")").style("fill", "none");
+
+	// Call the tooltips
+	svg.call(positionTip);
+	
+	// Add a text per position
+	focusAxiselements.append("text")
+	    .attr("class", "toleranceAxisTickLabel")
+		.attr("id", function(d, i) { return "toleranceAxisText_" + d.values[0].protein_pos; })
+	    .attr("x", function(d, i) { return x(d.values[0].protein_pos); })
+	    .attr("y", heightMarginPositionInfo / 2)
+	    .attr("dy", ".35em")
+	    .attr("text-anchor", "middle")
+	    .style("fill", "black")
+	    .style("clip-path", "url(#clip)")
+	    .text(function(d,i) { return "p."+d.values[0].protein_pos; });
+	
+	// Add a rectangle per position
+	focusAxiselements.append("rect")
+		.attr("class", "toleranceAxisTick")
+		.attr("id", function(d, i) { return "toleranceAxisRect_" + d.values[0].protein_pos;})
+	    .attr("x",  function(d, i) { return x(d.values[0].protein_pos - 0.5);} )
+	    .attr("y", 0)
+	    .attr("width",  function(d, i) {return x(d.values[1].protein_pos) - x(d.values[0].protein_pos)})
+	    .attr("height", heightMarginPositionInfo)
+	    .style("opacity", 0.5)
+	    .style("fill", "white")
+	    .style("stroke", "steelblue")
+	    .style("clip-path", "url(#clip)")
+	    .on("mouseover",
+				function(d, i) {
+	    	if (!d.values[0].selected){
+	    		d3.select(this).style("fill", "orange");
+	    	}
+	    	d3.select(this).style("stroke", "red");
+			positionTip.show(d);
+		})
+		.on("mouseout", function(d, i) {
+			if (!d.values[0].selected){
+	    		d3.select(this).style("fill", "white");
+	    	}
+			positionTip.hide(d);
+			d3.select(this).style("stroke", "steelblue");
+		})
+		.on("click", function(d, i) {
+			if (!d.values[0].selected){
+	    		d3.select(this).style("fill", "red");
+	    		d.values[0].selected = true;
+	    	}
+			else{
+	    		d3.select(this).style("fill", "orange");
+	    		d.values[0].selected = false;
+			}
+		});
 }
 
 // Draw the domain annotation
@@ -278,11 +368,11 @@ function annotateDomains(protDomain) {
 			.style('opacity', 0.5).style('fill', '#c014e2').style('stroke',
 					'black').style("clip-path", "url(#clip)").on("mouseover",
 					function(d) {
-						domainTip.show(d)
+						domainTip.show(d);
 						d3.select(this).style("fill", "yellow");
 						d3.select(this).moveToFront();
 					}).on("mouseout", function(d) {
-				domainTip.hide(d)
+				domainTip.hide(d);
 				d3.select(this).style("fill", "#c014e2");
 				d3.select(this).moveToBack();
 			}).on(
@@ -369,6 +459,30 @@ function addContextZoomView(tolerance) {
 		focus.select(".line").attr("d", toleranceLine);
 		focus.select(".axis--x").call(xAxis).selectAll("text").remove();
 
+		var focusAxis = d3.select("#tolerance_axis");
+		
+		focusAxis.selectAll(".toleranceAxisTick")
+		.attr("x", function(d, i) {
+			return x(d.values[0].protein_pos - 0.5);
+		}).attr("width", function(d, i) {
+			return x(d.values[1].protein_pos) - x(d.values[0].protein_pos);
+		});
+		
+		focusAxis.selectAll(".toleranceAxisTickLabel")
+		.attr("x", function(d, i) { return x(d.values[0].protein_pos); })
+		.attr("text-anchor", "middle")
+		.style("opacity", function(d,i){
+			var textwidth = d3.select('#toleranceAxisText_'+d.values[0].protein_pos).node().getComputedTextLength();
+			var rectwidth = d3.select('#toleranceAxisRect_'+d.values[0].protein_pos).node().width.animVal.value;
+			if((textwidth*1.05) >= rectwidth){
+				return 0;
+			}
+			else if ((textwidth*1.25) >= rectwidth){
+				return 0.5;
+			}
+			return 1;
+		});		
+		
 		var domains = d3.select("#domain_annotation")
 		domains.select(".axis--x").call(xAxis);
 		domains.selectAll(".pfamDomains").attr("x", function(d) {
