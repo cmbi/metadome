@@ -317,7 +317,12 @@ function addCustomAxis(groupedTolerance) {
 			}).attr("x", function(d, i) {
 		return x(d.values[0].protein_pos - 0.5);
 	}).attr("y", 0).attr("width", function(d, i) {
-		return x(d.values[1].protein_pos) - x(d.values[0].protein_pos)
+		if (d.values[1].protein_pos != d.values[0].protein_pos){
+			return x(d.values[1].protein_pos) - x(d.values[0].protein_pos);
+		}
+		else{
+			return x(d.values[1].protein_pos +1) - x(d.values[0].protein_pos);
+		}
 	}).attr("height", heightMarginPositionInfo).style("opacity", 0.5).style(
 			"fill", "white").style("stroke", "steelblue").style("clip-path",
 			"url(#clip)").on("mouseover", function(d, i) {
@@ -367,9 +372,9 @@ function annotateDomains(protDomain) {
 	// Fill the ui element
 	domains.selectAll(".rect").data(protDomain).enter().append("rect").attr(
 			"class", "pfamDomains").attr("x", function(d) {
-		return x(d.start);
+		return x(d.start - 0.5);
 	}).attr("y", 0).attr("width", function(d) {
-		return x(d.stop) - x(d.start);
+		return x(d.stop + 1) - x(d.start);
 	}).attr("height", heightAnnotations / 2).attr("rx", 10).attr("ry", 10)
 			.style('opacity', 0.5).style('fill', '#c014e2').style('stroke',
 					'black').style("clip-path", "url(#clip)").on("mouseover",
@@ -470,7 +475,12 @@ function addContextZoomView(tolerance) {
 		focusAxis.selectAll(".toleranceAxisTick").attr("x", function(d, i) {
 			return x(d.values[0].protein_pos - 0.5);
 		}).attr("width", function(d, i) {
-			return x(d.values[1].protein_pos) - x(d.values[0].protein_pos);
+			if (d.values[1].protein_pos != d.values[0].protein_pos){
+				return x(d.values[1].protein_pos) - x(d.values[0].protein_pos);
+			}
+			else{
+				return x(d.values[1].protein_pos +1) - x(d.values[0].protein_pos);
+			}
 		});
 
 		focusAxis.selectAll(".toleranceAxisTickLabel").attr("x",
@@ -496,9 +506,9 @@ function addContextZoomView(tolerance) {
 		var domains = d3.select("#domain_annotation")
 		domains.select(".axis--x").call(xAxis);
 		domains.selectAll(".pfamDomains").attr("x", function(d) {
-			return x(d.start);
+			return x(d.start - 0.5);
 		}).attr("width", function(d) {
-			return x(d.stop) - x(d.start);
+			return x(d.stop + 1) - x(d.start);
 		});
 		domains.selectAll(".clinvar").attr("x1", function(d) {
 			return x(d.protein_pos);
