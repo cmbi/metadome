@@ -50,13 +50,13 @@ var heightAnnotations = outerHeight - marginAnnotations.top
 		- marginAnnotations.bottom;
 
 // Scale the axis
-var x = d3.scaleLinear().range([ 0, width ]);
+var x = d3.scaleLinear().range([ 40, width -40 ]).nice();
 var x2 = d3.scaleLinear().range([ 0, width ]);
 var y = d3.scaleLinear().range([ heightLandscape, 0 ]);
 var y2 = d3.scaleLinear().range([ heightContext, 0 ]);
 
 // Set axis
-var xAxis = d3.axisBottom(x).ticks(0);
+var xAxis = d3.axisBottom(x2).ticks(0);
 var yAxis = d3.axisLeft(y).ticks(0);
 
 /*******************************************************************************
@@ -269,11 +269,6 @@ function createToleranceGraph(tolerance) {
 			.attr('stroke-width', "2px").style("clip-path", "url(#clip)").attr(
 					'd', toleranceLine);
 
-	// append xAxis for focus view
-	focus.append("g").attr("class", "axis axis--x").attr("transform",
-			"translate(0," + heightLandscape + ")").call(xAxis).selectAll(
-			"text").remove();
-
 	// append yAxis for focus view
 	focus.append("g").attr("class", "axis axis--y").call(yAxis);
 
@@ -305,9 +300,11 @@ function addCustomAxis(groupedTolerance) {
 			}).attr("x", function(d, i) {
 				return x(d.values[0].protein_pos);
 			}).attr("y", heightMarginPositionInfo / 2).attr("dy", ".35em")
+			.style('pointer-events', 'none')
+			.style('user-select', 'none')
 			.attr("text-anchor", "middle").style("fill", "black").style(
 					"clip-path", "url(#clip)").text(function(d, i) {
-				return "p." + d.values[0].protein_pos;
+				return d.values[0].protein_pos;
 			});
 
 	// Add a rectangle per position
@@ -323,26 +320,37 @@ function addCustomAxis(groupedTolerance) {
 		else{
 			return x(d.values[1].protein_pos +1) - x(d.values[0].protein_pos);
 		}
-	}).attr("height", heightMarginPositionInfo).style("opacity", 0.5).style(
-			"fill", "white").style("stroke", "steelblue").style("clip-path",
-			"url(#clip)").on("mouseover", function(d, i) {
+	}).attr("height", heightMarginPositionInfo)
+		.style("fill-opacity", 0.0)
+		.style("fill", "white")
+		.style("stroke", "steelblue")
+		.style("clip-path","url(#clip)")
+		.on("mouseover", function(d, i) {
 		if (!d.values[0].selected) {
-			d3.select(this).style("fill", "orange");
+			d3.select(this).style("fill", "orange").style("fill-opacity", 0.5);
 		}
-		d3.select(this).style("stroke", "red");
+		// show the tooltip
 		positionTip.show(d);
+		// amplify the border
+		d3.select(this).style("stroke", "red");
+		// change the cursor
+		d3.select(this).style("cursor", "pointer");
 	}).on("mouseout", function(d, i) {
 		if (!d.values[0].selected) {
-			d3.select(this).style("fill", "white");
+			d3.select(this).style("fill", "white").style("fill-opacity", 0.0);
 		}
+		// hide the tooltip
 		positionTip.hide(d);
+		// reset the stroke color
 		d3.select(this).style("stroke", "steelblue");
+		// reset the cursor
+        d3.select(this).style("cursor", "default");
 	}).on("click", function(d, i) {
 		if (!d.values[0].selected) {
-			d3.select(this).style("fill", "red");
+			d3.select(this).style("fill", "red").style("fill-opacity", 0.7);
 			d.values[0].selected = true;
 		} else {
-			d3.select(this).style("fill", "orange");
+			d3.select(this).style("fill", "orange").style("fill-opacity", 0.5);
 			d.values[0].selected = false;
 		}
 	});
@@ -377,21 +385,29 @@ function annotateDomains(protDomain) {
 		return x(d.stop + 1) - x(d.start);
 	}).attr("height", heightAnnotations / 2).attr("rx", 10).attr("ry", 10)
 			.style('opacity', 0.5).style('fill', '#c014e2').style('stroke',
-					'black').style("clip-path", "url(#clip)").on("mouseover",
-					function(d) {
-						domainTip.show(d);
-						d3.select(this).style("fill", "yellow");
-						d3.select(this).moveToFront();
-					}).on("mouseout", function(d) {
+					'black').style("clip-path", "url(#clip)")
+			.on("mouseover", function(d) {
+				// show the tooltip
+				domainTip.show(d);
+				// amplify the element
+				d3.select(this).style("fill", "yellow");
+				// move the element to front
+				d3.select(this).moveToFront();
+				// change the cursor
+				d3.select(this).style("cursor", "pointer");
+				})
+			.on("mouseout", function(d) {
+				// hide the tooltip
 				domainTip.hide(d);
+				// reset the color
 				d3.select(this).style("fill", "#c014e2");
+				// move the element to the back
 				d3.select(this).moveToBack();
-			}).on(
-					"click",
-					function(d) {
-						window.open("http://pfam.xfam.org/family/" + d.ID + "",
-								"_blank");
-					});
+				// change the cursor
+				d3.select(this).style("cursor", "default");
+			}).on("click", function(d) {
+				window.open("http://pfam.xfam.org/family/" + d.ID + "","_blank");
+			});
 
 	// function to move item to front of svg
 	d3.selection.prototype.moveToFront = function() {
@@ -486,7 +502,8 @@ function addContextZoomView(tolerance) {
 		focusAxis.selectAll(".toleranceAxisTickLabel").attr("x",
 				function(d, i) {
 					return x(d.values[0].protein_pos);
-				}).attr("text-anchor", "middle").style(
+				})
+				.attr("text-anchor", "middle").style(
 				"opacity",
 				function(d, i) {
 					var textwidth = d3.select(
@@ -495,10 +512,18 @@ function addContextZoomView(tolerance) {
 					var rectwidth = d3.select(
 							'#toleranceAxisRect_' + d.values[0].protein_pos)
 							.node().width.animVal.value;
-					if ((textwidth * 1.05) >= rectwidth) {
-						return 0;
+
+					
+					if ((textwidth *0.75) >= rectwidth) {
+					    return 0;
+					} else if ((textwidth * 0.9) >= rectwidth) {
+					    return 0.1;
+					} else if ((textwidth * 1.0) >= rectwidth) {
+					    return 0.4;
 					} else if ((textwidth * 1.25) >= rectwidth) {
-						return 0.5;
+					    return 0.5;
+					} else if ((textwidth * 1.5) >= rectwidth) {
+					    return 0.7;
 					}
 					return 1;
 				});
