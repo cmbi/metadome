@@ -452,8 +452,8 @@ function appendClinvar(variants) {
 // Draw the context area for zooming
 function addContextZoomView(tolerance) {
 	// add the brush element
-	var brush = d3.brushX().extent([ [ 0, 0 ], [ width, heightContext ] ]).on(
-			"brush end", brushed);
+	var brush = d3.brushX().extent([ [ 0, 0 ], [ width, heightContext ] ])
+		.on("brush end", brushed);
 
 	// append context view
 	var context = svg.append("g").attr("class", "context").attr("id",
@@ -481,65 +481,7 @@ function addContextZoomView(tolerance) {
 	function brushed() {
 		var s = d3.event.selection || x2.range();
 		x.domain(s.map(x2.invert, x2));
-		var focus = d3.select("#tolerance_graph");
-		focus.selectAll(".area").attr("d", toleranceArea);
-		focus.select(".line").attr("d", toleranceLine);
-		focus.select(".axis--x").call(xAxis).selectAll("text").remove();
-
-		var focusAxis = d3.select("#tolerance_axis");
-
-		focusAxis.selectAll(".toleranceAxisTick").attr("x", function(d, i) {
-			return x(d.values[0].protein_pos - 0.5);
-		}).attr("width", function(d, i) {
-			if (d.values[1].protein_pos != d.values[0].protein_pos){
-				return x(d.values[1].protein_pos) - x(d.values[0].protein_pos);
-			}
-			else{
-				return x(d.values[1].protein_pos +1) - x(d.values[0].protein_pos);
-			}
-		});
-
-		focusAxis.selectAll(".toleranceAxisTickLabel").attr("x",
-				function(d, i) {
-					return x(d.values[0].protein_pos);
-				})
-				.attr("text-anchor", "middle").style(
-				"opacity",
-				function(d, i) {
-					var textwidth = d3.select(
-							'#toleranceAxisText_' + d.values[0].protein_pos)
-							.node().getComputedTextLength();
-					var rectwidth = d3.select(
-							'#toleranceAxisRect_' + d.values[0].protein_pos)
-							.node().width.animVal.value;
-
-					
-					if ((textwidth *0.75) >= rectwidth) {
-					    return 0;
-					} else if ((textwidth * 0.9) >= rectwidth) {
-					    return 0.1;
-					} else if ((textwidth * 1.0) >= rectwidth) {
-					    return 0.4;
-					} else if ((textwidth * 1.25) >= rectwidth) {
-					    return 0.5;
-					} else if ((textwidth * 1.5) >= rectwidth) {
-					    return 0.7;
-					}
-					return 1;
-				});
-
-		var domains = d3.select("#domain_annotation")
-		domains.select(".axis--x").call(xAxis);
-		domains.selectAll(".pfamDomains").attr("x", function(d) {
-			return x(d.start - 0.5);
-		}).attr("width", function(d) {
-			return x(d.stop + 1) - x(d.start);
-		});
-		domains.selectAll(".clinvar").attr("x1", function(d) {
-			return x(d.protein_pos);
-		}).attr("x2", function(d) {
-			return x(d.protein_pos);
-		});
+		rescaleLandscape();
 	}
 }
 
@@ -582,6 +524,70 @@ function createToleranceGraphLegend() {
 	svg.append("text").attr("text-anchor", "middle").attr("x", -450).attr("y",
 			15).attr("dy", 0).attr("font-size", "14px").attr("transform",
 			"rotate(-90)").text("Intolerant");
+}
+
+/*******************************************************************************
+ * Interactive behaviour functions
+ ******************************************************************************/
+
+// Rescale the landscape for zooming or brushing purposes
+function rescaleLandscape(){
+    var focus = d3.select("#tolerance_graph");
+    focus.selectAll(".area").attr("d", toleranceArea);
+    focus.select(".line").attr("d", toleranceLine);
+    focus.select(".axis--x").call(xAxis).selectAll("text").remove();
+
+    var focusAxis = d3.select("#tolerance_axis");
+
+    focusAxis.selectAll(".toleranceAxisTick").attr("x", function(d, i) {
+	return x(d.values[0].protein_pos - 0.5);
+    	})
+    	.attr("width", function(d, i) {
+    	    if (d.values[1].protein_pos != d.values[0].protein_pos){
+		return x(d.values[1].protein_pos) - x(d.values[0].protein_pos);
+    	    } else {
+    		return x(d.values[1].protein_pos +1) - x(d.values[0].protein_pos);
+    	    }
+	});
+
+    focusAxis.selectAll(".toleranceAxisTickLabel")
+    	.attr("x", function(d, i) {
+    	    return x(d.values[0].protein_pos);
+	})
+	.attr("text-anchor", "middle")
+	.style("opacity", function(d, i) {
+	    var textwidth = d3.select('#toleranceAxisText_' + d.values[0].protein_pos).node().getComputedTextLength();
+	    var rectwidth = d3.select('#toleranceAxisRect_' + d.values[0].protein_pos).node().width.animVal.value;
+	    if ((textwidth *0.75) >= rectwidth) {
+		return 0;
+	    } else if ((textwidth * 0.9) >= rectwidth) {
+		return 0.1;
+	    } else if ((textwidth * 1.0) >= rectwidth) {
+		return 0.4;
+	    } else if ((textwidth * 1.25) >= rectwidth) {
+		return 0.5;
+	    } else if ((textwidth * 1.5) >= rectwidth) {
+		return 0.7;
+	    }
+	    return 1;
+	});
+
+    var domains = d3.select("#domain_annotation");
+    domains.select(".axis--x").call(xAxis);
+    domains.selectAll(".pfamDomains")
+    	.attr("x", function(d) {
+    	    return x(d.start - 0.5);
+    	})
+    	.attr("width", function(d) {
+    	    return x(d.stop + 1) - x(d.start);
+	});
+    domains.selectAll(".clinvar")
+    	.attr("x1", function(d) { 
+    	    return x(d.protein_pos);
+	})
+	.attr("x2", function(d) {
+	    return x(d.protein_pos);
+	});
 }
 
 /*******************************************************************************
