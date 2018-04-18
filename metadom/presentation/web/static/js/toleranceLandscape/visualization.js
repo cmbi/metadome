@@ -370,9 +370,13 @@ function annotateDomains(protDomain) {
 			"translate(0," + heightAnnotations + ")").call(xAxis);
 
 	// Add text to the ui element
-	svg.append("text").attr("text-anchor", "left").attr("x", 0).attr("y",
-			marginAnnotations.top + (heightAnnotations / 2)).attr("dy", 0)
-			.attr("font-size", "14px").text("Annotation");
+	svg.append("text")
+		.attr("text-anchor", "left")
+		.attr("x", 0).attr("y", marginAnnotations.top + (heightAnnotations / 2)).attr("dy", 0)
+		.attr("font-size", "14px")
+		.text("Annotation")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
 
 	// Call the tooltips
 	svg.call(domainTip);
@@ -473,9 +477,15 @@ function addContextZoomView(tolerance) {
 	context.append("g").attr("class", "brush").call(brush).call(brush.move,
 			x2.range());
 
-	svg.append("text").attr("text-anchor", "left").attr("x", 0).attr("y",
-			marginContext.top + 50).attr("dy", 0).attr("font-size", "14px")
-			.text("Zoom-in");
+	svg.append("text")
+		.attr("text-anchor", "left")
+		.attr("x", 0)
+		.attr("y", marginContext.top + 50)
+		.attr("dy", 0)
+		.attr("font-size", "14px")
+		.text("Zoom-in")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
 
 	// Define the brushed function
 	function brushed() {
@@ -511,19 +521,40 @@ function createToleranceGraphLegend() {
 			"translate(" + marginContext.left + "," + marginContext.top + ")");
 
 	// append legend text
-	svg.append("text").attr("text-anchor", "middle").attr("x", -50).attr("y",
-			15).attr("dy", 0).attr("font-size", "14px").attr("transform",
-			"rotate(-90)").text("Tolerant");
+	svg.append("text")
+		.attr("text-anchor", "middle")
+		.attr("x", -50)
+		.attr("y", 15)
+		.attr("dy", 0)
+		.attr("font-size", "14px")
+		.attr("transform", "rotate(-90)")
+		.text("Tolerant")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
 
 	// append legend text
-	svg.append("text").attr("text-anchor", "middle").attr("x", -250).attr("y",
-			15).attr("dy", 0).attr("font-size", "14px").attr("transform",
-			"rotate(-90)").text("Neutral");
+	svg.append("text")
+		.attr("text-anchor", "middle")
+		.attr("x", -250)
+		.attr("y", 15)
+		.attr("dy", 0)
+		.attr("font-size", "14px")
+		.attr("transform", "rotate(-90)")
+		.text("Neutral")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
 
 	// append legend text
-	svg.append("text").attr("text-anchor", "middle").attr("x", -450).attr("y",
-			15).attr("dy", 0).attr("font-size", "14px").attr("transform",
-			"rotate(-90)").text("Intolerant");
+	svg.append("text")
+		.attr("text-anchor", "middle")
+		.attr("x", -450)
+		.attr("y", 15)
+		.attr("dy", 0)
+		.attr("font-size", "14px")
+		.attr("transform", "rotate(-90)")
+		.text("Intolerant")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
 }
 
 /*******************************************************************************
