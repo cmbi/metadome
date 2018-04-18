@@ -2,12 +2,37 @@
 
 <!-- Staring definition of site content -->
 <section class="section">
-  <div class="container">
-    <h1 class="title" style="color: #00AFDC;">Generate a gene
-      <a href="{{ url_for('web.tolerance') }}">tolerance landscape</a></h1>
-    <h1 class="title" style="color: #00AFDC;">Retrieve 
-      <a href="{{ url_for('web.metadom') }}">meta-domains</a></h1>
+  <div class="box">
+    <section class="section">
+      <div class='content is-medium'>
+        <h1 class="title" style="color: #00AFDC;">Welcome to METADOM!</h1>
+        <p>
+          METADOM is an easy-to-use web service that allow you to analyse human proteins
+          on positional tolerance to population-based genetic variation present in the  
+          <a href="http://gnomad.broadinstitute.org/">gnoMAD</a> dataset, annotates known
+          pathogenic variation from the <a href="https://www.ncbi.nlm.nih.gov/clinvar/" 
+          target="_blank">ClinVar</a> resource, and allow use of homologous domain 
+          relations to analyse variant occuring at homologous domain positions in other
+          human proteins. 
+        </p>
+        <p>
+          Input your gene name and pick your transcript and METADOM will collect and
+          combine available information to produce a tolerance landscape, annotate 
+          <a href="https://pfam.xfam.org/" target="_blank">PFAM</a> domains and 
+          pathogenic <a href="https://www.ncbi.nlm.nih.gov/clinvar/" target="_blank">
+          ClinVar</a> variants, and provide meta-domain variant annotation.
+          Complete with results, ability to edit and download all the information.
+        </p>
+      </div>
+    </section>
+    <section class="section has-text-centered">
+    <!-- Start a tolerance landscape -->
+      <div class="control is-expanded has-text-centered">
+        <button class="button is-info is-large" onclick='location.href="{{ url_for("web.tolerance") }}"'>
+          Start analysis</button>
+      </div>
+    </section>
   </div>
-</section>
+ </section>
 
 {% endblock %} {% block js %} {% endblock %}
