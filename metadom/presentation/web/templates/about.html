@@ -1,5 +1,89 @@
 {% extends "base.html" %} {% block content %}
 
-<h2>About page</h2>
+<!-- Staring definition of site content -->
+<section class="section">
+  <div class="box">
+    <section class="section">
+      <div class='content'>
+        <h1 class="title" style="color: #00AFDC;">Mission</h1>
+        <p>
+          METADOM is developed at the Centre for Molecular and
+          Biomolecular Informatics <a href="www.cmbi.umcn.nl">CMBI</a>
+          and the department of <a
+            href="https://www.radboudumc.nl/en/research/departments/human-genetics"
+            target="_blank">Human Genetics</a> at the <a
+            href="https://www.radboudumc.nl/en/research" target="_blank">Radboud
+            University Medical Centre</a> in Nijmegen.
+        </p>
+
+        <p>Our mission is to provide better insight into human
+          genetic variation in the context of the protein. By using
+          homologous domain relations to further enhance the amount of
+          information even a single genetic variant may provide. And to
+          provide further evidence for the functional impact of genetic
+          variants. METADOM is aimed at professionals in the
+          (bio-)medical field of human genetics who wish to visualize
+          their mutation of interest in the context of normal genetic
+          variation and provide detailed information of similar variants
+          found across homologous domain positions. We hope that these
+          new insights can be used directly in a publication and/or for
+          intelligent design of further experiments.</p>
+
+        <h1 class="title" style="color: #00AFDC;">Method</h1>
+
+        <p>
+          METADOM integrates publicly available data of human genetic
+          variation to construct detailed information for a single
+          protein and its protein domains. More information on this
+          complex integration process can be found on the <a
+            href="{{ url_for('web.method') }}">method page</a>.
+        </p>
+
+        <p>
+          TESTING </br> Any results on tests
+        <p>
+        <h1 class="title" style="color: #00AFDC;">Citing METADOM</h1>
+
+        <p>We anticipate the publication of a method paper
+          describing this web-service in late 2018. Until that is
+          published, please use the following citation when referencing
+          the results in your report:</p>
+        <p>METADOM, Nijmegen, The Netherlands (URL:
+          https://stuart.radboudumc.nl/metadom) [date (month, year)
+          accessed].</p>
+        <p>together with :</p>
+        <p>
+          <strong> Aggregation of population‐based genetic
+            variation over protein domain homologues and its potential
+            use in genetic diagnostics. </strong>
+        </p>
+        <p>
+          <em> Human Mutation. 2017;38:1454–1463. <a
+            href="https://doi.org/10.1002/humu.23313" target="_blank">
+              10.1002/humu.23313 </a> PubMed: <a
+            href="https://www.ncbi.nlm.nih.gov/pubmed/28815929"
+            target="_blank"> 21059217. </a>
+          </em>
+        </p>
+
+
+        <h1 class="title" style="color: #00AFDC;">Informal Notice</h1>
+
+        <p>Please express your gratitude for this free material by
+          citing the above article.</p>
+
+        <p>
+          The material provided is complete, correct to the best of our
+          knowledge, and holds all that is needed to start building your
+          own METADOM server. If you do so, please provide a link to the
+          METADOM server. If you want to get a flying start by getting
+          access to the METADOM fully built database, feel free to <a
+            href="{{ url_for('web.contact') }}">contact us</a>.
+        </p>
+      </div>
+
+    </section>
+  </div>
+</section>
 
 {% endblock %} {% block js %} {% endblock %}
