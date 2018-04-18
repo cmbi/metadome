@@ -17,7 +17,6 @@ bp = Blueprint('web', __name__)
 def index():
     return render_template('index.html')
 
-
 @bp.route('/metadom', methods=['GET'])
 def metadom():
     return render_template('metadom.html')
@@ -52,7 +51,11 @@ def help():
 
 @bp.route('/about', methods=['GET'])
 def about():
-    return render_template('contact.html')
+    return render_template('about.html')
+
+@bp.route('/method', methods=['GET'])
+def method():
+    return render_template('method.html')
 
 
 # @bp.route("/input", methods=['GET', 'POST'])
