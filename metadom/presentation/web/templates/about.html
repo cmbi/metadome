@@ -48,7 +48,7 @@
           describing this web-service in late 2018. Until that is
           published, please use the following citation when referencing
           the results in your report:</p>
-        <p>METADOM, Nijmegen, The Netherlands (URL:
+        <p>METADOM web-service, Nijmegen, The Netherlands (URL:
           https://stuart.radboudumc.nl/metadom) [date (month, year)
           accessed].</p>
         <p>together with :</p>
@@ -66,8 +66,7 @@
           </em>
         </p>
 
-
-        <h1 class="title" style="color: #00AFDC;">Informal Notice</h1>
+        <h3 class="title" style="color: #00AFDC;">Informal Notice</h3>
 
         <p>Please express your gratitude for this free material by
           citing the above article.</p>
@@ -77,11 +76,86 @@
           knowledge, and holds all that is needed to start building your
           own METADOM server. If you do so, please provide a link to the
           METADOM server. If you want to get a flying start by getting
-          access to the METADOM fully built database, feel free to <a
+          access to the fully built METADOM database, feel free to <a
             href="{{ url_for('web.contact') }}">contact us</a>.
         </p>
-      </div>
 
+        <h3 class="title" style="color: #00AFDC;">Licensing</h3>
+
+        <p>
+          The <a href="https://github.com/cmbi/metadom/releases"
+            target="_blank">source code</a> is licensed <a
+            href="http://opensource.org/licenses/mit-license.php"
+            target="_blank">MIT</a>. The website content is licensed <a
+            href="http://creativecommons.org/licenses/by-nc-sa/4.0/"
+            target="_blank">CC ANS 4.0</a>
+        </p>
+
+        <h3 class="title" style="color: #00AFDC;">Acknowledgments</h3>
+
+        <p>This software could not exist without the many great open
+          source projects and resources freely available to the
+          (non-)scientific community. Particularly we would like to
+          express our deepest thanks to the following projects that we
+          have used for building the METADOM web-service:</p>
+
+
+        <div class="columns is-mobile is-centered is-multiline"
+          style="align-items: center">
+          <a class="column is-one-fifth" href="http://www.uniprot.org/"
+            target="_blank"><img class="image is-2by1"
+            src="{{ url_for('static', filename='img/uniprot_logo_medium.svg') }}"
+            alt="Uniprot"></a> <a class="column is-one-fifth"
+            href="https://www.gencodegenes.org/" target="_blank"><img
+            class="image is-2by1"
+            src="{{ url_for('static', filename='img/gencodegenes-logo-helix-av.png') }}"
+            alt="The GENCODE project produces high quality reference gene annotation and experimental validation for human and mouse genomes"></a>
+          <a class="column is-one-fifth" href="http://pfam.xfam.org/"
+            target="_blank"><img class="image is-2by1"
+            src="{{ url_for('static', filename='img/Pfam_logo.gif') }}"
+            alt="Pfam is a large collection of protein families, represented by multiple sequence alignments and hidden Markov models (HMMs)"></a>
+          <a class="column is-one-fifth"
+            href="https://www.ebi.ac.uk/interpro/" target="_blank"><img
+            class="image is-2by1"
+            src="{{ url_for('static', filename='img/InterPro_long_1600.png') }}"
+            alt="InterPro: protein sequence analysis & classification"></a>
+          <a class="column is-one-fifth" href="http://hmmer.org/"
+            target="_blank"><img class="image is-2by1"
+            src="{{ url_for('static', filename='img/hmmer_logo.png') }}"
+            alt="HMMER: biosequence analysis using profile hidden Markov models"></a>
+          <a class="column is-one-fifth"
+            href="http://gnomad.broadinstitute.org/" target="_blank"><img
+            class="image is-2by1"
+            src="{{ url_for('static', filename='img/gnomad_logo.png') }}"
+            alt="The Genome Aggregation Database (gnomAD)"></a> <a
+            class="column is-one-fifth"
+            href="https://www.ncbi.nlm.nih.gov/clinvar/" target="_blank"><img
+            class="image is-2by1"
+            src="{{ url_for('static', filename='img/clinvar_logo.png') }}"
+            alt="ClinVar is a freely accessible, public archive of reports of the relationships among human variations and phenotypes, with supporting evidence."></a>
+          <a class="column is-one-fifth" href="http://flask.pocoo.org/"
+            target="_blank"><img class="image is-2by1"
+            src="{{ url_for('static', filename='img/flask.svg') }}"
+            alt="Flask is a microframework for Python based on Werkzeug, Jinja 2 and good intentions."></a>
+          <a class="column is-one-fifth"
+            href="https://www.postgresql.org/" target="_blank"><img
+            class="image is-2by1"
+            src="{{ url_for('static', filename='img/postgresql-logo.png') }}"
+            alt="POSTGRESQL: THE WORLD'S MOST ADVANCED OPEN SOURCE RELATIONAL DATABASE"></a>
+          <a class="column is-one-fifth" href="https://www.docker.com/"
+            target="_blank"><img class="image is-2by1"
+            src="{{ url_for('static', filename='img/docker-logo.png') }}"
+            alt="Docker - Build, Ship, and Run Any App, Anywhere"></a>
+          <a class="column is-one-fifth" href="https://bulma.io/"
+            target="_blank"><img class="image is-2by1"
+            src="{{ url_for('static', filename='img/bulma-logo.png') }}"
+            alt="Bulma: a modern CSS framework based on Flexbox"></a>
+          <a class="column is-one-fifth" href="https://d3js.org/"
+            target="_blank"><img class="image is-2by1"
+            src="{{ url_for('static', filename='img/D3js_logo.svg') }}"
+            alt="D3 is a JavaScript library for visualizing data with HTML, SVG, and CSS."></a>
+        </div>
+      </div>
     </section>
   </div>
 </section>
