@@ -3,6 +3,7 @@ import logging
 from flask import Flask
 from metadom.domain.services.database_creation import create_db
 from metadom.domain.infrastructure import write_all_genes_names_to_disk
+from metadom.domain.services.mail.mail import mail
 
 _log = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ def create_app(settings=None):
     # a better way. Having the email handler configured at the root means all
     # child loggers inherit it.
     from metadom import _log as metadom_logger
-
+    
     # Only log to the console during development and production, but not during
     # testing.
     if app.testing:
@@ -44,6 +45,9 @@ def create_app(settings=None):
             metadom_logger.setLevel(logging.INFO)
     
 
+    # Add mail instance
+    mail.init_app(app)
+ 
     # Initialize extensions
     from metadom import toolbar
     toolbar.init_app(app)
