@@ -12,6 +12,10 @@ SQLALCHEMY_POOL_TIMEOUT = 10
 # Debug toolbar
 DEBUG_TB_ENABLED = DEBUG
 
+# E-mail
+MAIL_SERVER = None # add your smtp server here if needed
+DEFAULT_RECIPIENT = None # where should the support emails be sent to
+
 # local data directory
 DATA_DIR = "/usr/data/"
 GENE_NAMES_FILE = DATA_DIR+'gene_names.txt'
