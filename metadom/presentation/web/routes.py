@@ -1,13 +1,15 @@
-import logging
-
 from flask import Blueprint, redirect, g, render_template, url_for, request, session
-
-from metadom import get_version
-from metadom.presentation.web.forms import MetaDomForm
-from metadom.domain.repositories import MappingRepository, GeneRepository
+from flask_mail import Message
 import json
-from metadom.presentation import api
 import traceback
+from metadom import get_version
+from metadom.domain.repositories import GeneRepository
+from metadom.domain.services.mail.mail import mail
+from metadom.presentation.web.forms import SupportForm
+from metadom.presentation import api
+from metadom.default_settings import DEFAULT_RECIPIENT
+
+import logging
 
 _log = logging.getLogger(__name__)
 
@@ -41,13 +43,24 @@ def tolerance_js():
     # Renders the javascript used on the index page
     return render_template('/js/tolerance.js')
 
-@bp.route('/contact', methods=['GET'])
+@bp.route('/contact', methods=['GET', 'POST'])
 def contact():
-    return render_template('contact.html')
+    form = SupportForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        body = form.body.data
+        
+        msg = Message(subject="Support Request",
+                  sender=email,
+                  recipients=[DEFAULT_RECIPIENT])
+        
+        msg.body = body
+        
+        mail.send(msg)
 
-@bp.route('/help', methods=['GET'])
-def help():
-    return render_template('help.html')
+        return render_template('contact_sent.html')
+
+    return render_template('contact.html', form=form)
 
 @bp.route('/about', methods=['GET'])
 def about():
