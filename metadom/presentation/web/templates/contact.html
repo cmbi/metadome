@@ -1,5 +1,46 @@
 {% extends "base.html" %} {% block content %}
 
-<h2>Contact page</h2>
+<section class="section">
+  <div class="box">
+    <div class='content'>
+
+      <h3 class="title" style="color: #00AFDC;">Get in touch with
+        us</h3>
+      <p>Please include the following information if your query is
+        about an analysis in METADOM.
+      <ul>
+        <li>The gene name and transcription</li>
+        <li>A description of the problem</li>
+        <li>Your expectation</li>
+      </ul>
+      </p>
+      <hr>
+      <form id="metadom_contact_form" method="post"
+        action="{{ url_for('web.contact') }}" role="form"
+        enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="field">
+          <label class="label" style="color: #00AFDC;">Email</label>
+          <div class="control">{{ form.email(class_='input',
+            type_="email", placeholder='your@email.address') }}</div>
+        </div>
+
+        <div class="field">
+          <label class="label" style="color: #00AFDC;">Message</label>
+          <div class="control">{{ form.body(class_='textarea',
+            placeholder='Please provide a description', rows='10') }}</div>
+        </div>
+        <hr>
+        <div class="control is-expanded has-text-centered">
+          <button class="button is-info is-medium" type="submit">
+            Submit</button>
+        </div>
+        
+      </form>
+    </div>
+  </div>
+</section>
+
 
 {% endblock %} {% block js %} {% endblock %}
