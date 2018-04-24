@@ -70,34 +70,6 @@ def about():
 def method():
     return render_template('method.html')
 
-
-# @bp.route("/input", methods=['GET', 'POST'])
-# def input():
-#     form = MetaDomForm()
-#     if form.validate_on_submit():
-#         # get result
-#         mappings = MappingRepository.get_mapping_position(form.entry_id.data, 
-#                                                   form.position.data)
-#         
-#         alignments = PfamDomainAlignmentRepository.get_msa_alignment(form.entry_id.data)
-# 
-#         _log.debug("Redirecting to result page")
-# 
-#         session['mappings'] = mappings
-#         session['alignments'] = alignments
-#         return redirect(url_for('web.result'))
-# 
-#     _log.debug("Rendering input page")
-#     return render_template("input.html", form=form)
-
-
-@bp.route("/result", methods=["GET"])
-def result():
-    mappings = session.get('mappings', None)
-    alignments = session.get('alignments', None)
-    return render_template("result.html", mappings=mappings, alignments=alignments)
-
-
 @bp.before_request
 def before_request():
     g.metadom_version = get_version()
