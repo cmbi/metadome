@@ -11,6 +11,7 @@ from metadom.domain.wrappers.interpro import retrieve_interpro_entries
 from sklearn.externals.joblib.parallel import Parallel, delayed
 
 import logging
+from metadom.domain.data_generation.mapping.meta_domain_mapping import generate_pfam_alignment_mappings
 
 _log = logging.getLogger(__name__)
 
@@ -20,15 +21,15 @@ def create_db():
 
     # the genes that are to be checked
     genes_of_interest = retrieve_all_protein_coding_gene_names()
-        
+         
     # (re-) construct the mapping database  => GENE2PROTEIN_MAPPING_DB
     generate_mappings_for_genes(genes_of_interest, batch_size=10, use_parallel=True)
-     
+      
     # annotate all the proteins with interpro_domains
     for protein in Protein.query.filter(Protein.evaluated_interpro_domains == False).all():
         # generate all pfam domain to swissprot mappings
         annotate_interpro_domains_to_proteins(protein)
-
+    
 def generate_mappings_for_genes(genes_of_interest, batch_size, use_parallel):
     # filter gene names alreay present in the database
     genes_of_interest = filter_gene_names_present_in_database(genes_of_interest)
@@ -98,3 +99,31 @@ def annotate_interpro_domains_to_proteins(protein):
     
     # Commit this session
     db.session.commit()
+    
+def generate_meta_domain_mappings(pfam_domains_of_interest, batch_size, use_parallel):
+      
+    # Create batches
+    pfam_domains_of_interest_batches = [pfam_domains_of_interest[i:i+batch_size] for i in range(0, len(pfam_domains_of_interest), batch_size)]
+    n_batches = len(pfam_domains_of_interest_batches)
+    n_domains = len(pfam_domains_of_interest)
+       
+    # Annotate the genes in batches
+    _log.info("Starting the creation of meta-domain mapping of batched analysis of '"+str(n_domains)+"' over '"+str(n_batches)+"' batches")
+    succeeded_domains = 0
+    for batch_counter, domain_batch in enumerate(pfam_domains_of_interest_batches):
+        _log.info("Starting batch '"+str(batch_counter+1)+"' out of '"+str(n_batches)+"', with '"+str(len(domain_batch))+"' domains")
+       
+        domain_mappings = []
+        if use_parallel:
+            domain_mappings = Parallel(n_jobs=CalculateNumberOfActiveThreads(batch_size))(delayed(generate_pfam_alignment_mappings)(domain) for domain in domain_batch)            
+        else:
+            domain_mappings = [generate_pfam_alignment_mappings(domain) for domain in domain_batch]
+  
+        # add the batches to the database
+        for meta_domain_mappings in domain_mappings:
+            add_meta_domain_mapping_to_database(meta_domain_mappings)
+            succeeded_domains +=1
+           
+        _log.info("Finished batch '"+str(batch_counter+1)+"' out of '"+str(n_batches)+"'")
+    _log.info("Finished the creation of meta-domain mapping of batched analysis of '"+str(n_domains)+"' over '"+str(n_batches)+"' batches, resulting in '"+str(succeeded_domains)+"' successful meta-domain mappings")
+
