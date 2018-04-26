@@ -1,7 +1,6 @@
 from metadom.database import db
 from metadom.domain.models.protein import Protein
 from metadom.domain.models.gene import Gene
-from metadom.domain.models.pfam_domain_alignment import PfamDomainAlignment
 from sqlalchemy.sql.expression import distinct
 import logging
 from metadom.domain.repositories import GeneRepository
@@ -87,34 +86,5 @@ def add_gene_mapping_to_database(gene_mapping):
         # Commit the changes of this mapping
         _session.commit()
             
-    # Close this session, thus all items are cleared and memory usage is kept at a minimum
-    _session.remove()
-     
-def add_meta_domain_mapping_to_database(meta_domain_mappings):
-    _session = db.create_scoped_session()
-      
-    for domain_alignment in meta_domain_mappings:
-        with _session.no_autoflush:
-            domain_occurrence = domain_alignment['domain_occurrence']
-            
-            to_be_added_domain_alignments = []
-            
-            for domain_mapping in domain_alignment['alignment']:
-                # retrieve the domain_alignment object
-                domain_alignment_object = domain_mapping['domain_alignment']
-                
-                # retrieve the mapping
-                mapping = domain_mapping['mapping']
-                
-                # update relationships
-                domain_occurrence.pfam_domain_alignments.append(domain_alignment_object)
-                mapping.pfam_domain_alignment.append(domain_alignment_object)
-                
-            # add the domain_alignment
-            _session.add_all(to_be_added_domain_alignments)
-            
-        # Commit the changes of this mapping
-        _session.commit()
-              
     # Close this session, thus all items are cleared and memory usage is kept at a minimum
     _session.remove()
