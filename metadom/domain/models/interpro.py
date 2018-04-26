@@ -18,7 +18,6 @@ class Interpro(db.Model):
     
     Relationships
     many to one               protein
-    one to many               pfam_domain_alignments
     """
     # Table configuration
     __tablename__ = 'interpro_domains'
@@ -34,7 +33,6 @@ class Interpro(db.Model):
     
     # Relationships
     protein = db.relationship("Protein", back_populates="interpro_domains")
-    pfam_domain_alignments = db.relationship("PfamDomainAlignment", back_populates="domain")
     
     # Constraints
     __table_args__ = (db.UniqueConstraint('protein_id', 'ext_db_id', 'uniprot_start', 'uniprot_stop', name='_unique_protein_region'),
