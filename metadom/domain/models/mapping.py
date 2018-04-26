@@ -28,7 +28,6 @@ class Mapping(db.Model):
     Relationships
     many to one               gene
     many to one               protein
-    many to one               pfam_domain_alignment
     """
     # Table configuration
     __tablename__ = 'mappings'
@@ -52,7 +51,6 @@ class Mapping(db.Model):
     # Relationships
     gene = db.relationship("Gene", back_populates="mappings")
     protein = db.relationship("Protein", back_populates="mappings")
-    pfam_domain_alignment = db.relationship("PfamDomainAlignment", back_populates="mappings")
     
     def __repr__(self):
         return "<Mapping(chr='%s', chr_pos='%s' base_pair='%s', codon='%s', codon_base_pair_position='%s', amino_acid_residue='%s', cDNA_position='%s', uniprot_position='%s')>" % (
