@@ -9,6 +9,7 @@ from metadom.domain.models.interpro import Interpro
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.sql.functions import func
 from metadom.default_settings import GENE_NAMES_FILE
+from sqlalchemy.sql.expression import and_, distinct
 
 _log = logging.getLogger(__name__)
 
@@ -52,6 +53,13 @@ class GeneRepository:
         return None
     
 class InterproRepository:
+    
+    @staticmethod
+    def get_all_Pfam_identifiers_suitable_for_metadomains():
+        """Retrieves all pfam identifiers that occur at least two times in the database"""
+        for domain_entry in Interpro.query.with_entities(Interpro.ext_db_id, func.count(Interpro.id)).filter(Interpro.ext_db_id.like('PF%')).group_by(Interpro.ext_db_id).having(func.count(Interpro.id)>2).distinct(Interpro.ext_db_id):
+            yield domain_entry.ext_db_id
+    
     
     @staticmethod
     def get_all_Pfam_identifiers():
