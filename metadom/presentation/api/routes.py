@@ -55,6 +55,8 @@ def get_tolerance_landscape():
 
 @bp.route('/gene/getToleranceLandscape/<transcript_id>/', methods=['GET'])
 def get_tolerance_landscape_for_transcript(transcript_id):
+#     return mockup_landscape();
+    
     sliding_window = request.args.get('slidingwindow')
     if sliding_window is None:
         sliding_window = 10
@@ -149,7 +151,7 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
     metadomain = MetaDomain(domain_id)
      
     # retrieve the context for this protein
-    protein_to_consensus_positions = metadomain.consensus_pos_per_protein[gene_region.protein_id]
+    protein_to_consensus_positions = metadomain.consensus_pos_per_protein[gene_region.uniprot_ac]
     
     meta_domain_data = []
     # generate the return value
@@ -163,8 +165,10 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
         metadom_entry['other_normal_variation'] = retieve_empty_variant_type_counter()
         metadom_entry['other_pathogenic_variation'] = retieve_empty_variant_type_counter()
         
+        _log.info('starting creation of meta codons')
         # Retrieve the meta codons for this position
         meta_codons = metadomain.get_codons_aligned_to_consensus_position(metadom_entry['consensus_pos'])
+        _log.info('finished creation of meta codons')
         
         # create the variant annotations
         normal_variant_annotation = []
@@ -254,7 +258,7 @@ def get_metadomain_information_for_gene_position(transcript_id, amino_acid_posit
             domain_id = interpro_domain.ext_db_id
             metadomain = MetaDomain(domain_id)
             
-            protein_to_consensus_positions = metadomain.consensus_pos_per_protein[gene_region.protein_id]
+            protein_to_consensus_positions = metadomain.consensus_pos_per_protein[gene_region.uniprot_ac]
             
             if amino_acid_position in protein_to_consensus_positions:
                 meta_domain_mappings[domain_id] = metadomain.mappings_per_consensus_pos[protein_to_consensus_positions[amino_acid_position]]
