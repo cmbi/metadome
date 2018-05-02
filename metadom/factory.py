@@ -4,6 +4,8 @@ from flask import Flask
 from metadom.domain.services.database_creation import create_db
 from metadom.domain.infrastructure import write_all_genes_names_to_disk
 from metadom.domain.services.mail.mail import mail
+from metadom.domain.services.meta_domain_creation import create_metadomains
+from metadom.default_settings import RECONSTRUCT_METADOMAINS
 
 _log = logging.getLogger(__name__)
 
@@ -69,7 +71,13 @@ def create_app(settings=None):
         # is while within this block. Therefore, you can now run........
         db.create_all()
         create_db()
+        
+        # now create all meta_domains
+        create_metadomains(reconstruct=RECONSTRUCT_METADOMAINS)
+        
         # retrieve all gene names and write to disk
         write_all_genes_names_to_disk()
+        
+    
 
     return app
