@@ -53,6 +53,10 @@ UNIPROT_SPROT_CANONICAL = UNIPROT_DIR+"uniprot_sprot.fasta"
 UNIPROT_SPROT_SPECIES_FILTER = "HUMAN"
 UNIPROT_TREMBL = UNIPROT_DIR+"uniprot_trembl.fasta"
 
+# Meta-domain files
+METADOMAIN_DIR = DATA_DIR+"metadomains/"
+RECONSTRUCT_METADOMAINS = False
+
 # PFAM specific files
 PFAM_DIR = DATA_DIR+"PFAM/Pfam30.0"
 PFAM_ALIGNMENT_DIR = PFAM_DIR+"/alignment/"
