@@ -80,6 +80,23 @@ class InterproRepository:
 class ProteinRepository:
     
     @staticmethod
+    def retrieve_protein_ac_for_multiple_protein_ids(_protein_ids):
+        """Retrieves all uniprot accession codes for multiple Protein objects as {protein_id: uniprot_ac}"""
+        _protein_ac_per_protein_id = {}
+        for protein in db.session.query(Protein).filter(Protein.id.in_(_protein_ids)).all():
+            _protein_ac_per_protein_id[protein.id] = protein.uniprot_ac
+        return _protein_ac_per_protein_id
+    
+    @staticmethod
+    def retrieve_protein_id_for_multiple_protein_acs(_protein_acs):
+        """Retrieves all protein ids for multiple Protein objects as {protein_ac: uniprot_id}"""
+        _protein_id_per_protein_ac = {}
+        for protein in db.session.query(Protein).filter(Protein.uniprot_ac.in_(_protein_acs)).all():
+            _protein_id_per_protein_ac[protein.uniprot_ac] = protein.id
+        return _protein_id_per_protein_ac
+    
+    
+    @staticmethod
     def retrieve_protein(protein_id):
         """Retrieves the protein object for a given protein id"""
         try:
