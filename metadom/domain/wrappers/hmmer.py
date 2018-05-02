@@ -407,25 +407,24 @@ def report_hmm_stat_for_pfam(pfam_ac):
     # return the hmmstat
     return hmmstat_output
 
-
-def align_sequences_according_to_PFAM_HMM(sequences, pfam_ac):
+def create_alignment_of_sequences_according_to_PFAM_HMM(sequences, pfam_ac, target_directory, target_file_alignments):
     """ aligns homologues pfam domains contained in 'sequences' based 
     on the Pfam-HMM specified by the 'pfam_ac'.
     
     The assumption of this method is that the 'sequences' are found to
-    be all part of the domain specified by 'pfam_ac' (a Pfam accession
+    be all part of the domain specified by 'pfam_ac' (_src Pfam accession
     code ex.: 'PF00102')
     
-    Output: a dictionary containing:
+    Output: _src dictionary containing:
     KEY - VALUE DESCRIPTION
-    'alignments' - a python list type containing python dictionaries
+    'alignments' - _src python list type containing python dictionaries
                     corresponding to the amount of sequences provided
                     by 'sequences'. The key 'seq_nr' herein corresponds
                     to the index of the sequence in 'sequences' and the
                     key 'alignment' corresponds to the alignment created
                     in the context of the Pfam HMM w.r.t. the other
                     sequences in 'sequences'
-   'consensus' - a python dictionary containing the consensus_identifier,
+   'consensus' - _src python dictionary containing the consensus_identifier,
                     consensus_sequence and alignments with corresponding
                     keys
     'PP_cons' - consensus posterior probability annotation for the entire
@@ -447,7 +446,7 @@ def align_sequences_according_to_PFAM_HMM(sequences, pfam_ac):
     if found_ids == 0:
         raise FoundNoPfamHMMException("Found no matching Pfam ids that for Pfam ac '"+pfam_ac+"' when searching for matching HMMER HMM's")
     
-    # create a temporary HMM file
+    # create _src temporary HMM file
     tmp_hmm_file = tempfile.NamedTemporaryFile(suffix=".hmm", delete=False)
     
     # fetch the HMM
@@ -463,48 +462,44 @@ def align_sequences_according_to_PFAM_HMM(sequences, pfam_ac):
     # create an fasta file from the various sequences
     with tempfile.NamedTemporaryFile(suffix=".fasta", delete=False) as tmp_sequences_file:
         tmp_sequences_file.write(('\n'.join(['>'+str(consensus_identifier), consensus_sequence])).encode(encoding='utf_8', errors='strict'))
-        for index, sequence in enumerate(sequences):
-            tmp_sequences_file.write(('\n'.join(['>'+str(index), sequence])).encode(encoding='utf_8', errors='strict'))
+        for sequence in sequences:
+            tmp_sequences_file.write(('\n'.join(['>'+str(sequence['uniprot_ac'])+'/'+str(sequence['start'])+'-'+str(sequence['stop']), sequence['sequence']])).encode(encoding='utf_8', errors='strict'))
     
     # Create temp file for storing the alignment
     tmp_hmm_alignment_file = tmp_hmm_file.name+"_alignment"
     
-    # use the HMM as a hmmalign using the found HMM model    
+    # use the HMM as _src hmmalign using the found HMM model    
     hmmalign_args = [HMMALIGN_EXECUTABLE, "-o", tmp_hmm_alignment_file, "--outformat", "Pfam", tmp_hmm_file.name, tmp_sequences_file.name]
     try:
         subprocess.call(hmmalign_args)
     except subprocess.CalledProcessError as e:
         _log.error("{}".format(e.output))
     
-    # interpret the alignments made by Pfam's HMM
-    hmmalign_output = {'alignments':[], 
-                       'consensus':{'identifier':consensus_identifier,
-                                    'alignment':None, 
-                                    'sequence':consensus_sequence},
-                        'PP_cons':None, 
-                        'RF':None}
     try:
         # retrieve the aligned sequences from the output file
         if os.path.exists(tmp_hmm_alignment_file):
-            with open(tmp_hmm_alignment_file) as a:
-                Pfam_alignments = a.readlines()
-                for line in Pfam_alignments:
-                    if line.startswith(consensus_identifier):
-                        # this is the consensus sequence
-                        alignment = [al for al in line.strip().split(" ") if len(al)>0]
-                        hmmalign_output['consensus']['alignment'] = alignment[1]
-                    elif line[0].isdigit():
-                        # this is one of the alignments
-                        alignment = [al for al in line.strip().split(" ") if len(al)>0]
-                        hmmalign_output['alignments'].append({'seq_nr':int(alignment[0]),'alignment':alignment[1]})
-                    elif line.startswith("#=GC PP_cons"):
-                        # handle the consensus posterior probability annotation for the entire column
-                        pp_cons = [al.strip() for al in line.strip().split("#=GC PP_cons") if len(al)>0]
-                        hmmalign_output['PP_cons'] = pp_cons[0]
-                    elif line.startswith("#=GC RF"):
-                        # handle the reference coordinate annotation
-                        rf = [al.strip() for al in line.strip().split("#=GC RF") if len(al)>0]
-                        hmmalign_output['RF'] = rf[0]
+            # first create the metadomain dir if it does not yet exist
+            if not os.path.isdir(target_directory):
+                _log.info('Directory '+target_directory+' did not exist yet, creating ...')
+                os.mkdir(target_directory)
+                
+            # first create the specific metadomain dir if it does not yet exist
+            if not os.path.isdir(target_directory+pfam_ac):
+                _log.info('Directory '+target_directory+pfam_ac+' did not exist yet, creating ...')
+                os.mkdir(target_directory+pfam_ac)
+                
+            with open(tmp_hmm_alignment_file) as _src:
+                with open(target_directory+pfam_ac+'/'+target_file_alignments, 'wt') as _dst:
+                    Pfam_alignments = _src.readlines()
+                    for line in Pfam_alignments:
+                        # write the line
+                        _dst.write(line)
+                        if line.startswith('# STOCKHOLM 1.0'):
+                            # this is just after the start of the file, appending comments
+                            _dst.write('#=GF ID '+consensus_identifier+'\n')
+                            _dst.write('#=GF AC '+pfam_ac+'\n')
+                            _dst.write('#=GF DC This alignment file only contains Pfam domains found in the human species'+'\n')
+                            _dst.write('#=GF CC consensus_sequence:'+consensus_sequence+'\n')
     except IOError as e:
         _log.error("{}".format(e.output))
         
@@ -512,6 +507,58 @@ def align_sequences_according_to_PFAM_HMM(sequences, pfam_ac):
     os.remove(tmp_hmm_file.name)
     os.remove(tmp_sequences_file.name)
     os.remove(tmp_hmm_alignment_file)
+
+def interpret_hmm_alignment_file(hmm_alignment_file):
+    # interpret the alignments made by Pfam's HMM
+    hmmalign_output = {}
+    try:
+        # retrieve the aligned sequences from the output file
+        if os.path.exists(hmm_alignment_file):
+            hmmalign_output['alignments'] = []
+            hmmalign_output['consensus'] = {'identifier':None, 'alignment':None, 'sequence':None}
+            hmmalign_output['PP_cons'] = None
+            hmmalign_output['RF'] = None
+            
+            with open(hmm_alignment_file) as a:
+                Pfam_alignments = a.readlines()
+                processed_comments = False
+                for line in Pfam_alignments:
+                    if processed_comments:
+                        if line.startswith(hmmalign_output['consensus']['identifier']):
+                            # this is the consensus sequence
+                            alignment = [al for al in line.strip().split(" ") if len(al)>0]
+                            hmmalign_output['consensus']['alignment'] = alignment[1]
+                        elif line.startswith("#=GC PP_cons"):
+                            # handle the consensus posterior probability annotation for the entire column
+                            pp_cons = [al.strip() for al in line.strip().split("#=GC PP_cons") if len(al)>0]
+                            hmmalign_output['PP_cons'] = pp_cons[0]
+                        elif line.startswith("#=GC RF"):
+                            # handle the reference coordinate annotation
+                            rf = [al.strip() for al in line.strip().split("#=GC RF") if len(al)>0]
+                            hmmalign_output['RF'] = rf[0]
+                        else:
+                            alignment = [al for al in line.strip().split(" ") if len(al)>0]
+                            seq_identifier = alignment[0]
+                            if '/' in seq_identifier and '-' in seq_identifier:
+                                # this is one of the alignments
+                                uniprot_ac_and_positions = seq_identifier.split('/')
+                                uniprot_ac = uniprot_ac_and_positions[0]
+                                positions = uniprot_ac_and_positions[1].split('-')
+                                start_pos = positions[0]
+                                stop_pos = positions[1] 
+                                
+                                hmmalign_output['alignments'].append({'seq_id': seq_identifier,'uniprot_ac':uniprot_ac, 'start_pos':start_pos, 'stop_pos':stop_pos, 'alignment':alignment[1]})
+                            
+                    else:
+                        if line.startswith('#=GF ID '):
+                            hmmalign_output['consensus']['identifier'] = line.strip().split('#=GF ID ')[1]
+                        elif line.startswith('#=GF CC consensus_sequence:'):
+                            hmmalign_output['consensus']['sequence'] = line.strip().split('#=GF CC consensus_sequence:')[1]
+                        elif line == '\n':
+                            processed_comments = True
+    except IOError as e:
+        _log.error("{}".format(e.output))
+        
     
     # return the alignments
     return hmmalign_output
