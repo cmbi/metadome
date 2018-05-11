@@ -149,7 +149,7 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
      
     # create a metadomain for this domain
     metadomain = MetaDomain(domain_id)
-     
+         
     # retrieve the context for this protein
     protein_to_consensus_positions = metadomain.consensus_pos_per_protein[gene_region.uniprot_ac]
     
@@ -165,10 +165,8 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
         metadom_entry['other_normal_variation'] = retieve_empty_variant_type_counter()
         metadom_entry['other_pathogenic_variation'] = retieve_empty_variant_type_counter()
         
-        _log.info('starting creation of meta codons')
         # Retrieve the meta codons for this position
         meta_codons = metadomain.get_codons_aligned_to_consensus_position(metadom_entry['consensus_pos'])
-        _log.info('finished creation of meta codons')
         
         # create the variant annotations
         normal_variant_annotation = []
