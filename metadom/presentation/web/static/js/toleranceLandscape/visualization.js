@@ -6,6 +6,9 @@ var outerHeight = 700;
 var svg = d3.select("svg").attr("width", outerWidth)
 		.attr("height", outerHeight);
 
+var metadomain_svg = d3.select("#metadomain_svg").attr("width", 400)
+.attr("height", 500);
+
 // Declare margins
 var marginLandscape = {
 	top : 20,
@@ -170,6 +173,10 @@ function createGraph(obj) {
 
 	svg.selectAll("*").remove();
 	svg = d3.select("svg");
+	
+	metadomain_svg.selectAll("*").remove();
+	metadomain_svg = d3.select('#metadomain_svg');
+
 
 	// Add defs to the svg
 	var defs = svg.append("defs")
@@ -195,6 +202,26 @@ function createGraph(obj) {
 
 	// Finally draw the context zoom
 	addContextZoomView(tolerance_data);
+}
+
+// Adds positional information for a selected position
+function createPositionalInformation(position_data){
+    metadomain_svg.selectAll("*").remove();
+    metadomain_svg = d3.select('#metadomain_svg');
+        
+    metadomain_svg.append("text")
+	.attr("class", "postionalInformation")
+	.attr("text-anchor", "middle")
+		.attr("x", 0)
+		.attr("y", 50)
+		.attr("dy", 0)
+		.attr("font-size", "14px")
+	.style('pointer-events', 'none')
+	.style('user-select', 'none')
+	.style("fill", "black")
+	.text(function(d, i) {
+	    return position_data.values[0].chr_positions;
+	});
 }
 
 /*******************************************************************************
@@ -366,10 +393,12 @@ function addCustomAxis(groupedTolerance) {
 		}).on("click", function(d, i) {
 		    if (!d.values[0].selected) {
 			d3.select(this).style("fill", "red").style("fill-opacity", 0.7);
-			d.values[0].selected = true;
+			d.values[0].selected = true;			
+			addRowToPositionalInformationTable(d);
 		    } else {
 			d3.select(this).style("fill", "orange").style("fill-opacity", 0.5);
 			d.values[0].selected = false;
+			d3.select("#positional_table_info_" + d.values[0].protein_pos).remove();
 		    }
 		});
 }
@@ -614,6 +643,44 @@ function createToleranceGraphLegend() {
 /*******************************************************************************
  * Interactive behaviour functions
  ******************************************************************************/
+
+// Update the positional information table with new values
+function addRowToPositionalInformationTable(d) {
+	var new_row = d3.select('#position_information_table').append('tr').attr('class', 'tr').attr("id", "positional_table_info_" + d.values[0].protein_pos);
+	
+	new_row.append('th').attr('class', 'sortable').text(d.values[0].protein_pos);
+	new_row.append('td').text(d.values[0].ref_codon);
+	new_row.append('td').text(d.values[0].ref_aa_triplet);
+	if ('metadomain' in d.values[0]){
+	    new_row.append('td').text(d.values[0].metadomain.domain_id + "(pos: "+d.values[0].metadomain.consensus_pos+")");
+	    new_row.append('td').text("gnomAD: ??"+" / ClinVar: ??");
+	    new_row.append('td').text("gnomAD: "+d.values[0].metadomain.other_normal_variation.missense+"/ ClinVar:"+d.values[0].metadomain.other_pathogenic_variation.missense);
+	}
+	else{
+	    new_row.append('td').text("-");
+	    new_row.append('td').text("gnomAD: ??"+" / ClinVar: ??");
+	    new_row.append('td').text("-");
+	}
+	
+	// Add interactiveness to the rows
+	new_row.on("click", function() {
+	    d3.selectAll('.tr').classed("is-selected", false);
+	    d3.select(this).classed("is-selected", true);
+	    createPositionalInformation(d);
+	});
+	
+	// Sort the table to the protein positions
+	// a numerical sorting function
+	function sortNum(a, b) {
+	    return 1 * $(a).find('.sortable').text() > 1 * $(b).find('.sortable').text() ? 1 : 0;
+	}
+
+	// Sort the table to the protein positions
+	var elems = $.makeArray($('tr:has(.sortable)').remove())
+        
+        elems.sort(sortNum)
+        $('#position_information_table').append($(elems));
+}
 
 // Rescale the landscape for zooming or brushing purposes
 function rescaleLandscape(){
