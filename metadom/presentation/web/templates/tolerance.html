@@ -94,7 +94,38 @@ $( function() {
     <svg xmlns="http://www.w3.org/2000/svg" id="svg"></svg>
     <div id="graph"></div>
   </div>
-  
+  <div id='positional_information' class="container">  
+    <div class="label"><label class="title">Positional information</label></div> 
+    <div class="field is-grouped"> 
+      <table class="table is-hoverable is-narrow">
+        <thead>
+          <tr>
+            <th><abbr title="Position in protein">Position</abbr></th>
+            <th><abbr title="The codon at this position">Codon</abbr></th>
+            <th><abbr title="The amino acid residue at this position">Residue</abbr></th>
+            <th><abbr title="Is this residue part of a protein domain">Protein domain</abbr></th>
+            <th><abbr title="Variants found at this position in the genome">Variants at position</abbr></th>
+            <th><abbr title="Variants found across the genome that are related to this position via meta-domains">Related variants at position</abbr></th>
+          </tr>
+        </thead>
+        <tfoot>
+          <tr>
+            <th><abbr title="Position in protein">Position</abbr></th>
+            <th><abbr title="The codon at this position">Codon</abbr></th>
+            <th><abbr title="The amino acid residue at this position">Residue</abbr></th>
+            <th><abbr title="Is this residue part of a protein domain">Protein domain</abbr></th>
+            <th><abbr title="Variants found at this position in the genome">Variants at position</abbr></th>
+            <th><abbr title="Variants found across the genome that are related to this position via meta-domains">Related variants at position</abbr></th>
+          </tr>
+        </tfoot>
+        <tbody id="position_information_table">
+        </tbody>
+      </table>
+      <div id="positional_details_graph">
+        <svg xmlns="http://www.w3.org/2000/svg" id="metadomain_svg"></svg>
+      </div>
+   </div> 
+  </div>
   <div class="container">
     <!-- Toggling advanced mode -->
     <div class="field is-grouped">    
