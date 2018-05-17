@@ -422,8 +422,6 @@ function addCustomAxis(groupedTolerance) {
 		    }
 		    // hide the tooltip
 		    positionTip.hide(d);
-		    // reset the cursor
-		    d3.select(this).style("cursor", "default");
 		}).on("click", function(d, i) {
 		    if (!d.values[0].selected) {
 			d3.select(this).style("fill", "red").style("fill-opacity", 0.7);
@@ -704,6 +702,8 @@ function addRowToPositionalInformationTable(d) {
 	    d3.selectAll('.tr').classed("is-selected", false);
 	    d3.select(this).classed("is-selected", true);
 	    createPositionalInformation(d);
+	}).on("mouseover", function(d, i) {
+	    d3.select(this).style("cursor", "pointer");
 	});
 		
 	// Sort the table to the protein positions
