@@ -209,6 +209,7 @@ function createPositionalInformation(position_data){
     metadomain_svg.selectAll("*").remove();
     metadomain_svg = d3.select('#metadomain_svg');
         
+    //  + "(pos: "+d.values[0].metadomain.consensus_pos+")"
     metadomain_svg.append("text")
 	.attr("class", "postionalInformation")
 	.attr("text-anchor", "middle")
@@ -652,13 +653,17 @@ function addRowToPositionalInformationTable(d) {
 	new_row.append('td').text(d.values[0].ref_codon);
 	new_row.append('td').text(d.values[0].ref_aa_triplet);
 	if ('metadomain' in d.values[0]){
-	    new_row.append('td').text(d.values[0].metadomain.domain_id + "(pos: "+d.values[0].metadomain.consensus_pos+")");
-	    new_row.append('td').text("gnomAD: ??"+" / ClinVar: ??");
-	    new_row.append('td').text("gnomAD: "+d.values[0].metadomain.other_normal_variation.missense+"/ ClinVar:"+d.values[0].metadomain.other_pathogenic_variation.missense);
+	    new_row.append('td').text(d.values[0].metadomain.domain_id);
+	    new_row.append('td').text("??");
+	    new_row.append('td').text("??");
+	    new_row.append('td').text(d.values[0].metadomain.other_normal_variation.missense);
+	    new_row.append('td').text(d.values[0].metadomain.other_pathogenic_variation.missense);
 	}
 	else{
 	    new_row.append('td').text("-");
-	    new_row.append('td').text("gnomAD: ??"+" / ClinVar: ??");
+	    new_row.append('td').text("??");
+	    new_row.append('td').text("??");
+	    new_row.append('td').text("-");
 	    new_row.append('td').text("-");
 	}
 	
