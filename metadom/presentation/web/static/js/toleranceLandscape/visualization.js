@@ -234,6 +234,9 @@ function createPositionalInformation(position_data){
 	console.log(position_data.values[0].metadomain.other_codons);
 	console.log(position_data.values[0].metadomain.other_normal_variation);
 	console.log(position_data.values[0].metadomain.other_pathogenic_variation);
+	
+	// download alignment
+	
     }
 //  "(pos: "+d.values[0].metadomain.consensus_pos+")"
 //    metadomain_svg.append("text")
@@ -401,9 +404,8 @@ function addCustomAxis(groupedTolerance) {
 		    }
 		})
 		.attr("height", heightMarginPositionInfo)
-		.style("fill-opacity", 0.0)
-		.style("fill", "white")
-		.style("stroke", "steelblue")
+		.style("fill-opacity", 0.2)
+		.style("fill", "grey")
 		.style("clip-path","url(#clip)")
 		.on("mouseover", function(d, i) {
 		    if (!d.values[0].selected) {
@@ -411,18 +413,15 @@ function addCustomAxis(groupedTolerance) {
 		    }
 		    // show the tooltip
 		    positionTip.show(d);
-		    // amplify the border
-		    d3.select(this).style("stroke", "red");
 		    // change the cursor
 		    d3.select(this).style("cursor", "pointer");
 		}).on("mouseout", function(d, i) {
 		    if (!d.values[0].selected) {
-			d3.select(this).style("fill", "white").style("fill-opacity", 0.0);
+			d3.select(this).style("fill-opacity", 0.2);
+			d3.select(this).style("fill", "grey");
 		    }
 		    // hide the tooltip
 		    positionTip.hide(d);
-		    // reset the stroke color
-		    d3.select(this).style("stroke", "steelblue");
 		    // reset the cursor
 		    d3.select(this).style("cursor", "default");
 		}).on("click", function(d, i) {
