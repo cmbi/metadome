@@ -208,23 +208,55 @@ function createGraph(obj) {
 function createPositionalInformation(position_data){
     metadomain_svg.selectAll("*").remove();
     metadomain_svg = d3.select('#metadomain_svg');
-        
+    
+    console.log(position_data.values[0].protein_pos);
+    
+    console.log(position_data.values[0].sw_dn_ds);
+    console.log(position_data.values[0].sw_coverage);
+    
+    console.log(position_data.values[0].cdna_pos);
+    console.log(position_data.values[0].chr);
+    console.log(position_data.values[0].chr_positions);
+    
+    console.log(position_data.values[0].ref_aa_triplet);
+    console.log(position_data.values[0].ref_codon);
+    
+//    clinvar Variants
+//    gnomad variants
+    
+//    if domain
+    
+    if ('metadomain' in position_data.values[0]){
+	console.log(position_data.values[0].metadomain.domain_id);
+	console.log(position_data.values[0].metadomain.domain_id);
+	console.log(position_data.values[0].metadomain.consensus_pos);
+	console.log(position_data.values[0].metadomain.other_chr_regions);
+	console.log(position_data.values[0].metadomain.other_codons);
+	console.log(position_data.values[0].metadomain.other_normal_variation);
+	console.log(position_data.values[0].metadomain.other_pathogenic_variation);
+    }
+//  "(pos: "+d.values[0].metadomain.consensus_pos+")"
+//    metadomain_svg.append("text")
+//	.attr("class", "postionalInformation")
+//	.attr("text-anchor", "right")
+//		.attr("x", 0)
+//		.attr("y", 50)
+//		.attr("dy", 0)
+//		.attr("font-size", "14px")
+//	.style("fill", "black")
+//	.text(function(d, i) {
+//	    return position_data.values[0].chr_positions;
+//	});
+    
+    
+    
+    
+//    if domain
+//    metadom_entry['domain_id'] = metadomain.domain_id
+//	 
+//    if metadomain :
 //	new_row.append('td').text(d.values[0].ref_codon);
 
-//    "(pos: "+d.values[0].metadomain.consensus_pos+")"
-    metadomain_svg.append("text")
-	.attr("class", "postionalInformation")
-	.attr("text-anchor", "right")
-		.attr("x", 0)
-		.attr("y", 50)
-		.attr("dy", 0)
-		.attr("font-size", "14px")
-	.style('pointer-events', 'none')
-	.style('user-select', 'none')
-	.style("fill", "black")
-	.text(function(d, i) {
-	    return position_data.values[0].chr_positions;
-	});
 }
 
 /*******************************************************************************
@@ -651,7 +683,7 @@ function createToleranceGraphLegend() {
 function addRowToPositionalInformationTable(d) {
 	var new_row = d3.select('#position_information_tbody').append('tr').attr('class', 'tr').attr("id", "positional_table_info_" + d.values[0].protein_pos);
 	
-	new_row.append('th').attr('class', 'sortable').text(d.values[0].protein_pos);
+	new_row.append('th').text(d.values[0].protein_pos);
 	new_row.append('td').text(d.values[0].ref_aa_triplet);
 	if ('metadomain' in d.values[0]){
 	    new_row.append('td').text(d.values[0].metadomain.domain_id);
