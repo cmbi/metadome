@@ -209,10 +209,12 @@ function createPositionalInformation(position_data){
     metadomain_svg.selectAll("*").remove();
     metadomain_svg = d3.select('#metadomain_svg');
         
-    //  + "(pos: "+d.values[0].metadomain.consensus_pos+")"
+//	new_row.append('td').text(d.values[0].ref_codon);
+
+//    "(pos: "+d.values[0].metadomain.consensus_pos+")"
     metadomain_svg.append("text")
 	.attr("class", "postionalInformation")
-	.attr("text-anchor", "middle")
+	.attr("text-anchor", "right")
 		.attr("x", 0)
 		.attr("y", 50)
 		.attr("dy", 0)
@@ -647,10 +649,9 @@ function createToleranceGraphLegend() {
 
 // Update the positional information table with new values
 function addRowToPositionalInformationTable(d) {
-	var new_row = d3.select('#position_information_table').append('tr').attr('class', 'tr').attr("id", "positional_table_info_" + d.values[0].protein_pos);
+	var new_row = d3.select('#position_information_tbody').append('tr').attr('class', 'tr').attr("id", "positional_table_info_" + d.values[0].protein_pos);
 	
 	new_row.append('th').attr('class', 'sortable').text(d.values[0].protein_pos);
-	new_row.append('td').text(d.values[0].ref_codon);
 	new_row.append('td').text(d.values[0].ref_aa_triplet);
 	if ('metadomain' in d.values[0]){
 	    new_row.append('td').text(d.values[0].metadomain.domain_id);
@@ -673,19 +674,33 @@ function addRowToPositionalInformationTable(d) {
 	    d3.select(this).classed("is-selected", true);
 	    createPositionalInformation(d);
 	});
-	
+		
 	// Sort the table to the protein positions
-	// a numerical sorting function
-	function sortNum(a, b) {
-	    return 1 * $(a).find('.sortable').text() > 1 * $(b).find('.sortable').text() ? 1 : 0;
-	}
-
-	// Sort the table to the protein positions
-	var elems = $.makeArray($('tr:has(.sortable)').remove())
-        
-        elems.sort(sortNum)
-        $('#position_information_table').append($(elems));
+	sortTable();
 }
+
+function sortTable(){
+    var rows = $('#position_information_tbody tr').get();
+
+    rows.sort(function(a, b) {
+        var A = parseInt($(a).children('th').eq(0).text());
+        var B = parseInt($(b).children('th').eq(0).text());
+    
+        if(A < B) {
+          return -1;
+        }
+    
+        if(A > B) {
+          return 1;
+        }
+    
+        return 0;
+    });
+
+    $.each(rows, function(index, row) {
+      $('#position_information_tbody').append(row);
+    });
+  }
 
 // Rescale the landscape for zooming or brushing purposes
 function rescaleLandscape(){
