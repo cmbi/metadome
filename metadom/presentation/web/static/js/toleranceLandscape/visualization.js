@@ -3,8 +3,11 @@
  ******************************************************************************/
 var outerWidth = 1300;
 var outerHeight = 700;
-var svg = d3.select("svg").attr("width", outerWidth)
+var svg = d3.select("#landscape_svg").attr("width", outerWidth)
 		.attr("height", outerHeight);
+
+var domain_details_svg = d3.select("#domain_details_svg").attr("width", 400)
+.attr("height", 500);
 
 var metadomain_svg = d3.select("#metadomain_svg").attr("width", 400)
 .attr("height", 500);
@@ -170,14 +173,19 @@ var positionTip = d3.tip()
 // Creates all graph elements based on the obj
 function createGraph(obj) {
 	$("#geneName").html(obj.geneName);
-
-	svg.selectAll("*").remove();
-	svg = d3.select("svg");
 	
+	// reset the svg
+	svg.selectAll("*").remove();
+	svg = d3.select("#landscape_svg");
+
+	// reset the metadomain_svg
 	metadomain_svg.selectAll("*").remove();
 	metadomain_svg = d3.select('#metadomain_svg');
-
-
+	
+	// reset the domain_details_svg
+	domain_details_svg.selectAll("*").remove();
+	domain_details_svg = d3.select('#domain_details_svg');
+	
 	// Add defs to the svg
 	var defs = svg.append("defs")
 		.attr('class', 'defs');
