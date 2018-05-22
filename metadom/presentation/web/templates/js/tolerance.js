@@ -175,7 +175,7 @@ function loadDoc() {
 						$("#download_svg_button").removeClass('is-hidden');
 						var geneName = document.getElementById("geneName").value;
 						var geneDetails = document.getElementById("geneDetails");
-						geneDetails.innerHTML = '<div class="label"><label class="label"> Gene: '+obj.geneName+' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='+gtID+'" target="_blank">'+gtID+'</a>, protein: <a href="https://www.uniprot.org/uniprot/'+obj.protein_ac+'" target="_blank">'+obj.protein_ac+'</a>)</label></div>';
+						geneDetails.innerHTML = 'Gene: '+obj.geneName+' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='+gtID+'" target="_blank">'+gtID+'</a>, protein: <a href="https://www.uniprot.org/uniprot/'+obj.protein_ac+'" target="_blank">'+obj.protein_ac+'</a>)';
 						
 						createGraph(obj);
 						// Download tsv with tolerance, variants and domains
