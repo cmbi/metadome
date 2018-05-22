@@ -38,11 +38,11 @@ $( function() {
   </div>
   
   <!-- Modal overlay for displaying domain information -->
-  <div class="modal is-active" id="domain_information_overlay">
+  <div class="modal" id="domain_information_overlay">
     <div class="modal-background" onclick='$("#domain_information_overlay").removeClass("is-active");'></div>
     <div class="modal-card">
       <header class="modal-card-head">
-        <p class="modal-card-title">Modal title</p>
+        <p class="modal-card-title" id='domain_information_overlay_title'></p>
         <button class="delete" aria-label="close" onclick='$("#domain_information_overlay").removeClass("is-active");'></button>
       </header>
       <section class="modal-card-body">
@@ -50,10 +50,6 @@ $( function() {
         <div id="domain_details_graph">
           <svg xmlns="http://www.w3.org/2000/svg" id="domain_details_svg"></svg>
         </div>
-        
-         <p class="image is-4by3">
-          <img src="https://wol-prod-cdn.literatumonline.com/cms/attachment/0647c304-b734-42da-83b7-31d1ba8b51c1/humu23313-fig-0005-m.jpg" alt="">
-         </p>
       </section>
       <footer class="modal-card-foot">
         <button class="button is-success">Save changes</button>
@@ -118,7 +114,7 @@ $( function() {
   </div>
   
   <div id='toleranceGraphContainer' class="container is-hidden" style='overflow-x: scroll'>
-    <p id="geneDetails"></p>
+    <p><div class="label"><label class="label" id="geneDetails"></label></div></p>
     <svg xmlns="http://www.w3.org/2000/svg" id="landscape_svg"></svg>
     <div id="graph"></div>
   </div>
