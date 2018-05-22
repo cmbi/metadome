@@ -270,6 +270,31 @@ function createPositionalInformation(position_data){
 
 }
 
+function drawMetaDomainInformation(domain_name, domain_id, start, stop){
+    // reset the domain_details_svg
+    domain_details_svg.selectAll("*").remove();
+    domain_details_svg = d3.select('#domain_details_svg');
+    
+    // Activate the overlay
+    $("#domain_information_overlay").addClass('is-active');
+    
+    // Format the HTML in the correct format
+    document.getElementById("domain_information_overlay_title").innerHTML = '<label class="label" >'+document.getElementById("geneDetails").innerHTML +'</label><label class="label"> Domain: ' + domain_name+' (<a href="http://pfam.xfam.org/family/' + domain_id + '" target="_blank">' + domain_id + '</a>), located at p.'+start+' - p.'+stop+' </label><label class="label"> Meta-domain information</label>';
+    
+    // Draw any other information
+    domain_details_svg.append("text")
+	.attr("class", "postionalInformation")
+	.attr("text-anchor", "right")
+		.attr("x", 25)
+		.attr("y", 50)
+		.attr("dy", 0)
+		.attr("font-size", "12px")
+	.style("fill", "black")
+	.text('Domain information in gene ... for '+domain_id+', pos '+start+'-'+stop);
+    
+    
+}
+
 /*******************************************************************************
  * Drawing user interface component
  ******************************************************************************/
@@ -508,7 +533,7 @@ function annotateDomains(protDomain) {
 		    d3.select(this).style("cursor", "default");
 		})
 		.on("click", function(d) {
-		    window.open("http://pfam.xfam.org/family/" + d.ID + "","_blank");
+		    drawMetaDomainInformation(d.Name, d.ID, d.start, d.stop)
 		});
 
 	// function to move item to front of svg
