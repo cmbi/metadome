@@ -7,31 +7,31 @@ var main_svg = d3.select("#landscape_svg").attr("width", main_outerWidth)
 		.attr("height", main_outerHeight);
 
 // Declare margins
-var marginLandscape = {
+var main_marginLandscape = {
 	top : 20,
 	right : 20,
 	bottom : 210,
 	left : 80
 };
-var marginLegend = {
+var main_marginLegend = {
 	top : 20,
 	right : 1240,
 	bottom : 210,
 	left : 20
 };
-var marginPositionInfo = {
+var main_marginPositionInfo = {
 	top : 495,
 	right : 20,
 	bottom : 180,
 	left : 80
 };
-var marginAnnotations = {
+var main_marginAnnotations = {
 	top : 530,
 	right : 20,
 	bottom : 120,
 	left : 80
 };
-var marginContext = {
+var main_marginContext = {
 	top : 610,
 	right : 20,
 	bottom : 30,
@@ -39,34 +39,46 @@ var marginContext = {
 };
 
 // Declare various UI widths and heights
-var width = main_outerWidth - marginLandscape.left - marginLandscape.right;
-var widthLegend = main_outerWidth - marginLegend.left - marginLegend.right;
-var heightLandscape = main_outerHeight - marginLandscape.top
-		- marginLandscape.bottom;
-var heightMarginPositionInfo = main_outerHeight - marginPositionInfo.top
-		- marginPositionInfo.bottom;
-var heightContext = main_outerHeight - marginContext.top - marginContext.bottom;
-var heightAnnotations = main_outerHeight - marginAnnotations.top
-		- marginAnnotations.bottom;
+var main_width = main_outerWidth - main_marginLandscape.left - main_marginLandscape.right;
+var main_widthLegend = main_outerWidth - main_marginLegend.left - main_marginLegend.right;
+var main_heightLandscape = main_outerHeight - main_marginLandscape.top
+		- main_marginLandscape.bottom;
+var main_heightMarginPositionInfo = main_outerHeight - main_marginPositionInfo.top
+		- main_marginPositionInfo.bottom;
+var main_heightContext = main_outerHeight - main_marginContext.top - main_marginContext.bottom;
+var main_heightAnnotations = main_outerHeight - main_marginAnnotations.top
+		- main_marginAnnotations.bottom;
 
 // Scale the axis
-var x = d3.scaleLinear().range([ 40, width -40 ]).nice();
-var x2 = d3.scaleLinear().range([ 0, width ]);
-var y = d3.scaleLinear().range([ heightLandscape, 0 ]);
-var y2 = d3.scaleLinear().range([ heightContext, 0 ]);
+var main_x = d3.scaleLinear().range([ 40, main_width -40 ]).nice();
+var main_x2 = d3.scaleLinear().range([ 0, main_width ]);
+var main_y = d3.scaleLinear().range([ main_heightLandscape, 0 ]);
+var main_y2 = d3.scaleLinear().range([ main_heightContext, 0 ]);
 
 // Set axis
-var xAxis = d3.axisBottom(x2).ticks(0);
-var yAxis = d3.axisLeft(y).ticks(0);
+var main_xAxis = d3.axisBottom(main_x2).ticks(0);
+var main_yAxis = d3.axisLeft(main_y).ticks(0);
 
 /*******************************************************************************
  * Global variables for domain details
  ******************************************************************************/
 
-var domain_details_svg = d3.select("#domain_details_svg").attr("width", 400)
-.attr("height", 500);
+var domain_details_svg = d3.select("#domain_details_svg").attr("width", 640)
+.attr("height", 400);
 
 //Declare margins
+var marginDomainDetailsNormalVar = {
+	top : 20,
+	right : 20,
+	bottom : 210,
+	left : 80
+};
+var marginDomainDetailsPathogenicVar = {
+	top : 20,
+	right : 20,
+	bottom : 210,
+	left : 80
+};
 
 
 var metadomain_svg = d3.select("#metadomain_svg").attr("width", 400)
@@ -115,23 +127,23 @@ var toleranceColorGradient = [ {
 
 // Define Area of Tolerance landscape graph
 var toleranceArea = d3.area().x(function(d) {
-	return x(d.protein_pos);
-}).y0(heightLandscape).y1(function(d) {
-	return y(d.sw_dn_ds);
+	return main_x (d.protein_pos);
+}).y0(main_heightLandscape).y1(function(d) {
+	return main_y(d.sw_dn_ds);
 });
 
 // Define Line of Tolerance landscape line plot
 var toleranceLine = d3.line().x(function(d) {
-	return x(d.protein_pos);
+	return main_x (d.protein_pos);
 }).y(function(d) {
-	return y(d.sw_dn_ds);
+	return main_y(d.sw_dn_ds);
 });
 
 // Define Area of the context area
 var contextArea = d3.area().curve(d3.curveMonotoneX).x(function(d) {
-	return x2(d.protein_pos);
-}).y0(heightContext).y1(function(d) {
-	return y2(d.sw_dn_ds);
+	return main_x2(d.protein_pos);
+}).y0(main_heightContext).y1(function(d) {
+	return main_y2(d.sw_dn_ds);
 });
 
 /*******************************************************************************
@@ -201,8 +213,8 @@ function createGraph(obj) {
 	main_svg.select('.defs').append("clipPath")
 		.attr("id", "clip")
 		.append("rect")
-		.attr("width", width)
-		.attr("height", heightLandscape);
+		.attr("width", main_width)
+		.attr("height", main_heightLandscape);
 
 	// Extract the various data
 	var tolerance_data = obj.sliding_window;
@@ -312,15 +324,15 @@ function createToleranceGraph(tolerance) {
 	var focus = main_svg.append("g")
 		.attr("class", "focus")
 		.attr("id", "tolerance_graph")
-		.attr("transform", "translate(" + marginLandscape.left + "," + marginLandscape.top + ")");
+		.attr("transform", "translate(" + main_marginLandscape.left + "," + main_marginLandscape.top + ")");
 
 	// setting x/y domain according to data
-	x.domain(d3.extent(tolerance, function(d) {
+	main_x .domain(d3.extent(tolerance, function(d) {
 	    return d.protein_pos;
 	}));
-	y.domain([ 0, maxTolerance ]);
-	x2.domain(x.domain());
-	y2.domain(y.domain());
+	main_y.domain([ 0, maxTolerance ]);
+	main_x2.domain(main_x .domain());
+	main_y2.domain(main_y.domain());
 
 	// create a group from the tolerance data
 	var dataGroup = d3.nest().key(function(d) {
@@ -384,7 +396,7 @@ function createToleranceGraph(tolerance) {
 		.attr('d', toleranceLine);
 
 	// append yAxis for focus view
-	focus.append("g").attr("class", "axis axis--y").call(yAxis);
+	focus.append("g").attr("class", "axis axis--y").call(main_yAxis);
 
 	// Add custom Axis
 	addCustomAxis(dataGroup)
@@ -402,7 +414,7 @@ function addCustomAxis(groupedTolerance) {
 		.data(groupedTolerance).enter()
 		.append("g")
 		.attr("class", "focusAxisElement")
-		.attr("transform", "translate(" + marginPositionInfo.left + ","	+ marginPositionInfo.top + ")")
+		.attr("transform", "translate(" + main_marginPositionInfo.left + ","	+ main_marginPositionInfo.top + ")")
 		.style("fill", "none");
 
 	// Call the tooltips
@@ -415,9 +427,9 @@ function addCustomAxis(groupedTolerance) {
 		    return "toleranceAxisText_" + d.values[0].protein_pos;
 		})
 		.attr("x", function(d, i) {
-		    return x(d.values[0].protein_pos);
+		    return main_x(d.values[0].protein_pos);
 		})
-		.attr("y", heightMarginPositionInfo / 2)
+		.attr("y", main_heightMarginPositionInfo / 2)
 		.attr("dy", ".35em")
 		.style('pointer-events', 'none')
 		.style('user-select', 'none')
@@ -435,15 +447,15 @@ function addCustomAxis(groupedTolerance) {
 		    return "toleranceAxisRect_" + d.values[0].protein_pos;
 		})
 		.attr("x", function(d, i) {
-		    return x(d.values[0].protein_pos - 0.5);
+		    return main_x(d.values[0].protein_pos - 0.5);
 		}).attr("y", 0).attr("width", function(d, i) {
 		    if (d.values[1].protein_pos != d.values[0].protein_pos){
-			return x(d.values[1].protein_pos) - x(d.values[0].protein_pos);
+			return main_x(d.values[1].protein_pos) - main_x(d.values[0].protein_pos);
 		    } else {
-			return x(d.values[1].protein_pos +1) - x(d.values[0].protein_pos);
+			return main_x(d.values[1].protein_pos +1) - main_x(d.values[0].protein_pos);
 		    }
 		})
-		.attr("height", heightMarginPositionInfo)
+		.attr("height", main_heightMarginPositionInfo)
 		.style("fill-opacity", 0.2)
 		.style("fill", "grey")
 		.style("clip-path","url(#clip)")
@@ -481,18 +493,18 @@ function annotateDomains(protDomain) {
 	var domains = main_svg.append("g")
 		.attr("class", "domains")
 		.attr("id", "domain_annotation")
-		.attr("transform", "translate(" + marginAnnotations.left + "," + marginAnnotations.top + ")");
+		.attr("transform", "translate(" + main_marginAnnotations.left + "," + main_marginAnnotations.top + ")");
 
 	// Adding subview for proteindomains
 	domains.append("g")
 		.attr("class", "axis axis--x")
-		.attr("transform", "translate(0," + heightAnnotations + ")")
-		.call(xAxis);
+		.attr("transform", "translate(0," + main_heightAnnotations + ")")
+		.call(main_xAxis);
 
 	// Add text to the ui element
 	main_svg.append("text")
 		.attr("text-anchor", "left")
-		.attr("x", 0).attr("y", marginAnnotations.top + (heightAnnotations / 2)).attr("dy", 0)
+		.attr("x", 0).attr("y", main_marginAnnotations.top + (main_heightAnnotations / 2)).attr("dy", 0)
 		.attr("font-size", "14px")
 		.text("Annotation")
 		.style('pointer-events', 'none')
@@ -506,13 +518,13 @@ function annotateDomains(protDomain) {
 		.data(protDomain).enter()
 		.append("rect").attr("class", "pfamDomains")
 		.attr("x", function(d) {
-		    return x(d.start - 0.5);
+		    return main_x(d.start - 0.5);
 		})
 		.attr("y", 0)
 		.attr("width", function(d) {
-		    return x(d.stop + 1) - x(d.start);
+		    return main_x(d.stop + 1) - main_x(d.start);
 		})
-		.attr("height", heightAnnotations / 2)
+		.attr("height", main_heightAnnotations / 2)
 		.attr("rx", 10)
 		.attr("ry", 10)
 		.style('opacity', 0.5)
@@ -572,13 +584,13 @@ function appendClinvar(variants) {
 		.append("line")
 		.attr("class", "clinvar")
 		.attr("x1", function(d) {
-		    return x(d.protein_pos);
+		    return main_x(d.protein_pos);
 		})
-		.attr("y1", heightAnnotations)
+		.attr("y1", main_heightAnnotations)
 		.attr("x2", function(d) {
-		    return x(d.protein_pos);
+		    return main_x(d.protein_pos);
 		})
-		.attr("y2", heightAnnotations / 2)
+		.attr("y2", main_heightAnnotations / 2)
 		.style("stroke", "red")
 		.style("stroke-width", 8)
 		.style("clip-path", "url(#clip)")
@@ -596,14 +608,14 @@ function appendClinvar(variants) {
 function addContextZoomView(tolerance) {
 	// add the brush element
 	var brush = d3.brushX()
-		.extent([ [ 0, 0 ], [ width, heightContext ] ])
+		.extent([ [ 0, 0 ], [ main_width, main_heightContext ] ])
 		.on("brush end", brushed);
 
 	// append context view
 	var context = main_svg.append("g")
 		.attr("class", "context")
 		.attr("id", "zoom_landscape")
-		.attr("transform", "translate(" + marginContext.left + "," + marginContext.top + ")");
+		.attr("transform", "translate(" + main_marginContext.left + "," + main_marginContext.top + ")");
 
 	// append context area
 	context.append("path")
@@ -615,19 +627,19 @@ function addContextZoomView(tolerance) {
 	// append xAxis for context view
 	context.append("g")
 		.attr("class", "axis axis--x")
-		.attr("transform", "translate(0," + heightContext + marginContext.top + ")")
-		.call(xAxis);
+		.attr("transform", "translate(0," + main_heightContext + main_marginContext.top + ")")
+		.call(main_xAxis);
 
 	// append yAxis for context view
 	context.append("g")
 		.attr("class", "brush")
 		.call(brush)
-		.call(brush.move, x2.range());
+		.call(brush.move, main_x2.range());
 
 	main_svg.append("text")
 		.attr("text-anchor", "left")
 		.attr("x", 0)
-		.attr("y", marginContext.top + 50)
+		.attr("y", main_marginContext.top + 50)
 		.attr("dy", 0)
 		.attr("font-size", "14px")
 		.text("Zoom-in")
@@ -636,8 +648,8 @@ function addContextZoomView(tolerance) {
 
 	// Define the brushed function
 	function brushed() {
-		var s = d3.event.selection || x2.range();
-		x.domain(s.map(x2.invert, x2));
+		var s = d3.event.selection || main_x2.range();
+		main_x.domain(s.map(main_x2.invert, main_x2));
 		rescaleLandscape();
 	}
 }
@@ -665,15 +677,15 @@ function createToleranceGraphLegend() {
 
 	// append heatmap legend
 	main_svg.append("rect")
-		.attr("width", widthLegend)
-		.attr("height", heightLandscape)
-		.attr("transform", "translate(" + marginLegend.left + "," + marginLegend.top + ")")
+		.attr("width", main_widthLegend)
+		.attr("height", main_heightLandscape)
+		.attr("transform", "translate(" + main_marginLegend.left + "," + main_marginLegend.top + ")")
 		.style("fill", "url(#legendGradient)");
 
 	var context = main_svg.append("g")
 		.attr("class", "context")
 		.attr("id", "zoom_landscape")
-		.attr("transform", "translate(" + marginContext.left + "," + marginContext.top + ")");
+		.attr("transform", "translate(" + main_marginContext.left + "," + main_marginContext.top + ")");
 
 	// append legend text
 	main_svg.append("text")
@@ -778,24 +790,24 @@ function rescaleLandscape(){
     var focus = d3.select("#tolerance_graph");
     focus.selectAll(".area").attr("d", toleranceArea);
     focus.select(".line").attr("d", toleranceLine);
-    focus.select(".axis--x").call(xAxis).selectAll("text").remove();
+    focus.select(".axis--x").call(main_xAxis).selectAll("text").remove();
 
     var focusAxis = d3.select("#tolerance_axis");
 
     focusAxis.selectAll(".toleranceAxisTick").attr("x", function(d, i) {
-	return x(d.values[0].protein_pos - 0.5);
+	return main_x(d.values[0].protein_pos - 0.5);
     	})
     	.attr("width", function(d, i) {
     	    if (d.values[1].protein_pos != d.values[0].protein_pos){
-		return x(d.values[1].protein_pos) - x(d.values[0].protein_pos);
+		return main_x(d.values[1].protein_pos) - main_x(d.values[0].protein_pos);
     	    } else {
-    		return x(d.values[1].protein_pos +1) - x(d.values[0].protein_pos);
+    		return main_x(d.values[1].protein_pos +1) - main_x(d.values[0].protein_pos);
     	    }
 	});
 
     focusAxis.selectAll(".toleranceAxisTickLabel")
     	.attr("x", function(d, i) {
-    	    return x(d.values[0].protein_pos);
+    	    return main_x(d.values[0].protein_pos);
 	})
 	.attr("text-anchor", "middle")
 	.style("opacity", function(d, i) {
@@ -816,20 +828,20 @@ function rescaleLandscape(){
 	});
 
     var domains = d3.select("#domain_annotation");
-    domains.select(".axis--x").call(xAxis);
+    domains.select(".axis--x").call(main_xAxis);
     domains.selectAll(".pfamDomains")
     	.attr("x", function(d) {
-    	    return x(d.start - 0.5);
+    	    return main_x(d.start - 0.5);
     	})
     	.attr("width", function(d) {
-    	    return x(d.stop + 1) - x(d.start);
+    	    return main_x(d.stop + 1) - main_x(d.start);
 	});
     domains.selectAll(".clinvar")
     	.attr("x1", function(d) { 
-    	    return x(d.protein_pos);
+    	    return main_x(d.protein_pos);
 	})
 	.attr("x2", function(d) {
-	    return x(d.protein_pos);
+	    return main_x(d.protein_pos);
 	});
 }
 
