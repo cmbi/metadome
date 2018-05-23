@@ -62,24 +62,39 @@ var main_yAxis = d3.axisLeft(main_y).ticks(0);
 /*******************************************************************************
  * Global variables for domain details
  ******************************************************************************/
-
-var domain_details_svg = d3.select("#domain_details_svg").attr("width", 640)
-.attr("height", 400);
+var domain_details_outerWidth = 1280;
+var domain_details_outerHeight = 600;
+var domain_details_svg = d3.select("#domain_details_svg").attr("width", domain_details_outerWidth)
+.attr("height", domain_details_outerHeight);
 
 //Declare margins
 var marginDomainDetailsNormalVar = {
 	top : 20,
 	right : 20,
-	bottom : 210,
-	left : 80
+	bottom : 320,
+	left : 20
 };
 var marginDomainDetailsPathogenicVar = {
-	top : 20,
+	top : 310,
 	right : 20,
-	bottom : 210,
-	left : 80
+	bottom : 20,
+	left : 20
 };
 
+//Declare various UI widths and heights
+var domain_details_width = domain_details_outerWidth - marginDomainDetailsNormalVar.left - marginDomainDetailsNormalVar.right;
+var domain_details_heightNormalVar = domain_details_outerHeight - marginDomainDetailsNormalVar.top
+		- marginDomainDetailsNormalVar.bottom;
+var domain_details_heightPathogenicVar = domain_details_outerHeight - marginDomainDetailsPathogenicVar.top
+		- marginDomainDetailsPathogenicVar.bottom;
+
+// Scale the axis
+var domain_details_x = d3.scaleBand().rangeRound([ 0, domain_details_width ]).padding(0.1);
+var domain_details_y = d3.scaleLinear().rangeRound([ domain_details_heightNormalVar, 0 ]);
+
+/*******************************************************************************
+ * Global variables for positional meta domain details
+ ******************************************************************************/
 
 var metadomain_svg = d3.select("#metadomain_svg").attr("width", 400)
 .attr("height", 500);
@@ -172,6 +187,15 @@ var domainTip = d3.tip()
 	    return "<span style='color:red'>" + d.Name + "</span>";
 	});
 
+//Define tooltip for pfamdomains
+var domain_details_position_tip = d3.tip()
+	.attr('class', 'd3-tip')
+	.offset([ -10, 0 ])
+	.html(function(d) {
+	    return "<span>" + d.protein_pos + "</span>";
+	});
+
+
 // Define tooltip for positions
 var positionTip = d3.tip()
 	.attr('class', 'd3-tip')
@@ -224,7 +248,7 @@ function createGraph(obj) {
 	// Draw all individual user interface elements based on the data
 	createToleranceGraph(tolerance_data);
 	createToleranceGraphLegend();
-	annotateDomains(domain_data);
+	annotateDomains(domain_data, tolerance_data);
 	appendClinvar(variant_data);
 
 	// Finally draw the context zoom
@@ -289,10 +313,13 @@ function createPositionalInformation(position_data){
 
 }
 
-function drawMetaDomainInformation(domain_name, domain_id, start, stop){
+function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
     // reset the domain_details_svg
     domain_details_svg.selectAll("*").remove();
     domain_details_svg = d3.select('#domain_details_svg');
+    
+    // Call the tooltips
+    domain_details_svg.call(domain_details_position_tip);
     
     // Activate the overlay
     $("#domain_information_overlay").addClass('is-active');
@@ -300,18 +327,105 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop){
     // Format the HTML in the correct format
     document.getElementById("domain_information_overlay_title").innerHTML = '<label class="label" >'+document.getElementById("geneDetails").innerHTML +'</label><label class="label"> Domain: ' + domain_name+' (<a href="http://pfam.xfam.org/family/' + domain_id + '" target="_blank">' + domain_id + '</a>), located at p.'+start+' - p.'+stop+' </label><label class="label"> Meta-domain information</label>';
     
-    // Draw any other information
-    domain_details_svg.append("text")
-	.attr("class", "postionalInformation")
-	.attr("text-anchor", "right")
-		.attr("x", 25)
-		.attr("y", 50)
-		.attr("dy", 0)
-		.attr("font-size", "12px")
-	.style("fill", "black")
-	.text('Domain information in gene ... for '+domain_id+', pos '+start+'-'+stop);
+    // Add barplot for the normal variation
+    var domain_details_BarPlotNormalVar = domain_details_svg.append("g")
+    	.attr("transform", "translate(" + marginDomainDetailsNormalVar.left + "," + marginDomainDetailsNormalVar.top + ")");
     
+    // Add barplot for the pathogenic variation
+    var domain_details_BarPlotPathogenicVar = domain_details_svg.append("g")
+	.attr("transform", "translate(" + marginDomainDetailsPathogenicVar.left + "," + marginDomainDetailsPathogenicVar.top + ")");
     
+    // Define the axes domain based on the data
+    domain_details_x.domain(data.map(function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.protein_pos; }}));
+    domain_details_y.domain([0, d3.max(data, function(d) { return d.sw_dn_ds; })]);
+    
+    // Add the x-axis to the normal variation barplot
+    domain_details_BarPlotNormalVar.append("g")
+    .attr("class", "axis axis--x")
+    .attr("transform", "translate(0," + domain_details_heightNormalVar + ")")
+    .call(d3.axisBottom(domain_details_x));
+    
+    // Add the x-axis to the pathogenic variation barplot
+    domain_details_BarPlotPathogenicVar.append("g")
+    .attr("class", "axis axis--x")
+    .attr("transform", "translate(0," + domain_details_heightPathogenicVar + ")")
+    .call(d3.axisBottom(domain_details_x));
+
+    // Add the y-axis to the normal variation barplot
+    domain_details_BarPlotNormalVar.append("g")
+        .attr("class", "axis axis--y")
+        .call(d3.axisLeft(domain_details_y).ticks(10, "%"))
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", "0.71em")
+        .attr("text-anchor", "end")
+        .text("Frequency");
+    
+    // Add the y-axis to the pathogenic variation barplot
+    domain_details_BarPlotPathogenicVar.append("g")
+        .attr("class", "axis axis--y")
+        .call(d3.axisLeft(domain_details_y).ticks(10, "%"))
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", "0.71em")
+        .attr("text-anchor", "end")
+        .text("Frequency");
+    
+    // Draw the normal variation barplot
+    domain_details_BarPlotNormalVar.selectAll(".bar")
+      .data(data)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d) { return domain_details_x(d.protein_pos); })
+        .attr("y", function(d) { return domain_details_y(d.sw_dn_ds); })
+        .attr("width", domain_details_x.bandwidth())
+        .attr("height", function(d) { return domain_details_heightNormalVar - domain_details_y(d.sw_dn_ds); })
+        .style("fill", "green")
+        .on("mouseover", function(d) {
+              // show the tooltip
+              domain_details_position_tip.show(d);
+              // amplify the element
+              d3.select(this).style("fill", "orange");
+              // move the element to front
+              d3.select(this).moveToFront();
+          })
+          .on("mouseout", function(d) {
+              // hide the tooltip
+              domain_details_position_tip.hide(d);
+              // reset the color
+              d3.select(this).style("fill", "green");
+              // move the element to the back
+              d3.select(this).moveToBack();
+          });
+    
+    // Draw the pathogenic variation barplot
+    domain_details_BarPlotPathogenicVar.selectAll(".bar")
+        .data(data)
+        .enter().append("rect")
+          .attr("class", "bar")
+          .attr("x", function(d) { return domain_details_x(d.protein_pos); })
+          .attr("y", function(d) { return domain_details_y(d.sw_dn_ds); })
+          .attr("width", domain_details_x.bandwidth())
+          .attr("height", function(d) { return domain_details_heightNormalVar - domain_details_y(d.sw_dn_ds); })
+          .style("fill", "red")
+          .on("mouseover", function(d) {
+              // show the tooltip
+              domain_details_position_tip.show(d);
+              // amplify the element
+              d3.select(this).style("fill", "orange");
+              // move the element to front
+              d3.select(this).moveToFront();
+          })
+          .on("mouseout", function(d) {
+              // hide the tooltip
+              domain_details_position_tip.hide(d);
+              // reset the color
+              d3.select(this).style("fill", "red");
+              // move the element to the back
+              d3.select(this).moveToBack();
+          });    
 }
 
 /*******************************************************************************
@@ -488,7 +602,7 @@ function addCustomAxis(groupedTolerance) {
 }
 
 // Draw the domain annotation
-function annotateDomains(protDomain) {
+function annotateDomains(protDomain, tolerance_data) {
 	// append domain view
 	var domains = main_svg.append("g")
 		.attr("class", "domains")
@@ -552,7 +666,7 @@ function annotateDomains(protDomain) {
 		    d3.select(this).style("cursor", "default");
 		})
 		.on("click", function(d) {
-		    drawMetaDomainInformation(d.Name, d.ID, d.start, d.stop)
+		    drawMetaDomainInformation(d.Name, d.ID, d.start, d.stop, tolerance_data)
 		});
 
 	// function to move item to front of svg
