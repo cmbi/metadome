@@ -1,16 +1,10 @@
 /*******************************************************************************
- * Global variables
+ * Global variables for landscape
  ******************************************************************************/
-var outerWidth = 1300;
-var outerHeight = 700;
-var svg = d3.select("#landscape_svg").attr("width", outerWidth)
-		.attr("height", outerHeight);
-
-var domain_details_svg = d3.select("#domain_details_svg").attr("width", 400)
-.attr("height", 500);
-
-var metadomain_svg = d3.select("#metadomain_svg").attr("width", 400)
-.attr("height", 500);
+var main_outerWidth = 1300;
+var main_outerHeight = 700;
+var main_svg = d3.select("#landscape_svg").attr("width", main_outerWidth)
+		.attr("height", main_outerHeight);
 
 // Declare margins
 var marginLandscape = {
@@ -45,14 +39,14 @@ var marginContext = {
 };
 
 // Declare various UI widths and heights
-var width = outerWidth - marginLandscape.left - marginLandscape.right;
-var widthLegend = outerWidth - marginLegend.left - marginLegend.right;
-var heightLandscape = outerHeight - marginLandscape.top
+var width = main_outerWidth - marginLandscape.left - marginLandscape.right;
+var widthLegend = main_outerWidth - marginLegend.left - marginLegend.right;
+var heightLandscape = main_outerHeight - marginLandscape.top
 		- marginLandscape.bottom;
-var heightMarginPositionInfo = outerHeight - marginPositionInfo.top
+var heightMarginPositionInfo = main_outerHeight - marginPositionInfo.top
 		- marginPositionInfo.bottom;
-var heightContext = outerHeight - marginContext.top - marginContext.bottom;
-var heightAnnotations = outerHeight - marginAnnotations.top
+var heightContext = main_outerHeight - marginContext.top - marginContext.bottom;
+var heightAnnotations = main_outerHeight - marginAnnotations.top
 		- marginAnnotations.bottom;
 
 // Scale the axis
@@ -64,6 +58,19 @@ var y2 = d3.scaleLinear().range([ heightContext, 0 ]);
 // Set axis
 var xAxis = d3.axisBottom(x2).ticks(0);
 var yAxis = d3.axisLeft(y).ticks(0);
+
+/*******************************************************************************
+ * Global variables for domain details
+ ******************************************************************************/
+
+var domain_details_svg = d3.select("#domain_details_svg").attr("width", 400)
+.attr("height", 500);
+
+//Declare margins
+
+
+var metadomain_svg = d3.select("#metadomain_svg").attr("width", 400)
+.attr("height", 500);
 
 /*******************************************************************************
  * Config variables for visuals
@@ -175,8 +182,8 @@ function createGraph(obj) {
 	$("#geneName").html(obj.geneName);
 	
 	// reset the svg
-	svg.selectAll("*").remove();
-	svg = d3.select("#landscape_svg");
+	main_svg.selectAll("*").remove();
+	main_svg = d3.select("#landscape_svg");
 
 	// reset the metadomain_svg
 	metadomain_svg.selectAll("*").remove();
@@ -187,11 +194,11 @@ function createGraph(obj) {
 	domain_details_svg = d3.select('#domain_details_svg');
 	
 	// Add defs to the svg
-	var defs = svg.append("defs")
+	var defs = main_svg.append("defs")
 		.attr('class', 'defs');
 
 	// Add clipping to defs
-	svg.select('.defs').append("clipPath")
+	main_svg.select('.defs').append("clipPath")
 		.attr("id", "clip")
 		.append("rect")
 		.attr("width", width)
@@ -302,7 +309,7 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop){
 // Draw the tolerance graph
 function createToleranceGraph(tolerance) {
 	// append focus view
-	var focus = svg.append("g")
+	var focus = main_svg.append("g")
 		.attr("class", "focus")
 		.attr("id", "tolerance_graph")
 		.attr("transform", "translate(" + marginLandscape.left + "," + marginLandscape.top + ")");
@@ -340,7 +347,7 @@ function createToleranceGraph(tolerance) {
 	    	.attr("d", toleranceArea);
 
 	    // create a linear gradient, specific for this position
-	    var lineargradient = svg.append("linearGradient")
+	    var lineargradient = main_svg.append("linearGradient")
 	    	.attr("id", "area-gradient_" + d.values[0].protein_pos + "-" + d.values[1].protein_pos)
 	    	.attr("x1", "0%")
 		.attr("y1", "0%")
@@ -386,7 +393,7 @@ function createToleranceGraph(tolerance) {
 // Draw the axis and labels
 function addCustomAxis(groupedTolerance) {
 	// Add the Axis
-	var focusAxis = svg.append("g")
+	var focusAxis = main_svg.append("g")
 		.attr("class", "focusAxis")
 		.attr("id", "tolerance_axis");
 
@@ -399,7 +406,7 @@ function addCustomAxis(groupedTolerance) {
 		.style("fill", "none");
 
 	// Call the tooltips
-	svg.call(positionTip);
+	main_svg.call(positionTip);
 
 	// Add a text per position
 	focusAxiselements.append("text")
@@ -471,7 +478,7 @@ function addCustomAxis(groupedTolerance) {
 // Draw the domain annotation
 function annotateDomains(protDomain) {
 	// append domain view
-	var domains = svg.append("g")
+	var domains = main_svg.append("g")
 		.attr("class", "domains")
 		.attr("id", "domain_annotation")
 		.attr("transform", "translate(" + marginAnnotations.left + "," + marginAnnotations.top + ")");
@@ -483,7 +490,7 @@ function annotateDomains(protDomain) {
 		.call(xAxis);
 
 	// Add text to the ui element
-	svg.append("text")
+	main_svg.append("text")
 		.attr("text-anchor", "left")
 		.attr("x", 0).attr("y", marginAnnotations.top + (heightAnnotations / 2)).attr("dy", 0)
 		.attr("font-size", "14px")
@@ -492,7 +499,7 @@ function annotateDomains(protDomain) {
 		.style('user-select', 'none');
 
 	// Call the tooltips
-	svg.call(domainTip);
+	main_svg.call(domainTip);
 
 	// Fill the ui element
 	domains.selectAll(".rect")
@@ -557,10 +564,10 @@ function annotateDomains(protDomain) {
 // draw the ClinVar variants
 function appendClinvar(variants) {
 	// Call the tooltips
-	svg.call(clinvarTip);
+	main_svg.call(clinvarTip);
 
 	// Fill the ui element
-	svg.select("g.domains").selectAll(".lines")
+	main_svg.select("g.domains").selectAll(".lines")
 		.data(variants).enter()
 		.append("line")
 		.attr("class", "clinvar")
@@ -593,7 +600,7 @@ function addContextZoomView(tolerance) {
 		.on("brush end", brushed);
 
 	// append context view
-	var context = svg.append("g")
+	var context = main_svg.append("g")
 		.attr("class", "context")
 		.attr("id", "zoom_landscape")
 		.attr("transform", "translate(" + marginContext.left + "," + marginContext.top + ")");
@@ -617,7 +624,7 @@ function addContextZoomView(tolerance) {
 		.call(brush)
 		.call(brush.move, x2.range());
 
-	svg.append("text")
+	main_svg.append("text")
 		.attr("text-anchor", "left")
 		.attr("x", 0)
 		.attr("y", marginContext.top + 50)
@@ -638,7 +645,7 @@ function addContextZoomView(tolerance) {
 // Draw the legend for the Tolerance graph
 function createToleranceGraphLegend() {
 	// append gradient to defs
-	var legendGradient = svg.select('.defs')
+	var legendGradient = main_svg.select('.defs')
 		.append("linearGradient")
 		.attr("id", "legendGradient")
 		.attr("x1", "0%")
@@ -657,19 +664,19 @@ function createToleranceGraphLegend() {
 		});
 
 	// append heatmap legend
-	svg.append("rect")
+	main_svg.append("rect")
 		.attr("width", widthLegend)
 		.attr("height", heightLandscape)
 		.attr("transform", "translate(" + marginLegend.left + "," + marginLegend.top + ")")
 		.style("fill", "url(#legendGradient)");
 
-	var context = svg.append("g")
+	var context = main_svg.append("g")
 		.attr("class", "context")
 		.attr("id", "zoom_landscape")
 		.attr("transform", "translate(" + marginContext.left + "," + marginContext.top + ")");
 
 	// append legend text
-	svg.append("text")
+	main_svg.append("text")
 		.attr("text-anchor", "middle")
 		.attr("x", -50)
 		.attr("y", 15)
@@ -681,7 +688,7 @@ function createToleranceGraphLegend() {
 		.style('user-select', 'none');
 
 	// append legend text
-	svg.append("text")
+	main_svg.append("text")
 		.attr("text-anchor", "middle")
 		.attr("x", -250)
 		.attr("y", 15)
@@ -693,7 +700,7 @@ function createToleranceGraphLegend() {
 		.style('user-select', 'none');
 
 	// append legend text
-	svg.append("text")
+	main_svg.append("text")
 		.attr("text-anchor", "middle")
 		.attr("x", -450)
 		.attr("y", 15)
