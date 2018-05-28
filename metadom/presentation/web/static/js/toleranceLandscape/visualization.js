@@ -1,6 +1,8 @@
 /*******************************************************************************
  * Global variables for landscape
  ******************************************************************************/
+var selected_positions = 0;
+
 var main_outerWidth = 1300;
 var main_outerHeight = 700;
 var main_svg = d3.select("#landscape_svg").attr("width", main_outerWidth)
@@ -216,6 +218,10 @@ var positionTip = d3.tip()
 // Creates all graph elements based on the obj
 function createGraph(obj) {
 	$("#geneName").html(obj.geneName);
+	
+	// reset the variables
+	selected_positions = 0;
+	$("#positional_information").addClass('is-hidden');
 	
 	// reset the svg
 	main_svg.selectAll("*").remove();
@@ -597,10 +603,17 @@ function addCustomAxis(groupedTolerance) {
 			d3.select(this).style("fill", "red").style("fill-opacity", 0.7);
 			d.values[0].selected = true;			
 			addRowToPositionalInformationTable(d);
+			selected_positions += 1;
+			$("#positional_information").removeClass('is-hidden');
 		    } else {
 			d3.select(this).style("fill", "orange").style("fill-opacity", 0.5);
 			d.values[0].selected = false;
 			d3.select("#positional_table_info_" + d.values[0].protein_pos).remove();
+
+			selected_positions -= 1;
+			if (selected_positions <= 0){
+			    $("#positional_information").addClass('is-hidden');
+			}
 		    }
 		});
 }
