@@ -97,19 +97,6 @@ $( function() {
           <button class="button" onclick="clearTranscripts()">Reset</button>
         </div>
       </div>
-      <!-- Transcript selection -->
-      <!--
-      <div class="field">
-        <div class="control">
-          Please insert here DNA or Protein variants according to the <a href="http://varnomen.hgvs.org/" target="_blank">HGVS</a> variant nomenclature
-          <textarea id="custom_variants" class="textarea" placeholder="Annotate your variants, please provide variants as 'p.V2A', 'p.Val2Ala', 'c.T5C', or 'chr1:123123 T>C'"></textarea>
-        </div>
-        <div class="control is-vertical">
-          <button id="annotateCustomVariants" class="button is-info" onclick="">
-                Annotate variants</button>
-        </div>  
-      </div>
-       -->
     </div>
   </div>
   
@@ -118,7 +105,7 @@ $( function() {
     <svg xmlns="http://www.w3.org/2000/svg" id="landscape_svg"></svg>
     <div id="graph"></div>
   </div>
-  <div id='positional_information' class="container">  
+  <div id='positional_information' class="container is-hidden">  
     <div class="label"><label class="title">Positional information</label></div> 
     <div class="field is-grouped"> 
       <table class="table is-hoverable is-narrow" id="position_information_table">
