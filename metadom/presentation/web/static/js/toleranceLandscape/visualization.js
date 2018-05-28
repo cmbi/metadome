@@ -337,7 +337,7 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
     
     // Define the axes domain based on the data
     domain_details_x.domain(data.map(function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.protein_pos; }}));
-    domain_details_y.domain([0, d3.max(data, function(d) { return d.sw_dn_ds; })]);
+    domain_details_y.domain([0, d3.max(data, function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.sw_dn_ds; }})]);
     
     // Add the x-axis to the normal variation barplot
     domain_details_BarPlotNormalVar.append("g")
@@ -376,7 +376,9 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
     // Draw the normal variation barplot
     domain_details_BarPlotNormalVar.selectAll(".bar")
       .data(data)
-      .enter().append("rect")
+      .enter()
+      .filter(function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return true } else {return false}})
+      .append("rect")
         .attr("class", "bar")
         .attr("x", function(d) { return domain_details_x(d.protein_pos); })
         .attr("y", function(d) { return domain_details_y(d.sw_dn_ds); })
@@ -403,7 +405,9 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
     // Draw the pathogenic variation barplot
     domain_details_BarPlotPathogenicVar.selectAll(".bar")
         .data(data)
-        .enter().append("rect")
+        .enter()
+        .filter(function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return true } else {return false}})
+        .append("rect")
           .attr("class", "bar")
           .attr("x", function(d) { return domain_details_x(d.protein_pos); })
           .attr("y", function(d) { return domain_details_y(d.sw_dn_ds); })
