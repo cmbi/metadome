@@ -73,8 +73,8 @@ def get_tolerance_landscape_for_transcript(transcript_id):
     gene_region = GeneRegion(gene)
     
     if not gene_region is None:
-        # generate the sliding window for this gene
-        region_sliding_window = compute_tolerance_landscape(gene_region, sliding_window, frequency)
+        # generate the positional annotation for this gene by first computing the tolerance landscape
+        region_positional_annotation = compute_tolerance_landscape(gene_region, sliding_window, frequency)
         
         # Annotate Pfam domains
         Pfam_domains = []
@@ -87,19 +87,22 @@ def get_tolerance_landscape_for_transcript(transcript_id):
                 pfam_domain["Name"] = domain.region_name
                 pfam_domain["start"] = domain.uniprot_start
                 pfam_domain["stop"] = domain.uniprot_stop
-                pfam_domain["domID"] = domain.id
-                
+                 
+                try:
+                    if not pfam_domain['ID'] in meta_domains.keys():
+                        # construct a meta-domain if possible
+                        meta_domains[pfam_domain['ID']] = MetaDomain(domain.ext_db_id)
+                        pfam_domain["metadomain"] = True
+                    else:
+                        pfam_domain["metadomain"] = not(meta_domains[pfam_domain['ID']] is None)
+                except:
+                    # meta domain is not possible
+                    meta_domains[pfam_domain['ID']] = None
+                    
+                # Add the domain to the domain list
                 Pfam_domains.append(pfam_domain)
                 
-                meta_domains[pfam_domain['ID']] = MetaDomain(domain.ext_db_id)
-                
-                # retrieve the context for this protein
-                protein_to_consensus_positions = meta_domains[pfam_domain['ID']].consensus_pos_per_protein[gene_region.uniprot_ac]
-                
-                for position in protein_to_consensus_positions.keys():
-                    region_sliding_window[position]['metadomain'] = create_meta_domain_entry(gene_region, meta_domains[pfam_domain['ID']], protein_to_consensus_positions, position) 
-        # Annotate the clinvar variants
-        ClinVar_variants = []
+        # Annotate the clinvar variants for the current gene
         ClinVar_annotation = annotateSNVs(annotateTranscriptWithClinvarData,
                                          mappings_per_chr_pos=gene_region.retrieve_mappings_per_chromosome(),
                                          strand=gene_region.strand, 
@@ -111,20 +114,44 @@ def get_tolerance_landscape_for_transcript(transcript_id):
         
         for chrom_pos in ClinVar_annotation.keys():
             for variant in ClinVar_annotation[chrom_pos]:
+                protein_pos = _mappings_per_chromosome[chrom_pos].uniprot_position
+                
+                if not 'ClinVar' in region_positional_annotation[protein_pos].keys():
+                    region_positional_annotation[protein_pos]['ClinVar'] = []
+                
                 ClinVar_variant = {}
-                ClinVar_variant['protein_pos'] = _mappings_per_chromosome[chrom_pos].uniprot_position
                 ClinVar_variant['ref'] = variant['REF']
                 ClinVar_variant['alt'] = variant['ALT']
+                ClinVar_variant['ID'] = variant['ID']
                 
-                ClinVar_variants.append(ClinVar_variant)
-                
-        # update the positions to abide the users' expectation (start at 1, not zero
-        for d in ClinVar_variants:
-            d.update((k, v+1) for k, v in d.items() if k == "protein_pos")        
-        for d in region_sliding_window:
+                region_positional_annotation[protein_pos]['ClinVar'].append(ClinVar_variant)
+        
+        # annotate the positions further
+        for d in region_positional_annotation:
+            # retrieve the position as is in the database
+            db_position = d['protein_pos']
+            
+            # update the positions to abide the users' expectation (start at 1, not zero)
             d.update((k, v+1) for k, v in d.items() if k == "protein_pos")
             
-        return jsonify({"protein_ac":gene_region.uniprot_ac, "geneName":gene_region.gene_name, "sliding_window":region_sliding_window, "domains":Pfam_domains, "clinvar":ClinVar_variants})
+            # add domain and meta domain information per position
+            d['domains'] = []
+            for domain in Pfam_domains:
+                if d['protein_pos'] >= domain["start"] and d['protein_pos'] <= domain["stop"]:
+                    domain_entry = {}
+                    
+                    # add the domain id for this position
+                    domain_entry['ID'] = domain['ID'] 
+                    domain_entry['metadomain'] = None
+                    if domain["metadomain"]:
+                        # retrieve the context for this protein
+                        protein_to_consensus_positions = meta_domains[domain['ID']].consensus_pos_per_protein[gene_region.uniprot_ac]
+                    
+                        domain_entry['metadomain'] = create_meta_domain_entry(gene_region, meta_domains[pfam_domain['ID']], protein_to_consensus_positions, db_position)
+                    
+                    d['domains'].append(domain_entry)
+                                
+        return jsonify({"protein_ac":gene_region.uniprot_ac, "gene_name":gene_region.gene_name, "positional_annotation":region_positional_annotation, "domains":Pfam_domains})
     else:
         return jsonify({'error': 'No gene region could be build for transcript '+str(transcript_id)}), 500
 
@@ -189,9 +216,7 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
 
 def create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_positions, protein_pos):
     metadom_entry = {}
-    metadom_entry['domain_id'] = metadomain.domain_id
-    metadom_entry['protein_pos'] = protein_pos
-    metadom_entry['consensus_pos'] = protein_to_consensus_positions[metadom_entry['protein_pos']]
+    metadom_entry['consensus_pos'] = protein_to_consensus_positions[protein_pos]
     metadom_entry['other_chr_regions'] = []
     metadom_entry['other_codons'] = []
     metadom_entry['other_amino_acids'] = []
@@ -209,7 +234,7 @@ def create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_posit
     for meta_codon in meta_codons:
         # Check if we are dealing with the gene and protein_pos of interest
         if gene_region.gene_id in meta_codon.codon_aggregate.keys() \
-            and metadom_entry['protein_pos'] == meta_codon.codon_aggregate[gene_region.gene_id].amino_acid_position:
+            and protein_pos == meta_codon.codon_aggregate[gene_region.gene_id].amino_acid_position:
             # yes we are
             metadom_entry['chr_region'] = meta_codon.chr+":"+str(meta_codon.regions)+"(strand: "+meta_codon.strand.value+")"
             metadom_entry['codon'] = meta_codon.base_pair_representation
