@@ -1,8 +1,6 @@
 from metadom.domain.models.entities.gene_region import GeneRegion
 from metadom.domain.services.computation.gene_region_computations import compute_tolerance_landscape
 from metadom.domain.services.annotation.annotation import annotateSNVs
-from metadom.domain.services.computation.codon_computations import retieve_empty_variant_type_counter, retrieve_variant_type_counts,\
-    retrieve_aggregated_variant_type_counts
 from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithClinvarData,\
     annotateTranscriptWithExacData
 from metadom.domain.models.entities.meta_domain import MetaDomain
@@ -119,12 +117,20 @@ def get_tolerance_landscape_for_transcript(transcript_id):
                 if not 'ClinVar' in region_positional_annotation[protein_pos].keys():
                     region_positional_annotation[protein_pos]['ClinVar'] = []
                 
-                ClinVar_variant = {}
-                ClinVar_variant['ref'] = variant['REF']
-                ClinVar_variant['alt'] = variant['ALT']
-                ClinVar_variant['ID'] = variant['ID']
+                codon = gene_region.retrieve_codon_for_protein_position(protein_pos)
                 
-                region_positional_annotation[protein_pos]['ClinVar'].append(ClinVar_variant)
+                # create new entry for this variant
+                variant_entry = {}
+                # append variant information
+                variant_entry['alt_codon'], variant_entry['alt_aa'], variant_entry['alt_aa_triplet'], variant_entry['type']  = codon.interpret_SNV_type(position=chrom_pos, var_nucleotide= variant['ALT'])
+                variant_entry['pos'] = variant['POS']
+                variant_entry['ref'] = variant['REF']
+                variant_entry['alt'] = variant['ALT']
+
+                # append ClinVar specific information
+                variant_entry['clinvar_ID'] = variant['ID']
+                
+                region_positional_annotation[protein_pos]['ClinVar'].append(variant_entry)
         
         # annotate the positions further
         for d in region_positional_annotation:
@@ -217,61 +223,85 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
 def create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_positions, protein_pos):
     metadom_entry = {}
     metadom_entry['consensus_pos'] = protein_to_consensus_positions[protein_pos]
-    metadom_entry['other_chr_regions'] = []
+    metadom_entry['normal_variant_count'] = 0
+    metadom_entry['pathogenic_variant_count'] = 0
     metadom_entry['other_codons'] = []
-    metadom_entry['other_amino_acids'] = []
-    metadom_entry['other_normal_variation'] = retieve_empty_variant_type_counter()
-    metadom_entry['other_pathogenic_variation'] = retieve_empty_variant_type_counter()
     
     # Retrieve the meta codons for this position
     meta_codons = metadomain.get_codons_aligned_to_consensus_position(metadom_entry['consensus_pos'])
     
-    # create the variant annotations
-    normal_variant_annotation = []
-    pathogenic_variant_annotation = []
-    
     # iterate over meta_codons and add to metadom_entry
     for meta_codon in meta_codons:
         # Check if we are dealing with the gene and protein_pos of interest
-        if gene_region.gene_id in meta_codon.codon_aggregate.keys() \
-            and protein_pos == meta_codon.codon_aggregate[gene_region.gene_id].amino_acid_position:
-            # yes we are
-            metadom_entry['chr_region'] = meta_codon.chr+":"+str(meta_codon.regions)+"(strand: "+meta_codon.strand.value+")"
-            metadom_entry['codon'] = meta_codon.base_pair_representation
-            metadom_entry['amino_acid'] = meta_codon.amino_acid_residue
-        else:
-            # no we are not
-            metadom_entry['other_chr_regions'].append(meta_codon.chr+":"+str(meta_codon.regions)+"(strand: "+meta_codon.strand.value+")")
-            metadom_entry['other_codons'].append(meta_codon.base_pair_representation)
-            metadom_entry['other_amino_acids'].append(meta_codon.amino_acid_residue)
-            
+        if not (gene_region.gene_id in meta_codon.codon_aggregate.keys() \
+            and protein_pos == meta_codon.codon_aggregate[gene_region.gene_id].amino_acid_position):
+            # first append the general information for this codon
+            position_entry = {}
+            position_entry['chr'] = meta_codon.chr
+            position_entry['chr_positions'] = meta_codon.pretty_print_chr_region()
+            position_entry['strand'] = meta_codon.strand.value
+            position_entry['ref_aa'] = meta_codon.amino_acid_residue
+            position_entry['ref_aa_triplet'] = meta_codon.three_letter_amino_acid_residue()
+            position_entry['ref_codon'] = meta_codon.base_pair_representation
+
             # annotate missense from exac/gnomad
-            normal_variant_annotation.append({'mappings_per_chromosome':meta_codon.retrieve_mappings_per_chromosome(), 
-                                    'annotated_region':annotateSNVs(annotateTranscriptWithExacData,
+            position_entry['normal_variants'] = []
+            normal_variant_annotation = annotateSNVs(annotateTranscriptWithExacData,
                                      mappings_per_chr_pos=meta_codon.retrieve_mappings_per_chromosome(),
                                      strand=meta_codon.strand, 
                                      chromosome=meta_codon.chr,
-                                     regions=meta_codon.regions)})
+                                     regions=meta_codon.regions)
+            
+            # process the annotation
+            for chrom_pos in normal_variant_annotation.keys():
+                for variant in normal_variant_annotation[chrom_pos]:
+                    # create new entry for this variant
+                    variant_entry = {}
+                    # append variant information
+                    variant_entry['alt_codon'], variant_entry['alt_aa'], variant_entry['alt_aa_triplet'], variant_entry['type']  = meta_codon.interpret_SNV_type(position=chrom_pos, var_nucleotide= variant['ALT'])
+                    variant_entry['pos'] = variant['POS']
+                    variant_entry['ref'] = variant['REF']
+                    variant_entry['alt'] = variant['ALT']
+
+                    # append gnomAD/ExAC specific information
+                    variant_entry['allele_number'] = variant['ALT']
+                    variant_entry['allele_count'] = variant['ALT']
+                    
+                    # add to the position entry
+                    position_entry['normal_variants'].append(variant_entry)
             
             # annotate pathogenic missense from clinvar
-            pathogenic_variant_annotation.append({'mappings_per_chromosome':meta_codon.retrieve_mappings_per_chromosome(), 
-                                    'annotated_region':annotateSNVs(annotateTranscriptWithClinvarData,
+            position_entry['pathogenic_variants'] = []
+            pathogenic_variant_annotation = annotateSNVs(annotateTranscriptWithClinvarData,
                                      mappings_per_chr_pos=meta_codon.retrieve_mappings_per_chromosome(),
                                      strand=meta_codon.strand, 
                                      chromosome=meta_codon.chr,
-                                     regions=meta_codon.regions)})
-    
-    # count the number of normal and pathogenic missense
-    for normal_variants in normal_variant_annotation:
-        metadom_entry['other_normal_variation'].update(retrieve_aggregated_variant_type_counts(retrieve_variant_type_counts(normal_variants['mappings_per_chromosome'], normal_variants['annotated_region'])))
-    for pathogenic_variants in pathogenic_variant_annotation:
-        metadom_entry['other_pathogenic_variation'].update(retrieve_aggregated_variant_type_counts(retrieve_variant_type_counts(pathogenic_variants['mappings_per_chromosome'], pathogenic_variants['annotated_region'])))
-    
-    # ensure uniqueness
-    metadom_entry['other_chr_regions'] = list(set(metadom_entry['other_chr_regions']))
-    metadom_entry['other_codons'] = list(set(metadom_entry['other_codons']))
-    metadom_entry['other_amino_acids'] = list(set(metadom_entry['other_amino_acids']))
-    
+                                     regions=meta_codon.regions)
+            
+            # process the annotation
+            for chrom_pos in pathogenic_variant_annotation.keys():
+                for variant in pathogenic_variant_annotation[chrom_pos]:
+                    
+                    # create new entry for this variant
+                    variant_entry = {}
+                    # append variant information
+                    variant_entry['alt_codon'], variant_entry['alt_aa'], variant_entry['alt_aa_triplet'], variant_entry['type']  = meta_codon.interpret_SNV_type(position=chrom_pos, var_nucleotide= variant['ALT'])
+                    variant_entry['pos'] = variant['POS']
+                    variant_entry['ref'] = variant['REF']
+                    variant_entry['alt'] = variant['ALT']
+
+                    # append ClinVar specific information
+                    variant_entry['clinvar_ID'] = variant['ID']
+                    
+                    # add to the position entry
+                    position_entry['pathogenic_variants'].append(variant_entry)
+            
+            # Update the variant counts
+            metadom_entry['normal_variant_count'] += len(position_entry['normal_variants'])
+            metadom_entry['pathogenic_variant_count'] += len(position_entry['pathogenic_variants'])
+            
+            metadom_entry['other_codons'].append(position_entry)
+                
     return metadom_entry
 
 @bp.route('/gene/getMetaDomainInformation/<string:transcript_id>/<int:amino_acid_position>', methods=['GET'])
