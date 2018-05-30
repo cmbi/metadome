@@ -1,5 +1,8 @@
 from metadom.domain.services.helper_functions import convertListOfIntegerToRanges, list_of_stringified_of_ranges
 from Bio.Data.IUPACData import protein_letters_1to3
+from metadom.domain.services.computation.codon_computations import interpret_alt_codon, residue_variant_type
+from Bio.Seq import translate
+
 class MalformedCodonException(Exception):
     pass
 
@@ -32,6 +35,21 @@ class Codon(object):
         for mapping in self.mappings:
             mappings_per_chromosome[mapping.chromosome_position] = mapping
         return mappings_per_chromosome
+    
+    def interpret_SNV_type(self, position, var_nucleotide):
+        """Interprets the new codon, residue and type of a SNV"""
+        codon_pos = self.retrieve_mappings_per_chromosome()[position].codon_base_pair_position
+        
+        alt_codon = interpret_alt_codon(self.base_pair_representation, codon_pos, var_nucleotide)
+        alt_residue = translate(alt_codon)
+        var_type = residue_variant_type(self.amino_acid_residue, alt_residue)
+        
+        if not var_type == 'nonsense':
+            alt_residue_triplet = protein_letters_1to3[alt_residue]
+        else:
+            alt_residue_triplet = alt_residue
+        
+        return alt_codon, alt_residue, alt_residue_triplet, var_type
     
     def three_letter_amino_acid_residue(self):
         """Returns a three letter representation of the amino acid residue for this codon"""
