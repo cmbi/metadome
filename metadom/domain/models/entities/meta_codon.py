@@ -1,7 +1,9 @@
+from metadom.domain.models.entities.codon import Codon
+
 class MalformedAggregatedCodon(Exception):
     pass
 
-class MetaCodon(object):
+class MetaCodon(Codon):
     """
     MetaCodon Model Entity
     Used for a meta-codon representation of aggregated of models.entities.codon.Codon
