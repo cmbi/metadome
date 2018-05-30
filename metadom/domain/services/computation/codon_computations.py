@@ -1,6 +1,5 @@
 from metadom.domain.metrics.codon_statistics import codon_background_rates
 from Bio.Seq import translate
-from collections import Counter
 
 class ExternalREFAlleleNotEqualsTranscriptionException(Exception):
     pass
@@ -80,15 +79,3 @@ def retrieve_variant_type_counts(mappings_per_chromosome, annotated_region):
             variant_type_counts[residue_position][variant_type] += 1
                 
     return variant_type_counts
-
-def retrieve_aggregated_variant_type_counts(variant_type_counts):
-    aggregated_variant_count = retieve_empty_variant_type_counter()
-    for residue_position in variant_type_counts:
-        for variant_type in variant_type_counts[residue_position]:
-            if variant_type == 'missense' or variant_type == 'synonymous' or variant_type == 'nonsense':
-                aggregated_variant_count[variant_type] += variant_type_counts[residue_position][variant_type]
-    return aggregated_variant_count 
-    
-def retieve_empty_variant_type_counter():
-    return Counter({'missense' : 0, 'nonsense' : 0, 'synonymous' : 0,})
-    
