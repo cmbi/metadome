@@ -225,7 +225,7 @@ function loadDoc() {
 							var config = {
 								filename : fileName,
 							}
-							saveSvg(document.getElementById('svg'), fileName);
+							saveSvg(document.getElementById('landscape_svg'), fileName);
 						});
 					}
 				}
