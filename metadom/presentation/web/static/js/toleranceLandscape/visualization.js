@@ -74,13 +74,13 @@ var marginDomainDetailsNormalVar = {
 	top : 20,
 	right : 20,
 	bottom : 320,
-	left : 20
+	left : 30
 };
 var marginDomainDetailsPathogenicVar = {
 	top : 310,
 	right : 20,
 	bottom : 20,
-	left : 20
+	left : 30
 };
 
 //Declare various UI widths and heights
@@ -91,7 +91,7 @@ var domain_details_heightPathogenicVar = domain_details_outerHeight - marginDoma
 		- marginDomainDetailsPathogenicVar.bottom;
 
 // Scale the axis
-var domain_details_x = d3.scaleBand().rangeRound([ 0, domain_details_width ]).padding(0.1);
+var domain_details_x = d3.scaleBand().rangeRound([ 20, domain_details_width -20 ]).padding(0.1);
 var domain_details_normal_y = d3.scaleLinear().rangeRound([ domain_details_heightNormalVar, 0 ]);
 var domain_details_pathogenic_y = d3.scaleLinear().rangeRound([ domain_details_heightPathogenicVar, 0 ]);
 
@@ -168,26 +168,12 @@ var contextArea = d3.area().curve(d3.curveMonotoneX).x(function(d) {
  * Additional user interface elements
  ******************************************************************************/
 
-// Define tooltip for clinvar
-var clinvarTip = d3.tip()
-	.attr('class', 'd3-tip')
-	.offset([ -10, 0 ])
-	.html(function(d) {
-	    var variantString = "Clinvar<br>";
-	    var i = 0;
-	    while (i < d.alt.length) {
-		variantString = variantString + ("p." + d.protein_pos + d.ref + ">" + d.alt[i] + "<br>");
-		i++;
-	    }
-	    return "<span style='color:red'>" + variantString + "</span>";
-	});
-
 // Define tooltip for pfamdomains
 var domainTip = d3.tip()
 	.attr('class', 'd3-tip')
 	.offset([ -10, 0 ])
 	.html(function(d) {
-	    return "<span style='color:red'>" + d.Name + "</span>";
+	    return "<span><div style='text-align: center;'> Domain " + d.Name + " ("+d.ID+") </br> click for meta-domain annotation</div></span>";
 	});
 
 //Define tooltip for pfamdomains
@@ -195,7 +181,7 @@ var domain_details_position_tip = d3.tip()
 	.attr('class', 'd3-tip')
 	.offset([ -10, 0 ])
 	.html(function(d) {
-	    return "<span>" + d.protein_pos + "</span>";
+	    return "<span> Missense count: " + d + "</span>";
 	});
 
 
@@ -234,7 +220,13 @@ function createGraph(obj) {
 	// reset the variables
 	selected_positions = 0;
 	$("#positional_information").addClass('is-hidden');
-	
+	d3.selectAll('.tr').remove();
+
+	selected_positions -= 1;
+	if (selected_positions <= 0){
+	    $("#positional_information").addClass('is-hidden');
+	}
+
 	// reset the svg
 	main_svg.selectAll("*").remove();
 	main_svg = d3.select("#landscape_svg");
@@ -261,13 +253,11 @@ function createGraph(obj) {
 	// Extract the various data
 	var positional_annotation = obj.positional_annotation;
 	var domain_data = obj.domains;
-//	var variant_data = obj.clinvar;
 
 	// Draw all individual user interface elements based on the data
 	annotateDomains(domain_data, positional_annotation);
 	createToleranceGraph(positional_annotation);
 	createToleranceGraphLegend();
-//	appendClinvar(variant_data);
 
 	// Finally draw the context zoom
 	addContextZoomView(positional_annotation);
@@ -338,6 +328,9 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
     domain_details_svg.selectAll("*").remove();
     domain_details_svg = d3.select('#domain_details_svg');
     
+    // set the selected domain
+    data.selected_domain = domain_id;
+    
     // Call the tooltips
     domain_details_svg.call(domain_details_position_tip);
     
@@ -357,8 +350,8 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
     
     // Define the axes domain based on the data
     domain_details_x.domain(data.map(function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.protein_pos; }}));
-    domain_details_normal_y.domain([0, d3.max(data, function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.sw_dn_ds; }})]);
-    domain_details_pathogenic_y.domain([0, d3.max(data, function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.sw_dn_ds; }})]);
+    domain_details_normal_y.domain([0, d3.max(data, function(d) { if (d.protein_pos >= start && d.protein_pos <= stop && d.domains[domain_id] != null){ return d.domains[domain_id].normal_missense_variant_count;}})]);
+    domain_details_pathogenic_y.domain([0, d3.max(data, function(d) {if (d.protein_pos >= start && d.protein_pos <= stop && d.domains[domain_id] != null){ return d.domains[domain_id].pathogenic_missense_variant_count; }})]);
     
     // Add the x-axis to the normal variation barplot
     domain_details_BarPlotNormalVar.append("g")
@@ -375,7 +368,7 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
     // Add the y-axis to the normal variation barplot
     domain_details_BarPlotNormalVar.append("g")
         .attr("class", "axis axis--y")
-        .call(d3.axisLeft(domain_details_normal_y).ticks(10, "%"))
+        .call(d3.axisLeft(domain_details_normal_y))
         .append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 6)
@@ -386,7 +379,7 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
     // Add the y-axis to the pathogenic variation barplot
     domain_details_BarPlotPathogenicVar.append("g")
         .attr("class", "axis axis--y")
-        .call(d3.axisLeft(domain_details_pathogenic_y).ticks(10, "%"))
+        .call(d3.axisLeft(domain_details_pathogenic_y))
         .append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 6)
@@ -402,13 +395,13 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
       .append("rect")
         .attr("class", "bar")
         .attr("x", function(d) { return domain_details_x(d.protein_pos); })
-        .attr("y", function(d) { return domain_details_normal_y(d.sw_dn_ds); })
+        .attr("y", function(d) { return domain_details_normal_y(d.domains[domain_id].normal_missense_variant_count);})
         .attr("width", domain_details_x.bandwidth())
-        .attr("height", function(d) { return domain_details_heightNormalVar - domain_details_normal_y(d.sw_dn_ds); })
+        .attr("height", function(d) { return domain_details_heightNormalVar - domain_details_normal_y(d.domains[domain_id].normal_missense_variant_count); })
         .style("fill", "green")
         .on("mouseover", function(d) {
               // show the tooltip
-              domain_details_position_tip.show(d);
+              domain_details_position_tip.show(d.domains[domain_id].normal_missense_variant_count);
               // amplify the element
               d3.select(this).style("fill", "orange");
               // move the element to front
@@ -431,13 +424,13 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
         .append("rect")
           .attr("class", "bar")
           .attr("x", function(d) { return domain_details_x(d.protein_pos); })
-          .attr("y", function(d) { return domain_details_pathogenic_y(d.sw_dn_ds); })
+          .attr("y", function(d) { return domain_details_pathogenic_y(d.domains[domain_id].pathogenic_missense_variant_count); })
           .attr("width", domain_details_x.bandwidth())
-          .attr("height", function(d) { return domain_details_heightNormalVar - domain_details_pathogenic_y(d.sw_dn_ds); })
+          .attr("height", function(d) { return domain_details_heightPathogenicVar - domain_details_pathogenic_y(d.domains[domain_id].pathogenic_missense_variant_count); })
           .style("fill", "red")
           .on("mouseover", function(d) {
               // show the tooltip
-              domain_details_position_tip.show(d);
+              domain_details_position_tip.show(d.domains[domain_id].pathogenic_missense_variant_count);
               // amplify the element
               d3.select(this).style("fill", "orange");
               // move the element to front
@@ -728,37 +721,6 @@ function annotateDomains(protDomain, tolerance_data) {
 	};
 }
 
-// draw the ClinVar variants
-function appendClinvar(variants) {
-	// Call the tooltips
-	main_svg.call(clinvarTip);
-
-	// Fill the ui element
-	main_svg.select("g.domains").selectAll(".lines")
-		.data(variants).enter()
-		.append("line")
-		.attr("class", "clinvar")
-		.attr("x1", function(d) {
-		    return main_x(d.protein_pos);
-		})
-		.attr("y1", main_heightAnnotations)
-		.attr("x2", function(d) {
-		    return main_x(d.protein_pos);
-		})
-		.attr("y2", main_heightAnnotations / 2)
-		.style("stroke", "red")
-		.style("stroke-width", 8)
-		.style("clip-path", "url(#clip)")
-		.on("mouseover", function(d) {
-		    clinvarTip.show(d)
-		    d3.select(this).style("stroke", "blue");
-		})
-		.on("mouseout", function(d) {
-		    clinvarTip.hide(d);
-		    d3.select(this).style("stroke", "red");
-		});
-}
-
 // Draw the context area for zooming
 function addContextZoomView(tolerance) {
 	// add the brush element
@@ -897,28 +859,30 @@ function addRowToPositionalInformationTable(d) {
 	
 	// Add clinvar at position information
 	if ("ClinVar" in d.values[0]){
-	    clinvar_at_pos = ""+d.values[0].length;
+	    clinvar_at_pos = ""+d.values[0].ClinVar.length;
 	}
 	else{
 	    clinvar_at_pos = "0";
 	}
 	
 	// add domain and metadomain information to the information
-	if (d.values[0].domains.length > 0){
-	    var n_domains_at_position = d.values[0].domains.length;
+	if (Object.keys(d.values[0].domains).length > 0){
+	    var domain_id_list = Object.keys(d.values[0].domains);
+	    var n_domains_at_position = Object.keys(d.values[0].domains).length;
 	    domain_ids = "";
 	    related_gnomad = 0;
 	    related_clinvar = 0;
 	    for (i = 0; i < n_domains_at_position; i++){
 		if (i+1 == n_domains_at_position){
-		    domain_ids += d.values[0].domains[i].ID;
+		    domain_ids += domain_id_list[i];
 		}	
 		else{
-		    domain_ids += d.values[0].domains[i].ID+", ";
+		    domain_ids += domain_id_list[i]+", ";
 		}
-		if ("metadomain" in d.values[0].domains[i]){
-    		    related_gnomad += d.values[0].domains[i].metadomain.normal_variant_count;
-    		    related_clinvar += d.values[0].domains[i].metadomain.pathogenic_variant_count;
+		// append normal and pathogenic variant count
+		if (!(d.values[0].domains[domain_id_list[i]] == null)){
+    		    related_gnomad += d.values[0].domains[domain_id_list[i]].normal_variant_count;
+    		    related_clinvar += d.values[0].domains[domain_id_list[i]].pathogenic_variant_count;
 		}
 	    }
 	}
