@@ -207,6 +207,17 @@ var positionTip = d3.tip()
 	    positionTip_str += "Position: p." + d.values[0].protein_pos + " " + d.values[0].cdna_pos + "</br>";
 	    positionTip_str += "Codon: " + d.values[0].ref_codon + "</br>";
 	    positionTip_str += "Residue: " + d.values[0].ref_aa_triplet;
+	    if (d.values[0].domains.length > 0){
+		positionTip_str += "</br> In domain(s): ";
+		var n_domains_at_position = d.values[0].domains.length;
+		for (i = 0; i < n_domains_at_position; i++){
+		    if (i+1 == n_domains_at_position){
+			positionTip_str+= d.values[0].domains[i].ID;
+		    }else{
+			positionTip_str+= d.values[0].domains[i].ID+", ";
+		    }
+		}
+	    }
 	    positionTip_str += "</span>";
 	    return positionTip_str;
 	});
