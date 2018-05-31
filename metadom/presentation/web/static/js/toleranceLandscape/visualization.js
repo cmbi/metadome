@@ -356,7 +356,7 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
     
     // Define the axes domain based on the data
     domain_details_x.domain(data.map(function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.protein_pos; }}));
-    domain_details_y.domain([0, d3.max(data, function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.sw_dn_ds; }})]);
+    domain_details_y.domain([0, d3.max(data, function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.domains; }})]);
     
     // Add the x-axis to the normal variation barplot
     domain_details_BarPlotNormalVar.append("g")
@@ -887,20 +887,43 @@ function addRowToPositionalInformationTable(d) {
 	
 	new_row.append('th').text(d.values[0].protein_pos);
 	new_row.append('td').text(d.values[0].ref_aa_triplet);
-	if ('metadomain' in d.values[0]){
-	    new_row.append('td').text(d.values[0].metadomain.domain_id);
-	    new_row.append('td').text("??");
-	    new_row.append('td').text("??");
-	    new_row.append('td').text(d.values[0].metadomain.other_normal_variation.missense);
-	    new_row.append('td').text(d.values[0].metadomain.other_pathogenic_variation.missense);
+
+	var domain_ids = "-";
+	var clinvar_at_pos = "-";
+	var related_gnomad = "-";
+	var related_clinvar = "-";
+	
+	// Add clinvar at position information
+	if ("ClinVar" in d.values[0]){
+	    clinvar_at_pos = ""+d.values[0].length;
 	}
 	else{
-	    new_row.append('td').text("-");
-	    new_row.append('td').text("??");
-	    new_row.append('td').text("??");
-	    new_row.append('td').text("-");
-	    new_row.append('td').text("-");
+	    clinvar_at_pos = "0";
 	}
+	
+	// add domain and metadomain information to the information
+	if (d.values[0].domains.length > 0){
+	    var n_domains_at_position = d.values[0].domains.length;
+	    domain_ids = "";
+	    related_gnomad = 0;
+	    related_clinvar = 0;
+	    for (i = 0; i < n_domains_at_position; i++){
+		if (i+1 == n_domains_at_position){
+		    domain_ids += d.values[0].domains[i].ID;
+		}	
+		else{
+		    domain_ids += d.values[0].domains[i].ID+", ";
+		}
+		if ("metadomain" in d.values[0].domains[i]){
+    		    related_gnomad += d.values[0].domains[i].metadomain.normal_variant_count;
+    		    related_clinvar += d.values[0].domains[i].metadomain.pathogenic_variant_count;
+		}
+	    }
+	}
+	new_row.append('td').text(domain_ids);
+	new_row.append('td').text(clinvar_at_pos);
+	new_row.append('td').text(related_gnomad);
+	new_row.append('td').text(related_clinvar);
 	
 	// Add interactiveness to the rows
 	new_row.on("click", function() {
