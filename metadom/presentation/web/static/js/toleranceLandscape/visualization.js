@@ -92,7 +92,8 @@ var domain_details_heightPathogenicVar = domain_details_outerHeight - marginDoma
 
 // Scale the axis
 var domain_details_x = d3.scaleBand().rangeRound([ 0, domain_details_width ]).padding(0.1);
-var domain_details_y = d3.scaleLinear().rangeRound([ domain_details_heightNormalVar, 0 ]);
+var domain_details_normal_y = d3.scaleLinear().rangeRound([ domain_details_heightNormalVar, 0 ]);
+var domain_details_pathogenic_y = d3.scaleLinear().rangeRound([ domain_details_heightPathogenicVar, 0 ]);
 
 /*******************************************************************************
  * Global variables for positional meta domain details
@@ -356,7 +357,8 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
     
     // Define the axes domain based on the data
     domain_details_x.domain(data.map(function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.protein_pos; }}));
-    domain_details_y.domain([0, d3.max(data, function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.domains; }})]);
+    domain_details_normal_y.domain([0, d3.max(data, function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.sw_dn_ds; }})]);
+    domain_details_pathogenic_y.domain([0, d3.max(data, function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.sw_dn_ds; }})]);
     
     // Add the x-axis to the normal variation barplot
     domain_details_BarPlotNormalVar.append("g")
@@ -373,24 +375,24 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
     // Add the y-axis to the normal variation barplot
     domain_details_BarPlotNormalVar.append("g")
         .attr("class", "axis axis--y")
-        .call(d3.axisLeft(domain_details_y).ticks(10, "%"))
+        .call(d3.axisLeft(domain_details_normal_y).ticks(10, "%"))
         .append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 6)
         .attr("dy", "0.71em")
         .attr("text-anchor", "end")
-        .text("Frequency");
+        .text("Missense Count");
     
     // Add the y-axis to the pathogenic variation barplot
     domain_details_BarPlotPathogenicVar.append("g")
         .attr("class", "axis axis--y")
-        .call(d3.axisLeft(domain_details_y).ticks(10, "%"))
+        .call(d3.axisLeft(domain_details_pathogenic_y).ticks(10, "%"))
         .append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", 6)
         .attr("dy", "0.71em")
         .attr("text-anchor", "end")
-        .text("Frequency");
+        .text("Missense Count");
     
     // Draw the normal variation barplot
     domain_details_BarPlotNormalVar.selectAll(".bar")
@@ -400,9 +402,9 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
       .append("rect")
         .attr("class", "bar")
         .attr("x", function(d) { return domain_details_x(d.protein_pos); })
-        .attr("y", function(d) { return domain_details_y(d.sw_dn_ds); })
+        .attr("y", function(d) { return domain_details_normal_y(d.sw_dn_ds); })
         .attr("width", domain_details_x.bandwidth())
-        .attr("height", function(d) { return domain_details_heightNormalVar - domain_details_y(d.sw_dn_ds); })
+        .attr("height", function(d) { return domain_details_heightNormalVar - domain_details_normal_y(d.sw_dn_ds); })
         .style("fill", "green")
         .on("mouseover", function(d) {
               // show the tooltip
@@ -429,9 +431,9 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
         .append("rect")
           .attr("class", "bar")
           .attr("x", function(d) { return domain_details_x(d.protein_pos); })
-          .attr("y", function(d) { return domain_details_y(d.sw_dn_ds); })
+          .attr("y", function(d) { return domain_details_pathogenic_y(d.sw_dn_ds); })
           .attr("width", domain_details_x.bandwidth())
-          .attr("height", function(d) { return domain_details_heightNormalVar - domain_details_y(d.sw_dn_ds); })
+          .attr("height", function(d) { return domain_details_heightNormalVar - domain_details_pathogenic_y(d.sw_dn_ds); })
           .style("fill", "red")
           .on("mouseover", function(d) {
               // show the tooltip
