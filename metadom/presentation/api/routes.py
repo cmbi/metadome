@@ -141,21 +141,16 @@ def get_tolerance_landscape_for_transcript(transcript_id):
             d.update((k, v+1) for k, v in d.items() if k == "protein_pos")
             
             # add domain and meta domain information per position
-            d['domains'] = []
+            d['domains'] = {}
             for domain in Pfam_domains:
                 if d['protein_pos'] >= domain["start"] and d['protein_pos'] <= domain["stop"]:
-                    domain_entry = {}
-                    
                     # add the domain id for this position
-                    domain_entry['ID'] = domain['ID'] 
-                    domain_entry['metadomain'] = None
+                    d['domains'][domain['ID']] = None 
                     if domain["metadomain"]:
                         # retrieve the context for this protein
                         protein_to_consensus_positions = meta_domains[domain['ID']].consensus_pos_per_protein[gene_region.uniprot_ac]
                     
-                        domain_entry['metadomain'] = create_meta_domain_entry(gene_region, meta_domains[pfam_domain['ID']], protein_to_consensus_positions, db_position)
-                    
-                    d['domains'].append(domain_entry)
+                        d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[pfam_domain['ID']], protein_to_consensus_positions, db_position)
                                 
         return jsonify({"protein_ac":gene_region.uniprot_ac, "gene_name":gene_region.gene_name, "positional_annotation":region_positional_annotation, "domains":Pfam_domains})
     else:
@@ -223,7 +218,13 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
 def create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_positions, protein_pos):
     metadom_entry = {}
     metadom_entry['consensus_pos'] = protein_to_consensus_positions[protein_pos]
+    metadom_entry['normal_missense_variant_count'] = 0
+    metadom_entry['normal_synonymous_variant_count'] = 0
+    metadom_entry['normal_nonsense_variant_count'] = 0
     metadom_entry['normal_variant_count'] = 0
+    metadom_entry['pathogenic_missense_variant_count'] = 0
+    metadom_entry['pathogenic_synonymous_variant_count'] = 0
+    metadom_entry['pathogenic_nonsense_variant_count'] = 0    
     metadom_entry['pathogenic_variant_count'] = 0
     metadom_entry['other_codons'] = []
     
@@ -269,6 +270,11 @@ def create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_posit
                     
                     # add to the position entry
                     position_entry['normal_variants'].append(variant_entry)
+                    
+                    # count the variants
+                    if variant_entry['type'] == 'missense': metadom_entry['normal_missense_variant_count'] += 1
+                    if variant_entry['type'] == 'synonymous': metadom_entry['normal_synonymous_variant_count'] += 1
+                    if variant_entry['type'] == 'nonsense': metadom_entry['normal_nonsense_variant_count'] += 1
             
             # annotate pathogenic missense from clinvar
             position_entry['pathogenic_variants'] = []
@@ -295,13 +301,19 @@ def create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_posit
                     
                     # add to the position entry
                     position_entry['pathogenic_variants'].append(variant_entry)
+                    
+                    # count the variants
+                    if variant_entry['type'] == 'missense': metadom_entry['pathogenic_missense_variant_count'] += 1
+                    if variant_entry['type'] == 'synonymous': metadom_entry['pathogenic_synonymous_variant_count'] += 1
+                    if variant_entry['type'] == 'nonsense': metadom_entry['pathogenic_nonsense_variant_count'] += 1
+            
+            # add this codon to the metadom entry
+            metadom_entry['other_codons'].append(position_entry)
             
             # Update the variant counts
             metadom_entry['normal_variant_count'] += len(position_entry['normal_variants'])
             metadom_entry['pathogenic_variant_count'] += len(position_entry['pathogenic_variants'])
             
-            metadom_entry['other_codons'].append(position_entry)
-                
     return metadom_entry
 
 @bp.route('/gene/getMetaDomainInformation/<string:transcript_id>/<int:amino_acid_position>', methods=['GET'])
