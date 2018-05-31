@@ -12,31 +12,31 @@ var main_svg = d3.select("#landscape_svg").attr("width", main_outerWidth)
 var main_marginLandscape = {
 	top : 20,
 	right : 20,
-	bottom : 210,
+	bottom : 410,
 	left : 80
 };
 var main_marginLegend = {
 	top : 20,
 	right : 1240,
-	bottom : 210,
+	bottom : 410,
 	left : 20
 };
 var main_marginPositionInfo = {
-	top : 495,
+	top : 325,
 	right : 20,
-	bottom : 180,
+	bottom : 335,
 	left : 80
 };
 var main_marginAnnotations = {
-	top : 530,
+	top : 310,
 	right : 20,
-	bottom : 120,
+	bottom : 320,
 	left : 80
 };
 var main_marginContext = {
-	top : 610,
+	top : 410,
 	right : 20,
-	bottom : 30,
+	bottom : 230,
 	left : 80
 };
 
@@ -247,18 +247,18 @@ function createGraph(obj) {
 		.attr("height", main_heightLandscape);
 
 	// Extract the various data
-	var tolerance_data = obj.sliding_window;
+	var positional_annotation = obj.positional_annotation;
 	var domain_data = obj.domains;
-	var variant_data = obj.clinvar;
+//	var variant_data = obj.clinvar;
 
 	// Draw all individual user interface elements based on the data
-	createToleranceGraph(tolerance_data);
+	annotateDomains(domain_data, positional_annotation);
+	createToleranceGraph(positional_annotation);
 	createToleranceGraphLegend();
-	annotateDomains(domain_data, tolerance_data);
-	appendClinvar(variant_data);
+//	appendClinvar(variant_data);
 
 	// Finally draw the context zoom
-	addContextZoomView(tolerance_data);
+	addContextZoomView(positional_annotation);
 }
 
 // Adds positional information for a selected position
@@ -283,7 +283,9 @@ function createPositionalInformation(position_data){
     
 //    if domain
     
-    if ('metadomain' in position_data.values[0]){
+    if (position_data.values[0].domains.length>0){
+	
+	
 	console.log(position_data.values[0].metadomain.domain_id);
 	console.log(position_data.values[0].metadomain.domain_id);
 	console.log(position_data.values[0].metadomain.consensus_pos);
@@ -544,6 +546,21 @@ function addCustomAxis(groupedTolerance) {
 	// Call the tooltips
 	main_svg.call(positionTip);
 
+	focusAxiselements.append("rect")
+	.attr("class", "toleranceAxisTickBackground")
+	.attr("x", function(d, i) {
+	    return main_x(d.values[0].protein_pos - 0.5);
+	}).attr("y", 0).attr("width", function(d, i) {
+	    if (d.values[1].protein_pos != d.values[0].protein_pos){
+		return main_x(d.values[1].protein_pos) - main_x(d.values[0].protein_pos);
+	    } else {
+		return main_x(d.values[1].protein_pos +1) - main_x(d.values[0].protein_pos);
+	    }
+	})
+	.attr("height", main_heightMarginPositionInfo)
+	.style("fill", "white")
+	.style("clip-path","url(#clip)");
+	
 	// Add a text per position
 	focusAxiselements.append("text")
 		.attr("class", "toleranceAxisTickLabel")
@@ -626,18 +643,12 @@ function annotateDomains(protDomain, tolerance_data) {
 		.attr("id", "domain_annotation")
 		.attr("transform", "translate(" + main_marginAnnotations.left + "," + main_marginAnnotations.top + ")");
 
-	// Adding subview for proteindomains
-	domains.append("g")
-		.attr("class", "axis axis--x")
-		.attr("transform", "translate(0," + main_heightAnnotations + ")")
-		.call(main_xAxis);
-
 	// Add text to the ui element
 	main_svg.append("text")
 		.attr("text-anchor", "left")
-		.attr("x", 0).attr("y", main_marginAnnotations.top + (main_heightAnnotations / 2)).attr("dy", 0)
+		.attr("x", 0).attr("y", main_marginAnnotations.top + (main_heightAnnotations*(3/5))).attr("dy", 0)
 		.attr("font-size", "14px")
-		.text("Annotation")
+		.text("Protein")
 		.style('pointer-events', 'none')
 		.style('user-select', 'none');
 
@@ -655,7 +666,7 @@ function annotateDomains(protDomain, tolerance_data) {
 		.attr("width", function(d) {
 		    return main_x(d.stop + 1) - main_x(d.start);
 		})
-		.attr("height", main_heightAnnotations / 2)
+		.attr("height", main_heightAnnotations)
 		.attr("rx", 10)
 		.attr("ry", 10)
 		.style('opacity', 0.5)
@@ -833,7 +844,7 @@ function createToleranceGraphLegend() {
 	// append legend text
 	main_svg.append("text")
 		.attr("text-anchor", "middle")
-		.attr("x", -250)
+		.attr("x", -150)
 		.attr("y", 15)
 		.attr("dy", 0)
 		.attr("font-size", "14px")
@@ -845,7 +856,7 @@ function createToleranceGraphLegend() {
 	// append legend text
 	main_svg.append("text")
 		.attr("text-anchor", "middle")
-		.attr("x", -450)
+		.attr("x", -250)
 		.attr("y", 15)
 		.attr("dy", 0)
 		.attr("font-size", "14px")
@@ -936,6 +947,17 @@ function rescaleLandscape(){
     	    }
 	});
 
+    focusAxis.selectAll(".toleranceAxisTickBackground").attr("x", function(d, i) {
+	return main_x(d.values[0].protein_pos - 0.5);
+    	})
+    	.attr("width", function(d, i) {
+    	    if (d.values[1].protein_pos != d.values[0].protein_pos){
+		return main_x(d.values[1].protein_pos) - main_x(d.values[0].protein_pos);
+    	    } else {
+    		return main_x(d.values[1].protein_pos +1) - main_x(d.values[0].protein_pos);
+    	    }
+	});
+    
     focusAxis.selectAll(".toleranceAxisTickLabel")
     	.attr("x", function(d, i) {
     	    return main_x(d.values[0].protein_pos);
