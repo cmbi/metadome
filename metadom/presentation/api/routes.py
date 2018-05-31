@@ -264,8 +264,8 @@ def create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_posit
                     variant_entry['alt'] = variant['ALT']
 
                     # append gnomAD/ExAC specific information
-                    variant_entry['allele_number'] = variant['ALT']
-                    variant_entry['allele_count'] = variant['ALT']
+                    variant_entry['allele_number'] = variant['AN']
+                    variant_entry['allele_count'] = variant['AC']
                     
                     # add to the position entry
                     position_entry['normal_variants'].append(variant_entry)
