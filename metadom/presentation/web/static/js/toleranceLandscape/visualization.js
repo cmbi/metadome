@@ -238,7 +238,8 @@ function createGraph(obj) {
 	// reset the domain_details_svg
 	domain_details_svg.selectAll("*").remove();
 	domain_details_svg = d3.select('#domain_details_svg');
-	
+	document.getElementById("positional_details_text").innerHTML = '<p>Click on one of the selected positions to obtain more information</p>';
+
 	// Add defs to the svg
 	var defs = main_svg.append("defs")
 		.attr('class', 'defs');
@@ -263,30 +264,72 @@ function createGraph(obj) {
 	addContextZoomView(positional_annotation);
 }
 
-function createClinVarTable(ref_codon, ref_residue, ClinvarVariants){
+function createClinVarTableHeader(){
     var html_table= '';
     // Define the header
     html_table += '<table class="table is-hoverable is-narrow">';
     html_table += '<thead><tr style="border-style:hidden;">';
+    html_table += '<th><abbr title="Chromosome">Chr</abbr></th>';
+    html_table += '<th><abbr title="Chromosome poition">Pos</abbr></th>';
     html_table += '<th><abbr title="Change of codon">Codon change</abbr></th>';
     html_table += '<th><abbr title="Change of residue">Residue change</abbr></th>';
     html_table += '<th><abbr title="Type of mutation">Type</abbr></th>';
     html_table += '<th><abbr title="ClinVar Identifier">ClinVar ID</abbr></th>';
     html_table += '</tr></thead><tfoot></tfoot><tbody>';
-    
+    return html_table;
+}
+
+function createGnomADTableHeader(){
+    var html_table= '';
+    // Define the header
+    html_table += '<table class="table is-hoverable is-narrow">';
+    html_table += '<thead><tr style="border-style:hidden;">';
+    html_table += '<th><abbr title="Chromosome">Chr</abbr></th>';
+    html_table += '<th><abbr title="Chromosome poition">Pos</abbr></th>';
+    html_table += '<th><abbr title="Change of codon">Codon change</abbr></th>';
+    html_table += '<th><abbr title="Change of residue">Residue change</abbr></th>';
+    html_table += '<th><abbr title="Type of mutation">Type</abbr></th>';
+    html_table += '<th><abbr title="Allele frequency">Allele Frequency</abbr></th>';
+    html_table += '</tr></thead><tfoot></tfoot><tbody>';
+    return html_table;
+}
+
+function createTableFooter(){
+    return '</tbody></table>';
+}
+
+function createClinVarTableBody(chr, chr_pos, ref_codon, ref_residue, ClinvarVariants){
+    var html_table= '';
     // here comes the data
     for (index = 0; index < ClinvarVariants.length; index++){
 	variant = ClinvarVariants[index];
 	html_table += '<tr>';
+	html_table += '<td>'+chr+'</td>';
+	html_table += '<td>'+chr_pos+'</td>';
 	html_table += '<td>'+ref_codon+'>'+variant.alt_codon+'</td>';
 	html_table += '<td>'+ref_residue+'>'+variant.alt_aa_triplet+'</td>';
 	html_table += '<td>'+variant.type+'</td>';
 	html_table += '<td><a href="https://www.ncbi.nlm.nih.gov/clinvar/variation/' + variant.clinvar_ID + '/" target="_blank">' + variant.clinvar_ID + '</a></td>';
 	html_table += '</tr>';
     }
-    
-    // Closing the table
-    html_table += '</tbody></table>';
+    	
+    return html_table;
+}
+
+function createGnomADTableBody(chr, chr_pos, ref_codon, ref_residue, gnomADVariants){
+    var html_table= '';
+    // here comes the data
+    for (index = 0; index < gnomADVariants.length; index++){
+	variant = gnomADVariants[index];
+	html_table += '<tr>';
+	html_table += '<td>'+chr+'</td>';
+	html_table += '<td>'+chr_pos+'</td>';
+	html_table += '<td>'+ref_codon+'>'+variant.alt_codon+'</td>';
+	html_table += '<td>'+ref_residue+'>'+variant.alt_aa_triplet+'</td>';
+	html_table += '<td>'+variant.type+'</td>';
+	html_table += '<td>' + (variant.allele_count/variant.allele_number) + '</td>';
+	html_table += '</tr>';
+    }
     	
     return html_table;
 }
@@ -297,7 +340,6 @@ function createPositionalInformation(position_data){
     metadomain_svg.selectAll("*").remove();
     metadomain_svg = d3.select('#metadomain_svg');
     document.getElementById("positional_details_text").innerHTML = '';
-    
     
     // Add information on position to the HTML
     document.getElementById("positional_details_text").innerHTML += '<label class="label">Chr: '+position_data.values[0].chr+', strand: '+position_data.values[0].strand+'</label>';
@@ -311,7 +353,7 @@ function createPositionalInformation(position_data){
 	document.getElementById("positional_details_text").innerHTML += '<label class="label">ClinVar SNVs at position:</label>';
 	
 	// Add ClinVar variant table
-	document.getElementById("positional_details_text").innerHTML += createClinVarTable(position_data.values[0].ref_codon, position_data.values[0].ref_aa_triplet, position_data.values[0].ClinVar);
+	document.getElementById("positional_details_text").innerHTML += createClinVarTableHeader()+ createClinVarTableBody(position_data.values[0].chr, position_data.values[0].chr_positions, position_data.values[0].ref_codon, position_data.values[0].ref_aa_triplet, position_data.values[0].ClinVar)+ createTableFooter();
     }
     else{
 	document.getElementById("positional_details_text").innerHTML += '<label class="label">No ClinVar SNVs found at position</label>';
@@ -319,10 +361,13 @@ function createPositionalInformation(position_data){
     
     // Add meta domain variants
     document.getElementById("positional_details_text").innerHTML += '<hr>';
+    var domain_information = "";
+    var meta_domain_information = "";
     if (Object.keys(position_data.values[0].domains).length > 0){
 	var domain_ids = '';
 	var domain_id_list = Object.keys(position_data.values[0].domains);
 	var n_domains_at_position = Object.keys(position_data.values[0].domains).length;
+	
 	for (i = 0; i < n_domains_at_position; i++){
 	    if (i+1 == n_domains_at_position){
 		domain_ids += '<a href="http://pfam.xfam.org/family/' + domain_id_list[i] + '" target="_blank">'+domain_id_list[i]+"</a>";
@@ -332,38 +377,55 @@ function createPositionalInformation(position_data){
 	    }
 	    
 	    // add meta domain information
-	    // ... Todo
+	    if (!(position_data.values[0].domains[domain_id_list[i]] == null)){
+		meta_domain_information += '<label class="label">Meta-domain information for domain '+domain_id_list[i]+':</label>';
+		meta_domain_information += '<label class="label">Aligned to consensus position '+ position_data.values[0].domains[domain_id_list[i]].consensus_pos+', related to '+ position_data.values[0].domains[domain_id_list[i]].other_codons.length+' other codons throughout the genome</label>';
+		
+		
+		var gnomAD_table = '<label class="label">Variants in gnomAD found in other codons throughout the genome:</label>';
+		gnomAD_table += createGnomADTableHeader();
+		var clinvar_table = '<label class="label">Pathogenic variants in ClinVar found in other codons throughout the genome:</label>';
+		clinvar_table += createClinVarTableHeader();
+		for (j = 0; j < position_data.values[0].domains[domain_id_list[i]].other_codons.length; j++){
+		    var other_codon = position_data.values[0].domains[domain_id_list[i]].other_codons[j];
+		    if (other_codon.normal_variants.length>0){
+			gnomAD_table += createGnomADTableBody(other_codon.chr, other_codon.chr_positions+' ('+other_codon.strand+')', other_codon.ref_codon, other_codon.ref_aa_triplet, other_codon.normal_variants);
+		    }
+		    if (other_codon.pathogenic_variants.length>0){
+			clinvar_table += createClinVarTableBody(other_codon.chr, other_codon.chr_positions+' ('+other_codon.strand+')', other_codon.ref_codon, other_codon.ref_aa_triplet, other_codon.pathogenic_variants);
+		    }
+		}
+		
+		// Add the footers
+		clinvar_table += createTableFooter();
+		gnomAD_table += createTableFooter();
+		
+		// Reset the tables if there are no variants
+		if (position_data.values[0].domains[domain_id_list[i]].normal_variant_count == 0){
+		    gnomAD_table = "";
+		}
+		if (position_data.values[0].domains[domain_id_list[i]].pathogenic_variant_count == 0){
+		    clinvar_table = "";
+		}
+		
+		// Add the meta-domain information to the domain information
+		meta_domain_information += clinvar_table + gnomAD_table;
+	    }
+	    else{
+		meta_domain_information += '<label class="label">No meta-domain information at position for domain '+domain_id_list[i]+'</label>';
+	    }
 	}
 	
 	// Add the domain info to the html element
-	document.getElementById("positional_details_text").innerHTML += '<label class="label">Position is part of protein domain(s): '+domain_ids+'</label>';
-	
-	// Add the meta domain information to the html element
-	// ... Todo
-	
+	domain_information += '<label class="label">Position is part of protein domain(s): '+domain_ids+'</label>'
     }
     else{
-	document.getElementById("positional_details_text").innerHTML += '<label class="label">No protein domain information at position</label>';
+	// Add the domain
+	domain_information += '<label class="label">No protein domain information at position</label>';
     }
-//    clinvar Variants
-//    gnomad variants
     
-//    if domain
-    
-    if (position_data.values[0].domains.length>0){
-	
-	
-	console.log(position_data.values[0].metadomain.domain_id);
-	console.log(position_data.values[0].metadomain.domain_id);
-	console.log(position_data.values[0].metadomain.consensus_pos);
-	console.log(position_data.values[0].metadomain.other_chr_regions);
-	console.log(position_data.values[0].metadomain.other_codons);
-	console.log(position_data.values[0].metadomain.other_normal_variation);
-	console.log(position_data.values[0].metadomain.other_pathogenic_variation);
-	
-	// download alignment
-	
-    }
+    // Add the domain and meta-domain information to the html element
+    document.getElementById("positional_details_text").innerHTML += domain_information + meta_domain_information;
 //  "(pos: "+d.values[0].metadomain.consensus_pos+")"
 //    metadomain_svg.append("text")
 //	.attr("class", "postionalInformation")
@@ -376,16 +438,6 @@ function createPositionalInformation(position_data){
 //	.text(function(d, i) {
 //	    return position_data.values[0].chr_positions;
 //	});
-    
-    
-    
-    
-//    if domain
-//    metadom_entry['domain_id'] = metadomain.domain_id
-//	 
-//    if metadomain :
-//	new_row.append('td').text(d.values[0].ref_codon);
-
 }
 
 function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
