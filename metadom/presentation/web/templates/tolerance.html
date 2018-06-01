@@ -103,31 +103,39 @@ $( function() {
     <svg xmlns="http://www.w3.org/2000/svg" id="landscape_svg"></svg>
     <div id="graph"></div>
   </div>
-  <div id='positional_information' class="container is-hidden">  
-    <div class="label"><label class="title">Positional information</label></div> 
+  <div id='selected_positions_information' class="container is-hidden">
     <div class="field is-grouped"> 
-      <table class="table is-hoverable is-narrow" id="position_information_table">
-        <thead>
-          <tr style='border-style:hidden;'>
-            <th><abbr title="Position in protein">Position</abbr></th>
-            <th><abbr title="The amino acid residue at this position">Residue</abbr></th>
-            <th><abbr title="Is this residue part of a protein domain">Protein domain</abbr></th>
-            <th><abbr title="ClinVar variants found at this position in the genome">ClinVar variants at position</abbr></th>
-            <th colspan='2'><abbr title="Variants found across the genome that are related to this position via meta-domains">Related variants</abbr></th>
-          </tr>
-          <tr>
-            <th colspan='4'></th>
-            <th><abbr title="gnoMAD variants found across the genome that are related to this position via meta-domains">gnomAD*</abbr></th>
-            <th><abbr title="ClinVar variants found across the genome that are related to this position via meta-domains">ClinVar*</abbr></th>
-          </tr>
-        </thead>
-        <tfoot>
-        </tfoot>
-        <tbody id="position_information_tbody">
-        </tbody>
-      </table>
-      <div id="positional_details_graph">
-        <svg xmlns="http://www.w3.org/2000/svg" id="metadomain_svg"></svg>
+      <div id="selected_positions">
+        <div class="label"><label class="title">Selected positions</label></div> 
+        <table class="table is-hoverable is-narrow" id="position_information_table">
+          <thead>
+            <tr style='border-style:hidden;'>
+              <th><abbr title="Position in protein">Position</abbr></th>
+              <th><abbr title="The amino acid residue at this position">Residue</abbr></th>
+              <th><abbr title="Is this residue part of a protein domain">Protein domain</abbr></th>
+              <th><abbr title="ClinVar variants found at this position in the genome">ClinVar variants at position</abbr></th>
+              <th colspan='2'><abbr title="Variants found across the genome that are related to this position via meta-domains">Related variants</abbr></th>
+            </tr>
+            <tr>
+              <th colspan='4'></th>
+              <th><abbr title="gnoMAD variants found across the genome that are related to this position via meta-domains">gnomAD*</abbr></th>
+              <th><abbr title="ClinVar variants found across the genome that are related to this position via meta-domains">ClinVar*</abbr></th>
+            </tr>
+          </thead>
+          <tfoot>
+          </tfoot>
+          <tbody id="position_information_tbody">
+          </tbody>
+        </table>
+      </div>
+      <div id="positional_information">
+        <div class="label"><label class="title">Positional information</label></div> 
+        <div id="positional_details">
+          <div id="positional_details_text"></div>
+          <div id="positional_details_graph">
+            <svg xmlns="http://www.w3.org/2000/svg" id="metadomain_svg"></svg>
+          </div>
+        </div>
       </div>
    </div> 
   </div>
