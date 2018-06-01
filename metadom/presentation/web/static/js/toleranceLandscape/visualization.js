@@ -219,12 +219,12 @@ function createGraph(obj) {
 	
 	// reset the variables
 	selected_positions = 0;
-	$("#positional_information").addClass('is-hidden');
+	$("#selected_positions_information").addClass('is-hidden');
 	d3.selectAll('.tr').remove();
 
 	selected_positions -= 1;
 	if (selected_positions <= 0){
-	    $("#positional_information").addClass('is-hidden');
+	    $("#selected_positions_information").addClass('is-hidden');
 	}
 
 	// reset the svg
@@ -263,22 +263,58 @@ function createGraph(obj) {
 	addContextZoomView(positional_annotation);
 }
 
+function createClinVarTable(ref_codon, ref_residue, ClinvarVariants){
+    var html_table= '';
+    // Define the header
+    html_table += '<table class="table is-hoverable is-narrow">';
+    html_table += '<thead><tr style="border-style:hidden;">';
+    html_table += '<th><abbr title="Change of codon">Codon change</abbr></th>';
+    html_table += '<th><abbr title="Change of residue">Residue change</abbr></th>';
+    html_table += '<th><abbr title="Type of mutation">Type</abbr></th>';
+    html_table += '<th><abbr title="ClinVar Identifier">ClinVar ID</abbr></th>';
+    html_table += '</tr></thead><tfoot></tfoot><tbody>';
+    
+    // here comes the data
+    for (index = 0; index < ClinvarVariants.length; index++){
+	variant = ClinvarVariants[index];
+	html_table += '<tr>';
+	html_table += '<td>'+ref_codon+'>'+variant.alt_codon+'</td>';
+	html_table += '<td>'+ref_residue+'>'+variant.alt_aa_triplet+'</td>';
+	html_table += '<td>'+variant.type+'</td>';
+	html_table += '<td><a href="https://www.ncbi.nlm.nih.gov/clinvar/variation/' + variant.clinvar_ID + '/" target="_blank">' + variant.clinvar_ID + '</a></td>';
+	html_table += '</tr>';
+    }
+    
+    // Closing the table
+    html_table += '</tbody></table>';
+    	
+    return html_table;
+}
+
 // Adds positional information for a selected position
 function createPositionalInformation(position_data){
+    // Reset the positional information 
     metadomain_svg.selectAll("*").remove();
     metadomain_svg = d3.select('#metadomain_svg');
+    document.getElementById("positional_details_text").innerHTML = '';
     
-    console.log(position_data.values[0].protein_pos);
     
-    console.log(position_data.values[0].sw_dn_ds);
-    console.log(position_data.values[0].sw_coverage);
+    // Add information on position to the HTML
+    document.getElementById("positional_details_text").innerHTML += '<label class="label">Gene: '+ position_data.values[0].chr_positions +' (chr: '+position_data.values[0].chr+', strand: '+position_data.values[0].strand+')</label>';
+    document.getElementById("positional_details_text").innerHTML += '<label class="label">Protein: p.'+ position_data.values[0].protein_pos +' '+ position_data.values[0].ref_aa_triplet+'</label>';
+    document.getElementById("positional_details_text").innerHTML += '<label class="label">cDNA: '+ position_data.values[0].cdna_pos +' '+ position_data.values[0].ref_codon +'</label>';
     
-    console.log(position_data.values[0].cdna_pos);
-    console.log(position_data.values[0].chr);
-    console.log(position_data.values[0].chr_positions);
+    // Add clinvar at position information
+    if ("ClinVar" in position_data.values[0]){
+	document.getElementById("positional_details_text").innerHTML += '<label class="label">ClinVar SNVs at position:</label>';
+	
+	// Add ClinVar variant table
+	document.getElementById("positional_details_text").innerHTML += createClinVarTable(position_data.values[0].ref_codon, position_data.values[0].ref_aa_triplet, position_data.values[0].ClinVar);
+    }
+    else{
+	document.getElementById("positional_details_text").innerHTML += '<label class="label">No ClinVar SNVs found at position</label>';
+    }
     
-    console.log(position_data.values[0].ref_aa_triplet);
-    console.log(position_data.values[0].ref_codon);
     
 //    clinvar Variants
 //    gnomad variants
@@ -627,7 +663,7 @@ function addCustomAxis(groupedTolerance) {
 			d.values[0].selected = true;			
 			addRowToPositionalInformationTable(d);
 			selected_positions += 1;
-			$("#positional_information").removeClass('is-hidden');
+			$("#selected_positions_information").removeClass('is-hidden');
 		    } else {
 			d3.select(this).style("fill", "orange").style("fill-opacity", 0.5);
 			d.values[0].selected = false;
@@ -635,7 +671,7 @@ function addCustomAxis(groupedTolerance) {
 
 			selected_positions -= 1;
 			if (selected_positions <= 0){
-			    $("#positional_information").addClass('is-hidden');
+			    $("#selected_positions_information").addClass('is-hidden');
 			}
 		    }
 		});
