@@ -300,11 +300,13 @@ function createPositionalInformation(position_data){
     
     
     // Add information on position to the HTML
-    document.getElementById("positional_details_text").innerHTML += '<label class="label">Gene: '+ position_data.values[0].chr_positions +' (chr: '+position_data.values[0].chr+', strand: '+position_data.values[0].strand+')</label>';
+    document.getElementById("positional_details_text").innerHTML += '<label class="label">Chr: '+position_data.values[0].chr+', strand: '+position_data.values[0].strand+'</label>';
+    document.getElementById("positional_details_text").innerHTML += '<label class="label">Gene: '+ position_data.values[0].chr_positions +'</label>';
     document.getElementById("positional_details_text").innerHTML += '<label class="label">Protein: p.'+ position_data.values[0].protein_pos +' '+ position_data.values[0].ref_aa_triplet+'</label>';
     document.getElementById("positional_details_text").innerHTML += '<label class="label">cDNA: '+ position_data.values[0].cdna_pos +' '+ position_data.values[0].ref_codon +'</label>';
     
     // Add clinvar at position information
+    document.getElementById("positional_details_text").innerHTML += '<hr>';
     if ("ClinVar" in position_data.values[0]){
 	document.getElementById("positional_details_text").innerHTML += '<label class="label">ClinVar SNVs at position:</label>';
 	
@@ -315,7 +317,34 @@ function createPositionalInformation(position_data){
 	document.getElementById("positional_details_text").innerHTML += '<label class="label">No ClinVar SNVs found at position</label>';
     }
     
-    
+    // Add meta domain variants
+    document.getElementById("positional_details_text").innerHTML += '<hr>';
+    if (Object.keys(position_data.values[0].domains).length > 0){
+	var domain_ids = '';
+	var domain_id_list = Object.keys(position_data.values[0].domains);
+	var n_domains_at_position = Object.keys(position_data.values[0].domains).length;
+	for (i = 0; i < n_domains_at_position; i++){
+	    if (i+1 == n_domains_at_position){
+		domain_ids += '<a href="http://pfam.xfam.org/family/' + domain_id_list[i] + '" target="_blank">'+domain_id_list[i]+"</a>";
+	    }	
+	    else{
+		domain_ids += '<a href="http://pfam.xfam.org/family/' + domain_id_list[i] + '" target="_blank">'+domain_id_list[i]+", </a>";
+	    }
+	    
+	    // add meta domain information
+	    // ... Todo
+	}
+	
+	// Add the domain info to the html element
+	document.getElementById("positional_details_text").innerHTML += '<label class="label">Position is part of protein domain(s): '+domain_ids+'</label>';
+	
+	// Add the meta domain information to the html element
+	// ... Todo
+	
+    }
+    else{
+	document.getElementById("positional_details_text").innerHTML += '<label class="label">No protein domain information at position</label>';
+    }
 //    clinvar Variants
 //    gnomad variants
     
