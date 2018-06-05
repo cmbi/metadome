@@ -162,11 +162,11 @@ $( function() {
 
     <!-- Advanced options -->
     <div id="advanced_options" class="field is-hidden">
-      <!-- Implement ExAC frequency filter -->
+      <!-- Implement gnomAD frequency filter -->
       <div class="control">
-        <div class="label">Tolerance is based on ExAC SNV variants with "<span id="exacFreq">0.00%</span>" frequency or greater </div>
+        <div class="label">Tolerance is based on gnomAD SNV variants with "<span id="gnomadFreq">0.00%</span>" frequency or greater </div>
         <input type="range" name="frequency" id="frequency" value="0.0" min="0.0" max="0.01" step="0.0001" required 
-         oninput="updateExACFrequencySlider(this)" onmouseup="loadDoc()"/>
+         oninput="updateGnomADFrequencySlider(this)" onmouseup="loadDoc()"/>
       </div>
 
       <!-- Change the sliding window size -->
