@@ -96,6 +96,25 @@ $( function() {
         </div>
       </div>
     </div>
+    <!-- Toggling advanced mode -->
+    <div class="field is-grouped">    
+      <div class="control is-hidden" id="advanced_checkbox_control">
+        <label class="checkbox"> <input id="advanced_checkbox"
+          type="checkbox" disabled onclick="toggleAdvancedOpions(this)">
+          Advanced mode
+        </label>
+      </div>
+      <div class="control is-hidden" id="download_svg_button">
+        <button id='dlSVG' name="downloadButton" type="button"
+          class="button is-info is-outlined">Download Graph as
+          SVG</button>
+      </div>
+      <div class="control is-hidden" id="download_tsv_button">
+        <button id='dlJSON' name="downloadButton" type="button"
+          class="button is-info is-outlined">Download data for
+          Graph as TSV</button>
+      </div>
+    </div>
   </div>
   
   <div id='toleranceGraphContainer' class="container is-hidden" style='overflow-x: scroll'>
@@ -138,46 +157,6 @@ $( function() {
         </div>
       </div>
    </div> 
-  </div>
-  <div class="container">
-    <!-- Toggling advanced mode -->
-    <div class="field is-grouped">    
-      <div class="control is-hidden" id="advanced_checkbox_control">
-        <label class="checkbox"> <input id="advanced_checkbox"
-          type="checkbox" disabled onclick="toggleAdvancedOpions(this)">
-          Advanced mode
-        </label>
-      </div>
-      <div class="control is-hidden" id="download_svg_button">
-        <button id='dlSVG' name="downloadButton" type="button"
-          class="button is-info is-outlined">Download Graph as
-          SVG</button>
-      </div>
-      <div class="control is-hidden" id="download_tsv_button">
-        <button id='dlJSON' name="downloadButton" type="button"
-          class="button is-info is-outlined">Download data for
-          Graph as TSV</button>
-      </div>
-    </div>
-
-    <!-- Advanced options -->
-    <div id="advanced_options" class="field is-hidden">
-      <!-- Implement gnomAD frequency filter -->
-      <div class="control">
-        <div class="label">Tolerance is based on gnomAD SNV variants with "<span id="gnomadFreq">0.00%</span>" frequency or greater </div>
-        <input type="range" name="frequency" id="frequency" value="0.0" min="0.0" max="0.01" step="0.0001" required 
-         oninput="updateGnomADFrequencySlider(this)" onmouseup="loadDoc()"/>
-      </div>
-
-      <!-- Change the sliding window size -->
-      <div class="control">
-        <div class="label">
-          Sliding window: <span id="swPer">10</span> amino-acid residues (changing this will make the colouring inaccurate)
-        </div>
-        <input type="range" name="slidingWindow" id="slidingWindow"
-          value="10" min="1" max="100" step="1" required oninput="updateSlidingwindowPercentage(this)" onmouseup="loadDoc()"/>
-      </div>
-    </div>
   </div>
 </section>
 
