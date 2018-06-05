@@ -207,11 +207,7 @@ function loadDoc() {
 
 						// Download for the whole svg as svg
 						d3.select('#dlSVG').on('click', function() {
-							var selection = document.getElementsByClassName("dropdown")[0];
-							var fileName = selection.options[selection.selectedIndex].text;
-							var config = {
-								filename : fileName,
-							}
+							var fileName = 'Gene_'+obj.gene_name+'_transcript_'+obj.transcript_id+'_protein_'+obj.protein_ac+'_metadome';
 							saveSvg(document.getElementById('landscape_svg'), fileName);
 						});
 					}
