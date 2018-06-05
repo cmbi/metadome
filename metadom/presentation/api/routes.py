@@ -152,7 +152,7 @@ def get_tolerance_landscape_for_transcript(transcript_id):
                         # add the MetaDomain information if there is any
                         d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[pfam_domain['ID']], protein_to_consensus_positions, db_position)
                                 
-        return jsonify({"protein_ac":gene_region.uniprot_ac, "gene_name":gene_region.gene_name, "positional_annotation":region_positional_annotation, "domains":Pfam_domains})
+        return jsonify({"transcript_id":transcript_id, "protein_ac":gene_region.uniprot_ac, "gene_name":gene_region.gene_name, "positional_annotation":region_positional_annotation, "domains":Pfam_domains})
     else:
         return jsonify({'error': 'No gene region could be build for transcript '+str(transcript_id)}), 500
 
