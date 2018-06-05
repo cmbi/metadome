@@ -35,8 +35,6 @@ function getTranscript() {
 				$("#geneNameHelpMessage").removeClass('is-danger');
 				$("#getToleranceButton").addClass('is-info');
 				$("#getToleranceButton").removeClass('is-static');
-				document.getElementById("advanced_checkbox").disabled = false;
-				$("#advanced_checkbox_control").removeClass('is-hidden');
 				var dropdown = document.getElementById("gtID");
 				dropdown.setAttribute('class', 'dropdown');
 				var i = 0
@@ -93,26 +91,16 @@ function resetDropdown() {
 
 function clearTranscripts() {
 	resetDropdown();
+	resetGraph();
 	$("#getToleranceButton").addClass('is-static');
 	$("#getToleranceButton").removeClass('is-info');
 	$("#geneName").removeClass('is-success');
 	$("#advanced_options").addClass("is-hidden");
 	$("#toleranceGraphContainer").addClass('is-hidden');
 	document.getElementById("geneNameHelpMessage").innerHTML = "";
-	document.getElementById("advanced_checkbox").disabled = true;
-	document.getElementById("advanced_checkbox").checked = false;
-	$("#advanced_checkbox_control").addClass('is-hidden');
-	$("#download_tsv_button").addClass('is-hidden');
-	$("#download_svg_button").addClass('is-hidden');
-}
-
-function toggleAdvancedOpions(checkbox) {
-	// toggle between showing and hidding the advanced section
-	if (checkbox.checked == true) {
-		$("#advanced_options").removeClass("is-hidden");
-	} else {
-		$("#advanced_options").addClass("is-hidden");
-	}
+	document.getElementById("clinvar_checkbox").checked = false;
+	document.getElementById("related_clinvar_checkbox").checked = false;
+	$("#graph_control_field").addClass('is-hidden');
 }
 
 function saveSvg(svgEl, name) {
@@ -153,57 +141,17 @@ function loadDoc() {
 
 					if (typeof obj == 'undefined' || obj == null || obj.length == 0) {
 						d3.select("svg").selectAll("*").remove();
-						$("#download_tsv_button").addClass('is-hidden');
-						$("#download_svg_button").addClass('is-hidden');
+						$("#graph_control_field").addClass('is-hidden');
 						$("#toleranceGraphContainer").addClass('is-hidden');
 					} else {
 						$("#toleranceGraphContainer").removeClass('is-hidden');
-						$("#download_tsv_button").removeClass('is-hidden');
-						$("#download_svg_button").removeClass('is-hidden');
+						$("#graph_control_field").removeClass('is-hidden');
 						var geneName = document.getElementById("geneName").value;
 						var geneDetails = document.getElementById("geneDetails");
 						geneDetails.innerHTML = 'Gene: '+obj.gene_name+' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='+obj.transcript_id+'" target="_blank">'+obj.transcript_id+'</a>, protein: <a href="https://www.uniprot.org/uniprot/'+obj.protein_ac+'" target="_blank">'+obj.protein_ac+'</a>)';
 						
+						// Draw the graph
 						createGraph(obj);
-						// Download tsv with tolerance, variants and domains
-						d3.select('#dlJSON').on(
-								'click',
-								function() {
-									var selectionWindow = x.domain();
-									var startIP = selectionWindow[0];
-									var endIP = selectionWindow[1];
-									var slidingW = parseInt(obj.sliding_window[1].pos);
-									var startExport = startIP - slidingW + 1;
-									var endExport = endIP - slidingW + 2;
-									var variants = [];
-									var hgmd = [];
-									var protDomain = [];
-									if (startIP < slidingW) {
-										startExport = 0;
-									}
-
-									svg.select("g.focus").selectAll("line.clinvar").each(
-											function(d) {
-												variants.push(d);
-											});
-
-									svg.select("g.domains").selectAll("rect.pfamDomains").each(
-											function(d) {
-												protDomain.push(d);
-											});
-
-									var clinDomArray = convertToArray(variants, hgmd, protDomain,
-											startIP, endIP);
-									var jsonse = JSON.stringify(obj.sliding_window.slice(startExport,
-											endExport));
-									var convertJS = convertToTSV(jsonse, clinDomArray);
-									var blob = new Blob([ convertJS ], {
-										type : "text/plain"
-									});
-									var selection = document.getElementsByClassName("dropdown")[0];
-									var fileName = selection.options[selection.selectedIndex].text;
-									saveAs(blob, fileName + "_" + startIP + "_" + endIP + ".tsv");
-								});
 
 						// Download for the whole svg as svg
 						d3.select('#dlSVG').on('click', function() {
