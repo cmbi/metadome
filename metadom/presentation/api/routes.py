@@ -2,7 +2,7 @@ from metadom.domain.models.entities.gene_region import GeneRegion
 from metadom.domain.services.computation.gene_region_computations import compute_tolerance_landscape
 from metadom.domain.services.annotation.annotation import annotateSNVs
 from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithClinvarData,\
-    annotateTranscriptWithExacData
+    annotateTranscriptWithGnomADData
 from metadom.domain.models.entities.meta_domain import MetaDomain
 from metadom.domain.repositories import GeneRepository
 from flask import abort, Blueprint, jsonify, render_template, session
@@ -245,9 +245,9 @@ def create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_posit
             position_entry['ref_aa_triplet'] = meta_codon.three_letter_amino_acid_residue()
             position_entry['ref_codon'] = meta_codon.base_pair_representation
 
-            # annotate missense from exac/gnomad
+            # annotate missense from gnomad
             position_entry['normal_variants'] = []
-            normal_variant_annotation = annotateSNVs(annotateTranscriptWithExacData,
+            normal_variant_annotation = annotateSNVs(annotateTranscriptWithGnomADData,
                                      mappings_per_chr_pos=meta_codon.retrieve_mappings_per_chromosome(),
                                      strand=meta_codon.strand, 
                                      chromosome=meta_codon.chr,
@@ -264,7 +264,7 @@ def create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_posit
                     variant_entry['ref'] = variant['REF']
                     variant_entry['alt'] = variant['ALT']
 
-                    # append gnomAD/ExAC specific information
+                    # append gnomAD specific information
                     variant_entry['allele_number'] = variant['AN']
                     variant_entry['allele_count'] = variant['AC']
                     
