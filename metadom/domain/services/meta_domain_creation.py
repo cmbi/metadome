@@ -9,7 +9,6 @@ from metadom.domain.wrappers.hmmer import interpret_hmm_alignment_file
 _log = logging.getLogger(__name__)
 
 def create_metadomains(reconstruct):
-    _log.info(interpret_hmm_alignment_file(METADOMAIN_DIR+'PF00002/metadomain_alignments'))
     # initialize custom logging framework
     _log.info("Starting creation of all meta-domain alignments")
  
