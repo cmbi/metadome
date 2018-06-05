@@ -213,11 +213,9 @@ var positionTip = d3.tip()
  * Main draw function
  ******************************************************************************/
 
-// Creates all graph elements based on the obj
-function createGraph(obj) {
-	$("#geneName").html(obj.geneName);
-	
-	// reset the variables
+//Reset all graph elements based on the obj
+function resetGraph(){
+    	// reset the variables
 	selected_positions = 0;
 	$("#selected_positions_information").addClass('is-hidden');
 	d3.selectAll('.tr').remove();
@@ -239,7 +237,15 @@ function createGraph(obj) {
 	domain_details_svg.selectAll("*").remove();
 	domain_details_svg = d3.select('#domain_details_svg');
 	document.getElementById("positional_details_text").innerHTML = '<p>Click on one of the selected positions to obtain more information</p>';
+}
 
+// Creates all graph elements based on the obj
+function createGraph(obj) {
+	$("#geneName").html(obj.geneName);
+	
+	// reset the Graph
+	resetGraph();
+	
 	// Add defs to the svg
 	var defs = main_svg.append("defs")
 		.attr('class', 'defs');
