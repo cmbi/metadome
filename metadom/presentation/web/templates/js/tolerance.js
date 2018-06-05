@@ -13,9 +13,9 @@ function updateSlidingwindowPercentage(slider){
 	swpercentage.innerHTML = slider.value;
 }
 
-function updateExACFrequencySlider(slider){
-	var exacFreq = document.getElementById("exacFreq");
-	exacFreq.innerHTML = Math.round(slider.value * 10000)/100 + "%";
+function updateGnomADFrequencySlider(slider){
+	var gnomadFreq = document.getElementById("gnomadFreq");
+	gnomadFreq.innerHTML = Math.round(slider.value * 10000)/100 + "%";
 }
 
 
