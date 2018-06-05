@@ -1,26 +1,26 @@
 from metadom.domain.services.annotation.annotation import annotateSNVs
-from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithExacData    
+from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithGnomADData    
 from metadom.domain.metrics.GeneticTolerance import background_corrected_mosy_score
 from metadom.domain.services.computation.codon_computations import retrieve_variant_type_counts
 from metadom.domain.services.helper_functions import create_sliding_window
 
 def compute_tolerance_landscape(gene_region, sliding_window_size, min_frequency=0.0):
-    # Annotate exac information
-    full_exac_annotations = annotateSNVs(annotateTranscriptWithExacData, 
+    # Annotate gnomad information
+    full_gnomad_annotations = annotateSNVs(annotateTranscriptWithGnomADData, 
                                          mappings_per_chr_pos=gene_region.retrieve_mappings_per_chromosome(),
                                          strand=gene_region.strand, 
                                          chromosome=gene_region.chr,
                                          regions=gene_region.regions)
-    filtered_exac_annotations = dict()
+    filtered_gnomad_annotations = dict()
     # filter on the minimal frequency
-    for chrom_pos in full_exac_annotations.keys():
-        for exac_variant in full_exac_annotations[chrom_pos]:
-            if exac_variant['AF'] >= min_frequency:
-                if not chrom_pos in filtered_exac_annotations.keys():
-                    filtered_exac_annotations[chrom_pos] = []
-                filtered_exac_annotations[chrom_pos].append(exac_variant)
+    for chrom_pos in full_gnomad_annotations.keys():
+        for gnomad_variant in full_gnomad_annotations[chrom_pos]:
+            if gnomad_variant['AF'] >= min_frequency:
+                if not chrom_pos in filtered_gnomad_annotations.keys():
+                    filtered_gnomad_annotations[chrom_pos] = []
+                filtered_gnomad_annotations[chrom_pos].append(gnomad_variant)
         
-    variant_type_counts = retrieve_variant_type_counts(gene_region.retrieve_mappings_per_chromosome(), filtered_exac_annotations)
+    variant_type_counts = retrieve_variant_type_counts(gene_region.retrieve_mappings_per_chromosome(), filtered_gnomad_annotations)
     
     # precompute the sliding window
     sliding_window = create_sliding_window(gene_region.protein_region_length, sliding_window_size)
