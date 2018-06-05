@@ -56,6 +56,7 @@ UNIPROT_TREMBL = UNIPROT_DIR+"uniprot_trembl.fasta"
 # Meta-domain files
 METADOMAIN_DIR = DATA_DIR+"metadomains/"
 RECONSTRUCT_METADOMAINS = False
+METADOMAIN_ALIGNMENT_FILE_NAME = 'metadomain_alignments' # Alignments are saved as: METADOMAIN_DIR+<Pfam_id>+'/'+METADOMAIN_ALIGNMENT_FILE_NAME
 
 # PFAM specific files
 PFAM_DIR = DATA_DIR+"PFAM/Pfam30.0"
@@ -63,17 +64,15 @@ PFAM_ALIGNMENT_DIR = PFAM_DIR+"/alignment/"
 PFAM_HMM_DAT = PFAM_DIR+"/Pfam-A.hmm.dat.gz"
 PFAM_HMM = PFAM_DIR+"/Pfam-A.hmm"
 
-# Exac specific files
-EXAC_DIR = DATA_DIR + "ExAC/release1.0/"
-EXAC_VCF_FILE = EXAC_DIR + "ExAC.r1.sites.vep.vcf.gz"
-EXAC_ACCEPTED_FILTERS = ['PASS']
+# gnomAD specific files
+GNOMAD_DIR = DATA_DIR + "gnoMAD/"
+GNOMAD_VCF_FILE = GNOMAD_DIR + "pass_gnomad.exomes.r2.0.2.sites.vcf.gz"
+GNOMAD_ACCEPTED_FILTERS = ['PASS']
 
-## TODO: create filter based on ExAC r1.0
 # ClinVar specific files
-CLINVAR_DIR = DATA_DIR + 'ClinVar/GRCh37/20170615_vcf_2.0/'
+CLINVAR_DIR = DATA_DIR + 'ClinVar/GRCh37/20180429_vcf_2.0/'
 CLINVAR_ORIGINAL_VCF_FILE = CLINVAR_DIR + 'clinvar.vcf.gz'
-CLINVAR_FILTERED_VCF_FILE = CLINVAR_DIR + 'clinvar.snv.filtered_ExAC.r0.3.1.pass.0.001AF.vcf.gz'
-CLINVAR_VCF_FILE = CLINVAR_FILTERED_VCF_FILE
+CLINVAR_VCF_FILE = CLINVAR_ORIGINAL_VCF_FILE
 CLINVAR_CONSIDERED_CLINSIG = ['Pathogenic']
 
 # # Configuration
