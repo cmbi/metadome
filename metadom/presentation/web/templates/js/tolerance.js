@@ -8,17 +8,6 @@ $("#geneName").keyup(function(event) {
     }
 });
 
-function updateSlidingwindowPercentage(slider){
-	var swpercentage = document.getElementById("swPer");
-	swpercentage.innerHTML = slider.value;
-}
-
-function updateGnomADFrequencySlider(slider){
-	var gnomadFreq = document.getElementById("gnomadFreq");
-	gnomadFreq.innerHTML = Math.round(slider.value * 10000)/100 + "%";
-}
-
-
 // Function to send AJAX request to the webserver to get all transcripts
 // belonging to a gene name
 function getTranscript() {
@@ -149,11 +138,9 @@ function loadDoc() {
 		$("#loading_overlay").addClass('is-active');
 		var input = selection.options[selection.selectedIndex].text;
 		var gtID = input.toUpperCase();
-		var slidingWindow = document.getElementById("slidingWindow").value;
-		var frequency = document.getElementById("frequency").value;
 
 		var status = true;
-		if (gtID == "" || frequency == "") {
+		if (gtID == "") {
 			status = false
 		}
 		if (status) {
@@ -234,8 +221,7 @@ function loadDoc() {
 				// the variable is defined
 				xhttp.open("GET",
 						"{{ url_for('api.get_tolerance_landscape') }}" + "/"
-								+ gtID + "/?slidingwindow=" + slidingWindow
-								+ "&frequency=" + frequency, true);
+								+ gtID + "/", true);
 				xhttp.setRequestHeader("Content-type",
 						"application/x-www-form-urlencoded");
 				xhttp.send();
