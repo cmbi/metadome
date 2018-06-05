@@ -1,4 +1,4 @@
-from metadom.default_settings import EXAC_VCF_FILE, EXAC_ACCEPTED_FILTERS,\
+from metadom.default_settings import GNOMAD_VCF_FILE, GNOMAD_ACCEPTED_FILTERS,\
  CLINVAR_CONSIDERED_CLINSIG, CLINVAR_VCF_FILE
 from metadom.domain.parsers.tabix import tabix_query, variant_coordinate_system
 
@@ -64,20 +64,20 @@ def annotateTranscriptWithClinvarData(chromosome, regions):
                     clinvar_record['INFO']['CLNSIG'][0] in CLINVAR_CONSIDERED_CLINSIG:
                     yield clinvar_record
 
-def annotateTranscriptWithExacData(chromosome, regions):
+def annotateTranscriptWithGnomADData(chromosome, regions):
     """
-    Annotates variants found within the ExAC dataset with specific FILTER settings.
+    Annotates variants found within the gnomAD dataset with specific FILTER settings.
         PASS : passed all variant filters imposed by ExAC, all such variants are considered real variants.
     """
     for gene_sub_region in regions:
-        for tabix_record in tabix_query(EXAC_VCF_FILE, chromosome[3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based):
+        for tabix_record in tabix_query(GNOMAD_VCF_FILE, chromosome[3:], gene_sub_region[0], gene_sub_region[1], variant_coordinate_system.one_based):
             for i, item in enumerate(tabix_record.ALT):
-                exac_filter = ''
+                gnomad_filter = ''
                 if len(tabix_record.FILTER) == 0:
-                    exac_filter = 'PASS'
+                    gnomad_filter = 'PASS'
                 else:
-                    exac_filter = tabix_record.FILTER[0]
+                    gnomad_filter = tabix_record.FILTER[0]
                 
-                if exac_filter in EXAC_ACCEPTED_FILTERS:
-                    exac_record = {'CHROM': tabix_record.CHROM, 'POS': tabix_record.POS, 'FILTER':exac_filter, 'REF':tabix_record.REF, 'ALT':item, 'INFO':{'AC':tabix_record.INFO['AC'][i], 'AF':tabix_record.INFO['AF'][i], 'AN':tabix_record.INFO['AN']}}
-                    yield exac_record
+                if gnomad_filter in GNOMAD_ACCEPTED_FILTERS:
+                    gnomad_record = {'CHROM': tabix_record.CHROM, 'POS': tabix_record.POS, 'FILTER':gnomad_filter, 'REF':tabix_record.REF, 'ALT':item, 'INFO':{'AC':tabix_record.INFO['AC'][i], 'AF':tabix_record.INFO['AF'][i], 'AN':tabix_record.INFO['AN']}}
+                    yield gnomad_record
