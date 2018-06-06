@@ -89,17 +89,22 @@ function resetDropdown() {
 	dropdown.options.add(opt);
 }
 
+function resetGraphControl(){
+	document.getElementById("clinvar_checkbox").checked = false;
+	document.getElementById("related_clinvar_checkbox").checked = false;
+	document.getElementById("show_tolerance_landscape_checkbox").checked = false;
+}
+
 function clearTranscripts() {
 	resetDropdown();
 	resetGraph();
+	resetGraphControl();
 	$("#getToleranceButton").addClass('is-static');
 	$("#getToleranceButton").removeClass('is-info');
 	$("#geneName").removeClass('is-success');
 	$("#advanced_options").addClass("is-hidden");
 	$("#toleranceGraphContainer").addClass('is-hidden');
-	document.getElementById("geneNameHelpMessage").innerHTML = "";
-	document.getElementById("clinvar_checkbox").checked = false;
-	document.getElementById("related_clinvar_checkbox").checked = false;
+    	document.getElementById("geneNameHelpMessage").innerHTML = "";
 	$("#graph_control_field").addClass('is-hidden');
 }
 
@@ -120,6 +125,7 @@ function saveSvg(svgEl, name) {
 // Function to get the data from the inputfield and send AJAX requests to the
 // webserver, returning arrays with json objects.
 function loadDoc() {
+    	resetGraphControl();
 	var selection = document.getElementsByClassName("dropdown")[0];
 
 	if (typeof selection !== 'undefined' && selection !== null && selection.length > 0) {
