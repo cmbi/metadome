@@ -19,29 +19,15 @@ bp = Blueprint('web', __name__)
 def index():
     return render_template('index.html')
 
-@bp.route('/metadom', methods=['GET'])
-def metadom():
-    return render_template('metadom.html')
-
-@bp.route('/metadom/<string:transcript_id>/<string:domain_id>', methods=['GET'])
-def metadom_with_data(transcript_id, domain_id):
-    _result = api.routes.get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=False)
-    return render_template('metadom.html', data=_result)
-
-@bp.route('/metadom_js')
-def metadom_js():
-    # Renders the javascript used on the index page
-    return render_template('/js/metadom.js')
-
-@bp.route('/tolerance', methods=['GET'])
-def tolerance():
+@bp.route('/dashboard', methods=['GET'])
+def dashboard():
     gene_names = GeneRepository.retrieve_all_gene_names_from_file()
-    return render_template('tolerance.html', data=map(json.dumps, gene_names))
+    return render_template('dashboard.html', data=map(json.dumps, gene_names))
 
-@bp.route('/tolerance_js')
-def tolerance_js():
+@bp.route('/dashboard_js')
+def dashboard_js():
     # Renders the javascript used on the index page
-    return render_template('/js/tolerance.js')
+    return render_template('/js/dashboard.js')
 
 @bp.route('/contact', methods=['GET', 'POST'])
 def contact():
