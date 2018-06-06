@@ -4,7 +4,7 @@ services:
         build: .
         command: "flask run --host=0.0.0.0"
         environment:
-            - FLASK_APP=metadom/application.py
+            - FLASK_APP=metadome/application.py
         ports:
             - "5000:5000"
         depends_on:
