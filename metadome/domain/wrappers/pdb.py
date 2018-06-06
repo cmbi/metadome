@@ -1,7 +1,7 @@
 import logging
-from metadom.domain.wrappers.blast import run_blast, interpretation_to_string,\
+from metadome.domain.wrappers.blast import run_blast, interpretation_to_string,\
     interpret_blast_as_pdb
-from metadom.default_settings import PDB_SEQRES_FASTA, PDB_STRUCTURE_DIR,\
+from metadome.default_settings import PDB_SEQRES_FASTA, PDB_STRUCTURE_DIR,\
     MINIMAL_BLASTPE_VALUE, MINIMAL_TRANSLATION_TO_STRUCTURE_PIDENT_VALUE,\
     MINIMAL_XRAY_STRUCTURE_RESOLUTION
 import warnings

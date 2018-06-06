@@ -1,9 +1,9 @@
-from metadom.domain.data_generation.mapping.Protein2ProteinMapping import \
+from metadome.domain.data_generation.mapping.Protein2ProteinMapping import \
     createMappingOfAASequenceToAASequence, map_single_residue
-from metadom.domain.models.mapping import Mapping
+from metadome.domain.models.mapping import Mapping
 
 import logging
-from metadom.domain.models.gene import Strand
+from metadome.domain.models.gene import Strand
 
 _log = logging.getLogger(__name__)
 

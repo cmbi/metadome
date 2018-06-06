@@ -1,10 +1,10 @@
-from metadom.database import db
-from metadom.domain.models.protein import Protein
-from metadom.domain.models.gene import Gene
+from metadome.database import db
+from metadome.domain.models.protein import Protein
+from metadome.domain.models.gene import Gene
 from sqlalchemy.sql.expression import distinct
 import logging
-from metadom.domain.repositories import GeneRepository
-from metadom.default_settings import GENE_NAMES_FILE
+from metadome.domain.repositories import GeneRepository
+from metadome.default_settings import GENE_NAMES_FILE
 import os
 
 _log = logging.getLogger(__name__)

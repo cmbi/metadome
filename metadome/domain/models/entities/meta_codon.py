@@ -1,4 +1,4 @@
-from metadom.domain.models.entities.codon import Codon
+from metadome.domain.models.entities.codon import Codon
 
 class MalformedAggregatedCodon(Exception):
     pass

@@ -1,5 +1,5 @@
 import unittest
-from metadom.domain.services.helper_functions import create_sliding_window, convertListOfIntegerToRanges
+from metadome.domain.services.helper_functions import create_sliding_window, convertListOfIntegerToRanges
 
 class TestHelperFunctions(unittest.TestCase):
 

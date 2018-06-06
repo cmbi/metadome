@@ -1,6 +1,6 @@
-from metadom.domain.services.helper_functions import convertListOfIntegerToRanges, list_of_stringified_of_ranges
+from metadome.domain.services.helper_functions import convertListOfIntegerToRanges, list_of_stringified_of_ranges
 from Bio.Data.IUPACData import protein_letters_1to3
-from metadom.domain.services.computation.codon_computations import interpret_alt_codon, residue_variant_type
+from metadome.domain.services.computation.codon_computations import interpret_alt_codon, residue_variant_type
 from Bio.Seq import translate
 
 class MalformedCodonException(Exception):

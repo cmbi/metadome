@@ -1,6 +1,6 @@
-from metadom.domain.data_generation.mapping.meta_domain_mapping import generate_pfam_alignment_mappings
-from metadom.domain.models.entities.codon import Codon, MalformedCodonException
-from metadom.domain.models.entities.meta_codon import MetaCodon, MalformedAggregatedCodon
+from metadome.domain.data_generation.mapping.meta_domain_mapping import generate_pfam_alignment_mappings
+from metadome.domain.models.entities.codon import Codon, MalformedCodonException
+from metadome.domain.models.entities.meta_codon import MetaCodon, MalformedAggregatedCodon
 
 class UnsupportedMetaDomainIdentifier(Exception):
     pass

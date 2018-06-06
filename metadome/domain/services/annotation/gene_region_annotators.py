@@ -1,6 +1,6 @@
-from metadom.default_settings import GNOMAD_VCF_FILE, GNOMAD_ACCEPTED_FILTERS,\
+from metadome.default_settings import GNOMAD_VCF_FILE, GNOMAD_ACCEPTED_FILTERS,\
  CLINVAR_CONSIDERED_CLINSIG, CLINVAR_VCF_FILE
-from metadom.domain.parsers.tabix import tabix_query, variant_coordinate_system
+from metadome.domain.parsers.tabix import tabix_query, variant_coordinate_system
 
 def annotateTranscriptWithClinvarData(chromosome, regions):
     """

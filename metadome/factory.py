@@ -1,11 +1,11 @@
 import logging
 
 from flask import Flask
-from metadom.domain.services.database_creation import create_db
-from metadom.domain.infrastructure import write_all_genes_names_to_disk
-from metadom.domain.services.mail.mail import mail
-from metadom.domain.services.meta_domain_creation import create_metadomains
-from metadom.default_settings import RECONSTRUCT_METADOMAINS
+from metadome.domain.services.database_creation import create_db
+from metadome.domain.infrastructure import write_all_genes_names_to_disk
+from metadome.domain.services.mail.mail import mail
+from metadome.domain.services.meta_domain_creation import create_metadomains
+from metadome.default_settings import RECONSTRUCT_METADOMAINS
 
 _log = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ def create_app(settings=None):
 
     app = Flask(__name__, static_folder='presentation/web/static',
                template_folder='presentation/web/templates')
-    app.config.from_object('metadom.default_settings')
+    app.config.from_object('metadome.default_settings')
     if settings:
         app.config.update(settings)        
     
@@ -28,7 +28,7 @@ def create_app(settings=None):
     # It is somewhat dubious to get _log from the root package, but I can't see
     # a better way. Having the email handler configured at the root means all
     # child loggers inherit it.
-    from metadom import _log as metadom_logger
+    from metadome import _log as metadom_logger
     
     # Only log to the console during development and production, but not during
     # testing.
@@ -51,20 +51,20 @@ def create_app(settings=None):
     mail.init_app(app)
  
     # Initialize extensions
-    from metadom import toolbar
+    from metadome import toolbar
     toolbar.init_app(app)
 
     
     # Specify the Blueprints
-    from metadom.presentation.web.routes import bp as web_bp
-    from metadom.presentation.api.routes import bp as api_bp
+    from metadome.presentation.web.routes import bp as web_bp
+    from metadome.presentation.api.routes import bp as api_bp
 
     # Register the Blueprints
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(web_bp)
     
     # Database
-    from metadom.database import db
+    from metadome.database import db
     db.init_app(app)
     with app.app_context():
         # Extensions like Flask-SQLAlchemy now know what the "current" app

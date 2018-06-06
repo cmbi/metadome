@@ -1,5 +1,5 @@
 import logging
-from metadom.default_settings import INTERPROSCAN_EXECUTABLE,\
+from metadome.default_settings import INTERPROSCAN_EXECUTABLE,\
     INTERPROSCAN_DOCKER_IMAGE, INTERPROSCAN_TEMP_DIR,\
     INTERPROSCAN_DOCKER_VOLUME, INTERPROSCAN_DOMAIN_DATABASES
 import urllib.request

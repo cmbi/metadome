@@ -1,4 +1,4 @@
-from metadom.domain.metrics.codon_statistics import codon_background_rates
+from metadome.domain.metrics.codon_statistics import codon_background_rates
 from Bio.Seq import translate
 
 class ExternalREFAlleleNotEqualsTranscriptionException(Exception):

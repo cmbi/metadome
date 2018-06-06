@@ -1,6 +1,6 @@
-from metadom.domain.repositories import MappingRepository, ProteinRepository, InterproRepository
-from metadom.domain.services.helper_functions import convertListOfIntegerToRanges
-from metadom.domain.models.entities.codon import Codon
+from metadome.domain.repositories import MappingRepository, ProteinRepository, InterproRepository
+from metadome.domain.services.helper_functions import convertListOfIntegerToRanges
+from metadome.domain.models.entities.codon import Codon
 
 class FailedToConstructGeneRegion(Exception):
     pass

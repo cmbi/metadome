@@ -1,5 +1,5 @@
-from metadom.database import db
-from metadom.domain.models.gene import Strand
+from metadome.database import db
+from metadome.domain.models.gene import Strand
 
 class Mapping(db.Model):
     """

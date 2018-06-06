@@ -3,8 +3,8 @@ import tempfile
 import subprocess
 import os
 from Bio.Align.Applications._Clustalw import ClustalwCommandline
-from metadom.default_settings import CLUSTALW_EXECUTABLE
-from metadom.domain.parsers.fasta import unwrap_fasta_alignment
+from metadome.default_settings import CLUSTALW_EXECUTABLE
+from metadome.domain.parsers.fasta import unwrap_fasta_alignment
 
 _log = logging.getLogger(__name__)
 

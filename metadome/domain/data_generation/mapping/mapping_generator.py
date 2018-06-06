@@ -1,15 +1,15 @@
-from metadom.default_settings import UNIPROT_SPROT_SPECIES_FILTER
-from metadom.domain.wrappers.gencode import retrieveGeneTranslations_gencode,\
+from metadome.default_settings import UNIPROT_SPROT_SPECIES_FILTER
+from metadome.domain.wrappers.gencode import retrieveGeneTranslations_gencode,\
     retrieveNucleotideSequence_gencode, retrieveCodingGenomicLocations_gencode,\
     retrieveStrandDirection_gencode, retrieveMRNAValidatedTranslations_gencode,\
     NoGeneTranslationsFoundException, TranscriptionNotContainingCDS,\
     TranscriptionNotEncodingForTranslation, TranscriptionStrandMismatchException,\
     MissMatchTranscriptIDToMatchingTranscript
-from metadom.domain.wrappers.uniprot import retrieveIdenticalUniprotMatch,\
+from metadome.domain.wrappers.uniprot import retrieveIdenticalUniprotMatch,\
     NoUniProtACFoundException
-from metadom.domain.data_generation.mapping.Gene2ProteinMapping import createMappingOfGeneTranscriptionToTranslationToProtein
-from metadom.domain.models.gene import Gene
-from metadom.domain.models.protein import Protein
+from metadome.domain.data_generation.mapping.Gene2ProteinMapping import createMappingOfGeneTranscriptionToTranslationToProtein
+from metadome.domain.models.gene import Gene
+from metadome.domain.models.protein import Protein
 
 import logging
 

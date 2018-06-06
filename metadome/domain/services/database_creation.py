@@ -1,13 +1,13 @@
-from metadom.database import db
-from metadom.domain.models.protein import Protein
-from metadom.domain.models.interpro import Interpro
-from metadom.domain.repositories import MappingRepository, SequenceRepository
-from metadom.domain.services.multi_threading import CalculateNumberOfActiveThreads
-from metadom.domain.data_generation.mapping.mapping_generator import generate_gene_to_swissprot_mapping
-from metadom.domain.infrastructure import add_gene_mapping_to_database,\
+from metadome.database import db
+from metadome.domain.models.protein import Protein
+from metadome.domain.models.interpro import Interpro
+from metadome.domain.repositories import MappingRepository, SequenceRepository
+from metadome.domain.services.multi_threading import CalculateNumberOfActiveThreads
+from metadome.domain.data_generation.mapping.mapping_generator import generate_gene_to_swissprot_mapping
+from metadome.domain.infrastructure import add_gene_mapping_to_database,\
     filter_gene_names_present_in_database
-from metadom.domain.wrappers.gencode import retrieve_all_protein_coding_gene_names
-from metadom.domain.wrappers.interpro import retrieve_interpro_entries
+from metadome.domain.wrappers.gencode import retrieve_all_protein_coding_gene_names
+from metadome.domain.wrappers.interpro import retrieve_interpro_entries
 from sklearn.externals.joblib.parallel import Parallel, delayed
 
 import logging

@@ -1,10 +1,10 @@
-from metadom.domain.models.entities.gene_region import GeneRegion
-from metadom.domain.services.computation.gene_region_computations import compute_tolerance_landscape
-from metadom.domain.services.annotation.annotation import annotateSNVs
-from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithClinvarData,\
+from metadome.domain.models.entities.gene_region import GeneRegion
+from metadome.domain.services.computation.gene_region_computations import compute_tolerance_landscape
+from metadome.domain.services.annotation.annotation import annotateSNVs
+from metadome.domain.services.annotation.gene_region_annotators import annotateTranscriptWithClinvarData,\
     annotateTranscriptWithGnomADData
-from metadom.domain.models.entities.meta_domain import MetaDomain
-from metadom.domain.repositories import GeneRepository
+from metadome.domain.models.entities.meta_domain import MetaDomain
+from metadome.domain.repositories import GeneRepository
 from flask import abort, Blueprint, jsonify, render_template, session
 from flask.globals import request
 from builtins import Exception
@@ -52,7 +52,7 @@ def get_tolerance_landscape():
     pass
 
 @bp.route('/gene/getToleranceLandscape/<transcript_id>/', methods=['GET'])
-def get_tolerance_landscape_for_transcript(transcript_id):
+def get_tolerance_landscape_for_transcript(transcript_id):    
     sliding_window = request.args.get('slidingwindow')
     if sliding_window is None:
         sliding_window = 10
@@ -192,7 +192,7 @@ def get_metadomains_for_transcript(transcript_id, domain_id, _jsonify=True):
     for protein_pos in protein_to_consensus_positions:
         metadom_entry = create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_positions, protein_pos)
         
-        # add the metadom entry to the return value
+        # add the metadome entry to the return value
         meta_domain_data.append(metadom_entry)
     
     # Add general info on the gene, domain and protein
@@ -307,7 +307,7 @@ def create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_posit
                     if variant_entry['type'] == 'synonymous': metadom_entry['pathogenic_synonymous_variant_count'] += 1
                     if variant_entry['type'] == 'nonsense': metadom_entry['pathogenic_nonsense_variant_count'] += 1
             
-            # add this codon to the metadom entry
+            # add this codon to the metadome entry
             metadom_entry['other_codons'].append(position_entry)
             
             # Update the variant counts

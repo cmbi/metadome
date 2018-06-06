@@ -1,14 +1,14 @@
 import logging
 
-from metadom.database import db
-from metadom.domain.models.mapping import Mapping
-from metadom.domain.models.gene import Gene
-from metadom.domain.models.protein import Protein
-from metadom.domain.models.interpro import Interpro
+from metadome.database import db
+from metadome.domain.models.mapping import Mapping
+from metadome.domain.models.gene import Gene
+from metadome.domain.models.protein import Protein
+from metadome.domain.models.interpro import Interpro
 
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.sql.functions import func
-from metadom.default_settings import GENE_NAMES_FILE
+from metadome.default_settings import GENE_NAMES_FILE
 from sqlalchemy.sql.expression import and_, distinct
 
 _log = logging.getLogger(__name__)

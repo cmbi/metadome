@@ -1,10 +1,10 @@
-from metadom.domain.repositories import InterproRepository
-from metadom.domain.data_generation.mapping.meta_domain_mapping import generate_pfam_alignments
+from metadome.domain.repositories import InterproRepository
+from metadome.domain.data_generation.mapping.meta_domain_mapping import generate_pfam_alignments
 
 import logging
 import os
-from metadom.default_settings import METADOMAIN_DIR
-from metadom.domain.wrappers.hmmer import interpret_hmm_alignment_file
+from metadome.default_settings import METADOMAIN_DIR
+from metadome.domain.wrappers.hmmer import interpret_hmm_alignment_file
 
 _log = logging.getLogger(__name__)
 

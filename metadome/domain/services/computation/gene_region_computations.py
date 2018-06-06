@@ -1,8 +1,8 @@
-from metadom.domain.services.annotation.annotation import annotateSNVs
-from metadom.domain.services.annotation.gene_region_annotators import annotateTranscriptWithGnomADData    
-from metadom.domain.metrics.GeneticTolerance import background_corrected_mosy_score
-from metadom.domain.services.computation.codon_computations import retrieve_variant_type_counts
-from metadom.domain.services.helper_functions import create_sliding_window
+from metadome.domain.services.annotation.annotation import annotateSNVs
+from metadome.domain.services.annotation.gene_region_annotators import annotateTranscriptWithGnomADData    
+from metadome.domain.metrics.GeneticTolerance import background_corrected_mosy_score
+from metadome.domain.services.computation.codon_computations import retrieve_variant_type_counts
+from metadome.domain.services.helper_functions import create_sliding_window
 
 def compute_tolerance_landscape(gene_region, sliding_window_size, min_frequency=0.0):
     # Annotate gnomad information

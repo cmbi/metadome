@@ -1,6 +1,6 @@
 import logging
 
-from metadom.domain.wrappers.clustal import clustalw_pairwiseAlignment
+from metadome.domain.wrappers.clustal import clustalw_pairwiseAlignment
 
 _log = logging.getLogger(__name__)
 

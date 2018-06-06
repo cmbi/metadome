@@ -1,8 +1,8 @@
 import logging
-from metadom.default_settings import GENCODE_HG_TRANSLATION_FILE,\
+from metadome.default_settings import GENCODE_HG_TRANSLATION_FILE,\
     GENCODE_SWISSPROT_FILE, GENCODE_HG_TRANSCRIPTION_FILE,\
     GENCODE_HG_ANNOTATION_FILE_GFF3, GENCODE_BASIC_FILE
-from metadom.domain.parsers import gff3
+from metadome.domain.parsers import gff3
 from Bio.Seq import translate
 import urllib
 

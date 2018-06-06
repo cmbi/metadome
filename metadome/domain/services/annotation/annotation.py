@@ -1,4 +1,4 @@
-from metadom.domain.models.gene import Strand
+from metadome.domain.models.gene import Strand
 
 import logging
 

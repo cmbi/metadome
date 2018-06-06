@@ -2,7 +2,7 @@ import logging
 import tempfile
 import subprocess
 import os
-from metadom.default_settings import BLASTP_EXECUTABLE
+from metadome.default_settings import BLASTP_EXECUTABLE
 
 _log = logging.getLogger(__name__)
 

@@ -1,8 +1,8 @@
 import logging
-from metadom.default_settings import PFAM_HMM_DAT, HMMFETCH_EXECUTABLE, PFAM_HMM,\
+from metadome.default_settings import PFAM_HMM_DAT, HMMFETCH_EXECUTABLE, PFAM_HMM,\
     HMMALIGN_EXECUTABLE, HMMEMIT_EXECUTABLE, HMMSTAT_EXECUTABLE,\
     HMMLOGO_EXECUTABLE, PFAM_ALIGNMENT_DIR
-from metadom.domain.parsers.fasta import unwrap_fasta_alignment
+from metadome.domain.parsers.fasta import unwrap_fasta_alignment
 from builtins import FileNotFoundError
 import os
 import tempfile

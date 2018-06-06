@@ -2,12 +2,12 @@ from flask import Blueprint, redirect, g, render_template, url_for, request, ses
 from flask_mail import Message
 import json
 import traceback
-from metadom import get_version
-from metadom.domain.repositories import GeneRepository
-from metadom.domain.services.mail.mail import mail
-from metadom.presentation.web.forms import SupportForm
-from metadom.presentation import api
-from metadom.default_settings import DEFAULT_RECIPIENT
+from metadome import get_version
+from metadome.domain.repositories import GeneRepository
+from metadome.domain.services.mail.mail import mail
+from metadome.presentation.web.forms import SupportForm
+from metadome.presentation import api
+from metadome.default_settings import DEFAULT_RECIPIENT
 
 import logging
 

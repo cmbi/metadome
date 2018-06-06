@@ -1,4 +1,4 @@
-from metadom.database import db
+from metadome.database import db
 
 class Interpro(db.Model):
     """

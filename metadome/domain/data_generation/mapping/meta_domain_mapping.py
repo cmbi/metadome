@@ -1,10 +1,10 @@
-from metadom.domain.wrappers.hmmer import FoundNoPfamHMMException,\
+from metadome.domain.wrappers.hmmer import FoundNoPfamHMMException,\
     FoundMoreThanOnePfamHMMException, convert_pfam_fasta_alignment_to_original_aligned_sequence,\
     map_sequence_to_aligned_sequence, convert_pfam_fasta_alignment_to_strict_fasta,\
     create_alignment_of_sequences_according_to_PFAM_HMM, interpret_hmm_alignment_file, convert_pfam_fasta_alignment_to_strict_sequence
-from metadom.domain.data_generation.mapping.Protein2ProteinMapping import createAlignedSequenceMapping    
-from metadom.domain.repositories import MappingRepository, SequenceRepository, InterproRepository, ProteinRepository
-from metadom.default_settings import METADOMAIN_DIR, METADOMAIN_ALIGNMENT_FILE_NAME
+from metadome.domain.data_generation.mapping.Protein2ProteinMapping import createAlignedSequenceMapping    
+from metadome.domain.repositories import MappingRepository, SequenceRepository, InterproRepository, ProteinRepository
+from metadome.default_settings import METADOMAIN_DIR, METADOMAIN_ALIGNMENT_FILE_NAME
 import numpy as np
 import time
 import logging

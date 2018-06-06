@@ -1,4 +1,4 @@
-from metadom.database import db
+from metadome.database import db
 import enum
 
 class ProteinSource(enum.Enum):
