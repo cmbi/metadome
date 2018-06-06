@@ -122,7 +122,7 @@ $( function() {
               class="button is-info is-outlined">Download current visualization</button>
           </div>
           <div class="control">
-            <button class="button" id="reset_button" onclick="clearTranscripts()">Reset Page</button>
+            <button class="button" id="reset_button" onclick='location.href="{{ url_for("web.dashboard") }}"'>Reset Page</button>
           </div>
         </div>
       </div>
