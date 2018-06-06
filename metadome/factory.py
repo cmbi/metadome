@@ -60,8 +60,8 @@ def create_app(settings=None):
     from metadome.presentation.api.routes import bp as api_bp
 
     # Register the Blueprints
-    app.register_blueprint(api_bp, url_prefix='/api')
-    app.register_blueprint(web_bp)
+    app.register_blueprint(api_bp, url_prefix='/metadome/api')
+    app.register_blueprint(web_bp, url_prefix='/metadome')
     
     # Database
     from metadome.database import db
@@ -71,10 +71,10 @@ def create_app(settings=None):
         # is while within this block. Therefore, you can now run........
         db.create_all()
         create_db()
-        
+         
         # now create all meta_domains
         create_metadomains(reconstruct=RECONSTRUCT_METADOMAINS)
-        
+         
         # retrieve all gene names and write to disk
         write_all_genes_names_to_disk()
         
