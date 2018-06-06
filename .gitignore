@@ -2,6 +2,6 @@
 *.project
 *.pydevproject
 .settings/*
-env_metadom/*
+env_metadome/*
 **/__pycache__/
 .externalToolBuilders/*
