@@ -152,9 +152,9 @@ var toleranceArea = d3.area().x(function(d) {
 
 // Define Line of Tolerance landscape line plot
 var toleranceLine = d3.line().x(function(d) {
-	return main_x (d.protein_pos);
+	return main_x (d.values[0].protein_pos);
 }).y(function(d) {
-	return main_y(d.sw_dn_ds);
+	return main_y(d.values[0].sw_dn_ds);
 });
 
 // Define Area of the context area
@@ -261,10 +261,40 @@ function createGraph(obj) {
 	var positional_annotation = obj.positional_annotation;
 	var domain_data = obj.domains;
 
+	// setting x/y domain according to data
+	main_x.domain(d3.extent(positional_annotation, function(d) {
+	    return d.protein_pos;
+	}));
+	main_y.domain([ 0, maxTolerance ]);
+	main_x2.domain(main_x .domain());
+	main_y2.domain(main_y.domain());
+
+	// create a group from the tolerance data
+	var dataGroup = d3.nest().key(function(d) {
+	    return d.protein_pos;
+	}).entries(positional_annotation);
+
+	// add two consecutive data values per group, so these can be used in
+	// drawing rectangles
+	dataGroup.forEach(function(group, i) {
+	    	group.values.push([]);
+		if (i + 1 < dataGroup.length) {
+		    group.values[1].protein_pos = dataGroup[i + 1].values[0].protein_pos;
+		    group.values[1].sw_dn_ds = dataGroup[i + 1].values[0].sw_dn_ds;
+		} else if (i < dataGroup.length) {
+		    group.values[1].protein_pos = dataGroup[i].values[0].protein_pos;
+		    group.values[1].sw_dn_ds = dataGroup[i].values[0].sw_dn_ds;
+		}
+		group.values[0].selected = false;
+	})
+	
 	// Draw all individual user interface elements based on the data
 	annotateDomains(domain_data, positional_annotation);
-	createToleranceGraph(positional_annotation);
+	createToleranceGraph(dataGroup);
 	createToleranceGraphLegend();
+
+	// Add schematic protein overview as a custom Axis
+	createSchematicProtein(dataGroup);
 
 	// Finally draw the context zoom
 	addContextZoomView(positional_annotation);
@@ -577,37 +607,13 @@ function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
  ******************************************************************************/
 
 // Draw the tolerance graph
-function createToleranceGraph(tolerance) {
+function createToleranceGraph(dataGroup) {
 	// append focus view
 	var focus = main_svg.append("g")
 		.attr("class", "focus")
 		.attr("id", "tolerance_graph")
 		.attr("transform", "translate(" + main_marginLandscape.left + "," + main_marginLandscape.top + ")");
-
-	// setting x/y domain according to data
-	main_x .domain(d3.extent(tolerance, function(d) {
-	    return d.protein_pos;
-	}));
-	main_y.domain([ 0, maxTolerance ]);
-	main_x2.domain(main_x .domain());
-	main_y2.domain(main_y.domain());
-
-	// create a group from the tolerance data
-	var dataGroup = d3.nest().key(function(d) {
-	    return d.protein_pos;
-	}).entries(tolerance);
-
-	// add two consecutive data values per group, so these can be used in
-	// drawing rectangles
-	dataGroup.forEach(function(group, i) {
-		if (i + 1 < dataGroup.length) {
-			group.values.push(dataGroup[i + 1].values[0]);
-		} else if (i < dataGroup.length) {
-			group.values.push(dataGroup[i].values[0]);
-		}
-		group.values[0].selected = false;
-	})
-
+	
 	// draw the tolerance area graph, base on the grouped consecutive data
 	// values
 	dataGroup.forEach(function(d) {
@@ -644,7 +650,7 @@ function createToleranceGraph(tolerance) {
 		});
 
 	// add tolerance line
-	focus.append('path').datum(tolerance)
+	focus.append('path').datum(dataGroup)
 		.attr('class', 'line')
 		.attr('id', 'toleranceLine')
 		.attr('fill', 'none')
@@ -655,13 +661,10 @@ function createToleranceGraph(tolerance) {
 
 	// append yAxis for focus view
 	focus.append("g").attr("class", "axis axis--y").call(main_yAxis);
-
-	// Add custom Axis
-	addCustomAxis(dataGroup)
 }
 
 // Draw the axis and labels
-function addCustomAxis(groupedTolerance) {
+function createSchematicProtein(groupedTolerance) {
 	// Add the Axis
 	var focusAxis = main_svg.append("g")
 		.attr("class", "focusAxis")
