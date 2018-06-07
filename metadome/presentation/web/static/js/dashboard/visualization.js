@@ -333,7 +333,7 @@ function createGnomADTableBody(chr, chr_pos, ref_codon, ref_residue, gnomADVaria
 	html_table += '<td>'+ref_codon+'>'+variant.alt_codon+'</td>';
 	html_table += '<td>'+ref_residue+'>'+variant.alt_aa_triplet+'</td>';
 	html_table += '<td>'+variant.type+'</td>';
-	html_table += '<td>' + (variant.allele_count/variant.allele_number) + '</td>';
+	html_table += '<td>' + parseFloat(variant.allele_count/variant.allele_number).toFixed(6) + '</td>';
 	html_table += '</tr>';
     }
     	
