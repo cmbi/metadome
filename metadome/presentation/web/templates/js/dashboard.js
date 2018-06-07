@@ -91,8 +91,7 @@ function resetDropdown() {
 
 function resetGraphControl(){
 	document.getElementById("clinvar_checkbox").checked = false;
-	document.getElementById("related_clinvar_checkbox").checked = false;
-	document.getElementById("show_tolerance_landscape_checkbox").checked = false;
+	document.getElementById("checkbox_for_landscape_default").checked = true;
 }
 
 function clearTranscripts() {

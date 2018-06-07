@@ -268,6 +268,9 @@ function createGraph(obj) {
 
 	// Finally draw the context zoom
 	addContextZoomView(positional_annotation);
+	
+	// Add behaviour according to the settings
+	toggleToleranceLandscapeOrMetadomainLandscape();
 }
 
 function createClinVarTableHeader(){
@@ -917,6 +920,7 @@ function createToleranceGraphLegend() {
 
 	// append heatmap legend
 	main_svg.append("rect")
+		.attr("id", "legendGradientRect")
 		.attr("width", main_widthLegend)
 		.attr("height", main_heightLandscape)
 		.attr("transform", "translate(" + main_marginLegend.left + "," + main_marginLegend.top + ")")
@@ -933,7 +937,7 @@ function createToleranceGraphLegend() {
 		.attr("x", -50)
 		.attr("y", 15)
 		.attr("dy", 0)
-		.attr("class", "label")
+		.attr("class", "label legendGradientText")
 		.attr("transform", "rotate(-90)")
 		.text("Tolerant")
 		.style('pointer-events', 'none')
@@ -945,7 +949,7 @@ function createToleranceGraphLegend() {
 		.attr("x", -150)
 		.attr("y", 15)
 		.attr("dy", 0)
-		.attr("class", "label")
+		.attr("class", "label legendGradientText")
 		.attr("transform", "rotate(-90)")
 		.text("Neutral")
 		.style('pointer-events', 'none')
@@ -957,7 +961,7 @@ function createToleranceGraphLegend() {
 		.attr("x", -250)
 		.attr("y", 15)
 		.attr("dy", 0)
-		.attr("class", "label")
+		.attr("class", "label legendGradientText")
 		.attr("transform", "rotate(-90)")
 		.text("Intolerant")
 		.style('pointer-events', 'none')
@@ -967,6 +971,28 @@ function createToleranceGraphLegend() {
 /*******************************************************************************
  * Interactive behaviour functions
  ******************************************************************************/
+
+// Allows toggling between the tolerance landscape and metadomain landscape
+function toggleToleranceLandscapeOrMetadomainLandscape(){
+    var tolerance_graph = d3.select("#tolerance_graph");
+    var legend = d3.select("#legendGradientRect");
+    var legend_text = d3.selectAll(".legendGradientText");
+
+    switch($('input[name=landscape_checkbox]:checked', '#checkbox_for_landscape').val()){
+        case "metadomain_landscape":
+            tolerance_graph.style("opacity", 0);
+            legend.style("opacity", 0);
+            legend_text.style("opacity", 0);
+            break;
+        case "tolerance_landscape":
+            tolerance_graph.style("opacity", 1);
+            legend.style("opacity", 1);
+            legend_text.style("opacity", 1);
+            break;
+	default:
+	    break;
+    }
+}
 
 // Update the positional information table with new values
 function addRowToPositionalInformationTable(d) {

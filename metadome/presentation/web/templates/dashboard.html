@@ -96,22 +96,20 @@ $( function() {
       <div class="label"><label class="label"> Graph control </label></div>
       <div class="label"><label class="label" id="geneDetails"></label></div>
         <div class="field is-grouped">
+          <div class="control" id="checkbox_for_landscape">
+            <label class="radio"> 
+              <input checked value="metadomain_landscape" name="landscape_checkbox" type="radio" onclick="toggleToleranceLandscapeOrMetadomainLandscape()" id="checkbox_for_landscape_default">
+              Show <abbr title="A bar chart over each domain annotated with gnomAD and Pathogenic ClinVar missense counts, present in other domains throughout the human genome for that domain position">Meta-domain variants</abbr>
+            </label>
+            <label class="radio"> 
+              <input value="tolerance_landscape" name="landscape_checkbox" type="radio" onclick="toggleToleranceLandscapeOrMetadomainLandscape()">
+              Show Gene's <abbr title="A graph that displays missense over synonymous ratios per position for the entire protein, based on gnomAD variants">Tolerance Landscape</abbr>
+            </label>
+          </div>
           <div class="control">
             <label class="checkbox"> <input id="clinvar_checkbox"
               type="checkbox" onclick="toggleAdvancedOpions(this)">
               Show ClinVar variants
-            </label>
-          </div>
-          <div class="control">
-            <label class="checkbox"> <input id="related_clinvar_checkbox"
-              type="checkbox" onclick="toggleAdvancedOpions(this)">
-              Show <abbr title="Annotate ClinVar variants found across the genome that are related to this protein via meta-domains">Related ClinVar</abbr> variants
-            </label>
-          </div>
-          <div class="control">
-            <label class="checkbox"> <input id="show_tolerance_landscape_checkbox"
-              type="checkbox" onclick="toggleAdvancedOpions(this)">
-              Show <abbr title="A graph that displays missense over synonymous ratios per position for the entire protein, based on gnomAD variants">Tolerance Landscape</abbr>
             </label>
           </div>
         </div>
