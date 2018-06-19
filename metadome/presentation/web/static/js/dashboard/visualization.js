@@ -455,7 +455,7 @@ function drawMetaDomainLandscape(domain_data, data){
     		meta_domain_ids.add(domain_data[i].ID);
     	}
     }
-    
+        
 	// Add barplot for the metadomain variation landscape
 	var meta_domain_landscape_canvas = main_svg.append("g")
     .attr("id", "metadomain_graph")
@@ -476,24 +476,13 @@ function drawMetaDomainLandscape(domain_data, data){
 		return max_value;
 		}
 	)]);
-		
-//	// Add the y-axis to the normal variation barplot
-//	meta_domain_landscape_canvas.append("g")
-//	.attr("class", "axis axis--y")
-//	.call(main_y_metadomain)
-//	.append("text")
-//	.attr("transform", "rotate(-90)")
-//	.attr("y", 6)
-//	.attr("dy", "0.71em")
-//	.attr("text-anchor", "end")
-//	.text("Missense Count");
 	
-	// Draw the metadomain missense variation barplot
+	// Draw the meta-domain normal missense variation barplot
 	meta_domain_landscape_canvas.selectAll(".bar")
 	.data(data)
 	.enter()
 	.append("rect")
-	.attr("class", "bar")
+	.attr("class", "normal_missense_variant_count")
 	.attr("x", function(d) { return main_x(d.values[0].protein_pos - 0.5); })
 	.attr("y", function(d) { 
 		normal_missense_variant_count = 0;
@@ -551,6 +540,73 @@ function drawMetaDomainLandscape(domain_data, data){
 	   domain_details_position_tip.hide(d);
 	   // reset the color
 	   d3.select(this).style("fill", "green");
+	   // move the element to the back
+	   d3.select(this).moveToBack();
+	});
+	
+	// Draw the meta-domain pathogenic missense variation barplot
+	meta_domain_landscape_canvas.selectAll(".bar")
+	.data(data)
+	.enter()
+	.append("rect")
+	.attr("class", "pathogenic_missense_variant_count")
+	.attr("x", function(d) { return main_x(d.values[0].protein_pos); })
+	.attr("y", function(d) { 
+		pathogenic_missense_variant_count = 0;
+		if (d.values[0].domains != null){
+			meta_domain_ids.forEach(domain_id => {
+				if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
+					pathogenic_missense_variant_count = Math.max(d.values[0].domains[domain_id].pathogenic_missense_variant_count, pathogenic_missense_variant_count);
+				}
+			});
+
+			return main_y_metadomain(pathogenic_missense_variant_count);
+		}
+		})
+	.attr("width", function(d, i) {
+	    if (d.values[1].protein_pos != d.values[0].protein_pos){
+			return main_x(d.values[1].protein_pos) - main_x(d.values[0].protein_pos);
+	    	    } else {
+	    		return main_x(d.values[1].protein_pos +1) - main_x(d.values[0].protein_pos);
+	    	    }
+		})
+	.attr("height", function(d) { 
+		pathogenic_missense_variant_count = 0;
+		if (d.values[0].domains != null){
+			meta_domain_ids.forEach(domain_id => {
+				if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
+					pathogenic_missense_variant_count = Math.max(d.values[0].domains[domain_id].pathogenic_missense_variant_count, pathogenic_missense_variant_count);
+				}
+			});
+			
+			return main_heightLandscape - main_y_metadomain(pathogenic_missense_variant_count);
+		}
+		})
+	.style("clip-path", "url(#clip)")
+	.style("fill", "red")
+	.on("mouseover", function(d) {
+		if (metadomain_graph_visible){
+			pathogenic_missense_variant_count = 0;
+			if (d.values[0].domains != null){
+				meta_domain_ids.forEach(domain_id => {
+					if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
+						pathogenic_missense_variant_count = Math.max(d.values[0].domains[domain_id].pathogenic_missense_variant_count, pathogenic_missense_variant_count);
+					}
+				});
+			}
+		   // show the tooltip
+		   domain_details_position_tip.show(pathogenic_missense_variant_count);
+		   // amplify the element
+		   d3.select(this).style("fill", "orange");
+		   // move the element to front
+		   d3.select(this).moveToFront();
+		}
+	})
+	.on("mouseout", function(d) {
+	   // hide the tooltip
+	   domain_details_position_tip.hide(d);
+	   // reset the color
+	   d3.select(this).style("fill", "red");
 	   // move the element to the back
 	   d3.select(this).moveToBack();
 	});
@@ -1049,11 +1105,20 @@ function rescaleLandscape(){
     focus.select(".axis--x").call(main_xAxis).selectAll("text").remove();
     
     var metadomain_landscape = d3.select("#metadomain_graph");
-    metadomain_landscape.selectAll(".bar")
-    	.attr("x", function(d) { return main_x(d.values[0].protein_pos - 0.5); })
+    metadomain_landscape.selectAll(".normal_missense_variant_count")
+	.attr("x", function(d) { return main_x(d.values[0].protein_pos - 0.45); })
+	.attr("width", function(d, i) {
+	    if (d.values[1].protein_pos != d.values[0].protein_pos){
+			return main_x(d.values[1].protein_pos-0.6) - main_x(d.values[0].protein_pos);
+	    	    } else {
+	    		return main_x(d.values[1].protein_pos +1) - main_x(d.values[0].protein_pos);
+	    	    }
+		});
+    metadomain_landscape.selectAll(".pathogenic_missense_variant_count")
+    	.attr("x", function(d) { return main_x(d.values[0].protein_pos+0.05); })
     	.attr("width", function(d, i) {
     	    if (d.values[1].protein_pos != d.values[0].protein_pos){
-    			return main_x(d.values[1].protein_pos) - main_x(d.values[0].protein_pos);
+    			return main_x(d.values[1].protein_pos-0.6) - main_x(d.values[0].protein_pos);
     	    	    } else {
     	    		return main_x(d.values[1].protein_pos +1) - main_x(d.values[0].protein_pos);
     	    	    }
