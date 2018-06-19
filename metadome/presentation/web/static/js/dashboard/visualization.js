@@ -55,45 +55,12 @@ var main_heightAnnotations = main_outerHeight - main_marginAnnotations.top
 var main_x = d3.scaleLinear().range([ 40, main_width -40 ]).nice();
 var main_x2 = d3.scaleLinear().range([ 0, main_width ]);
 var main_y = d3.scaleLinear().range([ main_heightLandscape, 0 ]);
+var main_y_metadomain = d3.scaleLinear().range([ main_heightLandscape, 0 ]);
 var main_y2 = d3.scaleLinear().range([ main_heightContext, 0 ]);
 
 // Set axis
 var main_xAxis = d3.axisBottom(main_x2).ticks(0);
 var main_yAxis = d3.axisLeft(main_y).ticks(0);
-
-/*******************************************************************************
- * Global variables for domain details
- ******************************************************************************/
-var domain_details_outerWidth = 1280;
-var domain_details_outerHeight = 600;
-var domain_details_svg = d3.select("#domain_details_svg").attr("width", domain_details_outerWidth)
-.attr("height", domain_details_outerHeight);
-
-//Declare margins
-var marginDomainDetailsNormalVar = {
-	top : 20,
-	right : 20,
-	bottom : 320,
-	left : 30
-};
-var marginDomainDetailsPathogenicVar = {
-	top : 310,
-	right : 20,
-	bottom : 20,
-	left : 30
-};
-
-//Declare various UI widths and heights
-var domain_details_width = domain_details_outerWidth - marginDomainDetailsNormalVar.left - marginDomainDetailsNormalVar.right;
-var domain_details_heightNormalVar = domain_details_outerHeight - marginDomainDetailsNormalVar.top
-		- marginDomainDetailsNormalVar.bottom;
-var domain_details_heightPathogenicVar = domain_details_outerHeight - marginDomainDetailsPathogenicVar.top
-		- marginDomainDetailsPathogenicVar.bottom;
-
-// Scale the axis
-var domain_details_x = d3.scaleBand().rangeRound([ 20, domain_details_width -20 ]).padding(0.1);
-var domain_details_normal_y = d3.scaleLinear().rangeRound([ domain_details_heightNormalVar, 0 ]);
-var domain_details_pathogenic_y = d3.scaleLinear().rangeRound([ domain_details_heightPathogenicVar, 0 ]);
 
 /*******************************************************************************
  * Global variables for positional meta domain details
@@ -108,6 +75,8 @@ var metadomain_svg = d3.select("#metadomain_svg").attr("width", 400)
 
 // indicates the maximum tolerance score
 var maxTolerance = 1.8;
+
+var metadomain_graph_visible = true;
 
 // indicates the various colors to indicate the tolerance
 var toleranceColorGradient = [ {
@@ -233,9 +202,7 @@ function resetGraph(){
 	metadomain_svg.selectAll("*").remove();
 	metadomain_svg = d3.select('#metadomain_svg');
 	
-	// reset the domain_details_svg
-	domain_details_svg.selectAll("*").remove();
-	domain_details_svg = d3.select('#domain_details_svg');
+	// reset the positional text
 	document.getElementById("positional_details_text").innerHTML = '<p>Click on one of the selected positions to obtain more information</p>';
 }
 
@@ -290,6 +257,7 @@ function createGraph(obj) {
 	
 	// Draw all individual user interface elements based on the data
 	annotateDomains(domain_data, positional_annotation);
+	drawMetaDomainLandscape(domain_data, dataGroup);
 	createToleranceGraph(dataGroup);
 	createToleranceGraphLegend();
 
@@ -479,127 +447,114 @@ function createPositionalInformation(position_data){
 //	});
 }
 
-function drawMetaDomainInformation(domain_name, domain_id, start, stop, data){
-    // reset the domain_details_svg
-    domain_details_svg.selectAll("*").remove();
-    domain_details_svg = d3.select('#domain_details_svg');
-    
-    // set the selected domain
-    data.selected_domain = domain_id;
-    
-    // Call the tooltips
-    domain_details_svg.call(domain_details_position_tip);
-    
-    // Activate the overlay
-    $("#domain_information_overlay").addClass('is-active');
-    
-    // Format the HTML in the correct format
-    document.getElementById("domain_information_overlay_title").innerHTML = '<label class="label" >'+document.getElementById("geneDetails").innerHTML +'</label><label class="label"> Domain: ' + domain_name+' (<a href="http://pfam.xfam.org/family/' + domain_id + '" target="_blank">' + domain_id + '</a>), located at p.'+start+' - p.'+stop+' </label><label class="label"> Meta-domain information</label>';
-    
-    // Add barplot for the normal variation
-    var domain_details_BarPlotNormalVar = domain_details_svg.append("g")
-    	.attr("transform", "translate(" + marginDomainDetailsNormalVar.left + "," + marginDomainDetailsNormalVar.top + ")");
-    
-    // Add barplot for the pathogenic variation
-    var domain_details_BarPlotPathogenicVar = domain_details_svg.append("g")
-	.attr("transform", "translate(" + marginDomainDetailsPathogenicVar.left + "," + marginDomainDetailsPathogenicVar.top + ")");
-    
-    // Define the axes domain based on the data
-    domain_details_x.domain(data.map(function(d) { if (d.protein_pos >= start && d.protein_pos <= stop){ return d.protein_pos; }}));
-    domain_details_normal_y.domain([0, d3.max(data, function(d) { if (d.protein_pos >= start && d.protein_pos <= stop && d.domains[domain_id] != null){ return d.domains[domain_id].normal_missense_variant_count;}})]);
-    domain_details_pathogenic_y.domain([0, d3.max(data, function(d) {if (d.protein_pos >= start && d.protein_pos <= stop && d.domains[domain_id] != null){ return d.domains[domain_id].pathogenic_missense_variant_count; }})]);
-    
-    // Add the x-axis to the normal variation barplot
-    domain_details_BarPlotNormalVar.append("g")
-    .attr("class", "axis axis--x")
-    .attr("transform", "translate(0," + domain_details_heightNormalVar + ")")
-    .call(d3.axisBottom(domain_details_x));
-    
-    // Add the x-axis to the pathogenic variation barplot
-    domain_details_BarPlotPathogenicVar.append("g")
-    .attr("class", "axis axis--x")
-    .attr("transform", "translate(0," + domain_details_heightPathogenicVar + ")")
-    .call(d3.axisBottom(domain_details_x));
+function drawMetaDomainLandscape(domain_data, data){
+    // get all possible domain ids
+    meta_domain_ids = new Set();
+    for (i = 0; i < domain_data.length; i++){
+    	if (domain_data[i].metadomain){
+    		meta_domain_ids.add(domain_data[i].ID);
+    	}
+    }
+    	
+	// Add barplot for the metadomain variation landscape
+	var meta_domain_landscape_canvas = main_svg.append("g")
+    .attr("id", "metadomain_graph")
+    .attr("transform", "translate(" + main_marginLandscape.left + "," + main_marginLandscape.top + ")");
+	
+	// Call the tooltips
+    meta_domain_landscape_canvas.call(domain_details_position_tip);
 
-    // Add the y-axis to the normal variation barplot
-    domain_details_BarPlotNormalVar.append("g")
-        .attr("class", "axis axis--y")
-        .call(d3.axisLeft(domain_details_normal_y))
-        .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", "0.71em")
-        .attr("text-anchor", "end")
-        .text("Missense Count");
-    
-    // Add the y-axis to the pathogenic variation barplot
-    domain_details_BarPlotPathogenicVar.append("g")
-        .attr("class", "axis axis--y")
-        .call(d3.axisLeft(domain_details_pathogenic_y))
-        .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", "0.71em")
-        .attr("text-anchor", "end")
-        .text("Missense Count");
-    
-    // Draw the normal variation barplot
-    domain_details_BarPlotNormalVar.selectAll(".bar")
-      .data(data)
-      .enter()
-      .filter(function(d) { if (d.protein_pos >= start && d.protein_pos <= stop && d.domains[domain_id] != null){ return true } else {return false}})
-      .append("rect")
-        .attr("class", "bar")
-        .attr("x", function(d) { return domain_details_x(d.protein_pos); })
-        .attr("y", function(d) { return domain_details_normal_y(d.domains[domain_id].normal_missense_variant_count);})
-        .attr("width", domain_details_x.bandwidth())
-        .attr("height", function(d) { return domain_details_heightNormalVar - domain_details_normal_y(d.domains[domain_id].normal_missense_variant_count); })
-        .style("fill", "green")
-        .on("mouseover", function(d) {
-              // show the tooltip
-              domain_details_position_tip.show(d.domains[domain_id].normal_missense_variant_count);
-              // amplify the element
-              d3.select(this).style("fill", "orange");
-              // move the element to front
-              d3.select(this).moveToFront();
-          })
-          .on("mouseout", function(d) {
-              // hide the tooltip
-              domain_details_position_tip.hide(d);
-              // reset the color
-              d3.select(this).style("fill", "green");
-              // move the element to the back
-              d3.select(this).moveToBack();
-          });
-    
-    // Draw the pathogenic variation barplot
-    domain_details_BarPlotPathogenicVar.selectAll(".bar")
-        .data(data)
-        .enter()
-        .filter(function(d) { if (d.protein_pos >= start && d.protein_pos <= stop && d.domains[domain_id] != null){ return true } else {return false}})
-        .append("rect")
-          .attr("class", "bar")
-          .attr("x", function(d) { return domain_details_x(d.protein_pos); })
-          .attr("y", function(d) { return domain_details_pathogenic_y(d.domains[domain_id].pathogenic_missense_variant_count); })
-          .attr("width", domain_details_x.bandwidth())
-          .attr("height", function(d) { return domain_details_heightPathogenicVar - domain_details_pathogenic_y(d.domains[domain_id].pathogenic_missense_variant_count); })
-          .style("fill", "red")
-          .on("mouseover", function(d) {
-              // show the tooltip
-              domain_details_position_tip.show(d.domains[domain_id].pathogenic_missense_variant_count);
-              // amplify the element
-              d3.select(this).style("fill", "orange");
-              // move the element to front
-              d3.select(this).moveToFront();
-          })
-          .on("mouseout", function(d) {
-              // hide the tooltip
-              domain_details_position_tip.hide(d);
-              // reset the color
-              d3.select(this).style("fill", "red");
-              // move the element to the back
-              d3.select(this).moveToBack();
-          });    
+	// Define the axes based on the data
+	main_x.domain(data.map(function(d) { return d.values[0].protein_pos; }));
+	main_y_metadomain.domain([0, d3.max(data, function(d) {
+		max_value = 0;
+		meta_domain_ids.forEach(domain_id => {
+			if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
+			    max_value = Math.max(d.values[0].domains[domain_id].normal_missense_variant_count, max_value);
+			    max_value = Math.max(d.values[0].domains[domain_id].pathogenic_missense_variant_count, max_value);
+			}
+		});
+		return max_value;
+		}
+	)]);
+		
+//	// Add the y-axis to the normal variation barplot
+//	meta_domain_landscape_canvas.append("g")
+//	.attr("class", "axis axis--y")
+//	.call(main_y_metadomain)
+//	.append("text")
+//	.attr("transform", "rotate(-90)")
+//	.attr("y", 6)
+//	.attr("dy", "0.71em")
+//	.attr("text-anchor", "end")
+//	.text("Missense Count");
+	
+	// Draw the metadomain missense variation barplot
+	meta_domain_landscape_canvas.selectAll(".bar")
+	.data(data)
+	.enter()
+	.append("rect")
+	.attr("class", "bar")
+	.attr("x", function(d) { return main_x(d.values[0].protein_pos - 0.5); })
+	.attr("y", function(d) { 
+		normal_missense_variant_count = 0;
+		if (d.values[0].domains != null){
+			meta_domain_ids.forEach(domain_id => {
+				if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
+					normal_missense_variant_count = Math.max(d.values[0].domains[domain_id].normal_missense_variant_count, normal_missense_variant_count);
+				}
+			});
+
+			return main_y_metadomain(normal_missense_variant_count);
+		}
+		})
+	.attr("width", function(d, i) {
+	    if (d.values[1].protein_pos != d.values[0].protein_pos){
+			return main_x(d.values[1].protein_pos) - main_x(d.values[0].protein_pos);
+	    	    } else {
+	    		return main_x(d.values[1].protein_pos +1) - main_x(d.values[0].protein_pos);
+	    	    }
+		})
+	.attr("height", function(d) { 
+		normal_missense_variant_count = 0;
+		if (d.values[0].domains != null){
+			meta_domain_ids.forEach(domain_id => {
+				if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
+					normal_missense_variant_count = Math.max(d.values[0].domains[domain_id].normal_missense_variant_count, normal_missense_variant_count);
+				}
+			});
+			
+			return main_heightLandscape - main_y_metadomain(normal_missense_variant_count);
+		}
+		})
+	.style("clip-path", "url(#clip)")
+	.style("fill", "green")
+	.on("mouseover", function(d) {
+		if (metadomain_graph_visible){
+			normal_missense_variant_count = 0;
+			if (d.values[0].domains != null){
+				meta_domain_ids.forEach(domain_id => {
+					if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
+						normal_missense_variant_count = Math.max(d.values[0].domains[domain_id].normal_missense_variant_count, normal_missense_variant_count);
+					}
+				});
+			}
+		   // show the tooltip
+		   domain_details_position_tip.show(normal_missense_variant_count);
+		   // amplify the element
+		   d3.select(this).style("fill", "orange");
+		   // move the element to front
+		   d3.select(this).moveToFront();
+		}
+	})
+	.on("mouseout", function(d) {
+	   // hide the tooltip
+	   domain_details_position_tip.hide(d);
+	   // reset the color
+	   d3.select(this).style("fill", "green");
+	   // move the element to the back
+	   d3.select(this).moveToBack();
+	});
 }
 
 /*******************************************************************************
@@ -829,7 +784,7 @@ function annotateDomains(protDomain, tolerance_data) {
 		    d3.select(this).style("cursor", "default");
 		})
 		.on("click", function(d) {
-		    drawMetaDomainInformation(d.Name, d.ID, d.start, d.stop, tolerance_data)
+			// TODO: interactiveness for clicking a domain
 		});
 
 	// function to move item to front of svg
@@ -977,20 +932,28 @@ function createToleranceGraphLegend() {
 
 // Allows toggling between the tolerance landscape and metadomain landscape
 function toggleToleranceLandscapeOrMetadomainLandscape(){
+	// get the tolerance graph
     var tolerance_graph = d3.select("#tolerance_graph");
     var legend = d3.select("#legendGradientRect");
     var legend_text = d3.selectAll(".legendGradientText");
+
+    // Get the metadomain graph
+    var metadomain_graph = d3.select("#metadomain_graph");
 
     switch($('input[name=landscape_checkbox]:checked', '#checkbox_for_landscape').val()){
         case "metadomain_landscape":
             tolerance_graph.style("opacity", 0);
             legend.style("opacity", 0);
             legend_text.style("opacity", 0);
+            metadomain_graph.style("opacity", 1);
+            metadomain_graph_visible = true;
             break;
         case "tolerance_landscape":
             tolerance_graph.style("opacity", 1);
             legend.style("opacity", 1);
             legend_text.style("opacity", 1);
+            metadomain_graph.style("opacity", 0);
+            metadomain_graph_visible = false;
             break;
 	default:
 	    break;
@@ -1085,6 +1048,17 @@ function rescaleLandscape(){
     focus.selectAll(".area").attr("d", toleranceArea);
     focus.select(".line").attr("d", toleranceLine);
     focus.select(".axis--x").call(main_xAxis).selectAll("text").remove();
+    
+    var metadomain_landscape = d3.select("#metadomain_graph");
+    metadomain_landscape.selectAll(".bar")
+    	.attr("x", function(d) { return main_x(d.values[0].protein_pos - 0.5); })
+    	.attr("width", function(d, i) {
+    	    if (d.values[1].protein_pos != d.values[0].protein_pos){
+    			return main_x(d.values[1].protein_pos) - main_x(d.values[0].protein_pos);
+    	    	    } else {
+    	    		return main_x(d.values[1].protein_pos +1) - main_x(d.values[0].protein_pos);
+    	    	    }
+    		});
 
     var focusAxis = d3.select("#tolerance_axis");
 
