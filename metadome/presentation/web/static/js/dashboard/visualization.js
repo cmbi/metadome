@@ -257,9 +257,9 @@ function createGraph(obj) {
 	
 	// Draw all individual user interface elements based on the data
 	annotateDomains(domain_data, positional_annotation);
-	drawMetaDomainLandscape(domain_data, dataGroup);
 	createToleranceGraph(dataGroup);
 	createToleranceGraphLegend();
+	drawMetaDomainLandscape(domain_data, dataGroup);
 
 	// Add schematic protein overview as a custom Axis
 	createSchematicProtein(dataGroup);
@@ -455,7 +455,7 @@ function drawMetaDomainLandscape(domain_data, data){
     		meta_domain_ids.add(domain_data[i].ID);
     	}
     }
-    	
+    
 	// Add barplot for the metadomain variation landscape
 	var meta_domain_landscape_canvas = main_svg.append("g")
     .attr("id", "metadomain_graph")
@@ -465,7 +465,6 @@ function drawMetaDomainLandscape(domain_data, data){
     meta_domain_landscape_canvas.call(domain_details_position_tip);
 
 	// Define the axes based on the data
-	main_x.domain(data.map(function(d) { return d.values[0].protein_pos; }));
 	main_y_metadomain.domain([0, d3.max(data, function(d) {
 		max_value = 0;
 		meta_domain_ids.forEach(domain_id => {
