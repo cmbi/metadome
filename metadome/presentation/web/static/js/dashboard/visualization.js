@@ -4,7 +4,7 @@
 var selected_positions = 0;
 
 var main_outerWidth = 1300;
-var main_outerHeight = 700;
+var main_outerHeight = 500;
 var main_svg = d3.select("#landscape_svg").attr("width", main_outerWidth)
 		.attr("height", main_outerHeight);
 
@@ -12,31 +12,31 @@ var main_svg = d3.select("#landscape_svg").attr("width", main_outerWidth)
 var main_marginLandscape = {
 	top : 20,
 	right : 20,
-	bottom : 410,
+	bottom : 210,
 	left : 80
 };
 var main_marginLegend = {
 	top : 20,
 	right : 1240,
-	bottom : 410,
+	bottom : 210,
 	left : 20
 };
 var main_marginPositionInfo = {
 	top : 325,
 	right : 20,
-	bottom : 335,
+	bottom : 135,
 	left : 80
 };
 var main_marginAnnotations = {
 	top : 310,
 	right : 20,
-	bottom : 320,
+	bottom : 120,
 	left : 80
 };
 var main_marginContext = {
 	top : 410,
 	right : 20,
-	bottom : 230,
+	bottom : 30,
 	left : 80
 };
 
