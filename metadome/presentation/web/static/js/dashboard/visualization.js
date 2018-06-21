@@ -842,7 +842,11 @@ function annotateDomains(protDomain, tolerance_data) {
 		    d3.select(this).style("cursor", "default");
 		})
 		.on("click", function(d) {
-			// TODO: interactiveness for clicking a domain
+			// Activate the overlay
+		    $("#domain_information_overlay").addClass('is-active');
+		    
+		    // Format the HTML in the correct format
+		    document.getElementById("domain_information_overlay_title").innerHTML = '<label class="label" >'+document.getElementById("geneDetails").innerHTML +'</label><label class="label"> Domain: ' + d.Name+' (<a href="http://pfam.xfam.org/family/' + d.ID + '" target="_blank">' + d.ID + '</a>), located at p.'+d.start+' - p.'+d.stop+' </label><label class="label"> </label>';
 		});
 
 	// function to move item to front of svg
