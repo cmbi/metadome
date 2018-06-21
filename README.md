@@ -1,105 +1,95 @@
-The metadom-api is a REST wrapper around metadom.
+# Metadome Web server
 
-# metadom-api
-# Development
+Here you may find all details on how to set up the MetaDome web server in your own environment.
 
-## Requirements
+## Software Requirements
 
-    Python 3.5.1
+The MetaDome webserver has only been tested for running in a Linux-based OS (tested on Ubuntu 16.04, Ubuntu 18.04 and Centos 7), but as it is fully containerized in docker it should in theory be possible to run it on any other OS.
+Please ensure you have the following software installed on your machine:
+
+	docker
+    docker-compose
+
+You can install docker from [here](https://www.docker.com/get-docker) and docker-compose from [here](https://docs.docker.com/compose/install/#install-compose)
+
+## Data Requirements
+
+The MetaDome webserver makes use of the following data resources
+
+### Gencode
+
+MetaDome uses version v19 of Gencode for GRCH37.
+From [here](https://www.gencodegenes.org/releases/19.html), please download the following files:
+    
+    gencode.v19.annotation.gtf
+    gencode.v19.annotation.gff3
+    gencode.v19.pc_transcripts.fa
+    gencode.v19.pc_translations.fa
+    gencode.v19.metadata.SwissProt
+    ucsc.gencode.v19.wgEncodeGencodeBasic.txt
+
+And put this in your preferred data storage folder under '/Gencode/'
+
+### UniProt
+
+MetaDome was tested with UniProt version 2016_09.
+From [here](ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/), please download the following files:
+
+    uniprot_sprot.dat.gz
+    uniprot_sprot_varsplic.fasta.gz
+    uniprot_sprot.fasta.gz
+
+Unzip 'uniprot_sprot_varsplic.fasta.gz' and 'uniprot_sprot.fasta.gz' and combine them to a new file: uniprot_sprot_canonical_and_varsplic.fasta
+
+Next you should build a blast database from this new file 'uniprot_sprot_canonical_and_varsplic.fasta'. See [here](https://www.ncbi.nlm.nih.gov/books/NBK279688/) for a further explanation on how to do this if you are unfamiliar with that.
+
+Next, put all this in your preferred data storage folder under '/UniProt/'
+
+### ClinVar
+
+MetaDome was tested with version 20180603 for GRCh37, but later versions may work as well as long as the GRCh37 remains unchanged.
+From [here](ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/), please download the following files:
+    clinvar.vcf.gz
+    clinvar.vcf.gz.tbi
+
+And put this in your preferred data storage folder under '/ClinVar/GRCh37/'
+
+### gnomAD
+
+MetaDome was tested with version r2.0.2 for GRCh37, but later versions may work as well as long as the GRCh37 remains unchanged.
+From [here](https://console.cloud.google.com/storage/browser/gnomad-public/release/2.0.2/vcf/exomes/?pli=1), please download the following files:
+
+    gnomad.exomes.r2.0.2.sites.vcf.bgz
+    gnomad.exomes.r2.0.2.sites.vcf.bgz.tbi
+
+And put this in your preferred data storage folder under '/gnomAD/'
+
+### PFAM
+
+MetaDome was tested with PFAM version 30.0.
+From [here](ftp://ftp.ebi.ac.uk/pub/databases/Pfam/releases/Pfam30.0/), please download the following files:
+
+    Pfam-A.hmm.dat.gz
+    Pfam-A.hmm.gz
+
+Unzip 'Pfam-A.hmm.gz' to Pfam-A.hmm.
+We used a Python script (available upon request) to seperate each of the PFAM alignments contained within 'Pfam-A.hmm.dat.gz' to a folder : 'alignment/PFXXXXX/full' where XXXXX corresponds to the PFAM identifier for faster querying and the alignment is contained in the file 'full'. MetaDome webserver expects the files to be organised as such.
+
+Put all this in your preferred data storage folder under '/PFAM/'
 
 ## Installation
 
 Clone the repository and cd into the project folder:
 
-    git clone https://github.com/cmbi/metadom-api.git
-    cd metadom-api
+    git clone https://github.com/cmbi/metadome.git
+    cd metadome
 
-Create a python virtual environment:
-
-    pyvenv metadom-api
-
-Install the dependencies:
-
-    source metadom-api/bin/activate
-    pip install -r requirements
-    deactivate
+    TODO: docker-compose with volumes attached
 
 Run the unit tests to check that everything works:
 
-    UNDER CONSTRUCTION
+    TODO
 
-# Implementation 
-## Endpoints
-All endpoints retrieve the information that is aligned to the position of interest via meta-domain relation, if available.
+## Running
 
-| HTTP | Method URI | Output type |
-| :---: | :-- | :-- |
-| GET | [hostname]/metadom/api/chr/`<str:chr>`/`<int:position>` | `locus` |
-
-### Input
-
-* `<str:chr>` : ['1-23', 'X'], excluding 'Y'. String type.
-* `<int:position>` : position on the chromosome, cDNA of the gene, sequence position of the protein, or pfam domain consensus position. Depending on the parent type. Numeric type.
-
-### Output
-A `locus` entry consists of:
-```
-{
-    "locus":{
-        "chromosome":<str>,
-        "position":<int>,
-    },
-    "locus_information": 
-        [
-            {
-                "information":information,
-                "meta_information":
-                    [
-                        information*,
-                        ...
-                    ],
-            }*, ... 
-        ],
-}
-```
- \*: zero or many
-
-An `information` entry consists of:
-* chromosome : ['1-23', 'X'], excluding 'Y'. String type.
-* chromosome_position : position on the chromosome. Numeric type.
-* cDNA_position : the position in the cDNA of the gene that matches the locus. Numeric type
-* uniprot_position : the sequence position of the protein that matched the locus. Numeric type
-* strand : '+' or '-'. String type
-* allele : one of the four nucleotide 'A', 'T', 'C', 'G'. String type.
-* codon : 'ATG',
-* codon_allele_position : position of the alle in the codon [0-2]. Numeric type.
-* amino_acid_residue : one of the twenty amino acids in single character respresentation, including '\*' for stop codon. String type
-* gene_name : the name of the gene wherein this domain occurs. String type
-* gencode_transcription_id : the transcription id from GENCODE. String type
-* gencode_translation_name : the translation name from GENCODE. String type
-* gencode_gene_id : the gene id from GENCODE. String type
-* havana_gene_id : the gene id from HAVANA. String type
-* havana_translation_id : the translation id from HAVANA. String type
-* uniprot_ac : the uniprot Accession Code. String type
-* uniprot_name : the name of the uniprot entry. String type
-* pfam_domain_consensus_position : the consensus position of the Pfam domain where this position is aligned to. Numeric type  or None
-* pfam_domain_name : the name of the Pfam domain. String type or None
-* pfam_domain_id : the Pfam domain identifier. String type  or None
-* interpro_id : the interpro identifier. String type  or None
-* uniprot_domain_start_pos : the position in the uniprot sequence where this domain starts. Numeric type or None
-* uniprot_domain_end_pos : the position in the uniprot sequence where this domain starts. Numeric type or None
-
-A `meta_information` entry consists of zero or more `information` entries, which are via a meta-domain relationship linked to this `information`
-
-### Future endpoints
-| HTTP | Method URI | Output type |
-| :---: | :-- | :-- |
-| GET | [hostname]/metadom/api/gene/`<str:gencode_translation_name>`/`<int:position>` | `locus` |
-| GET | [hostname]/metadom/api/protein/`<str:uniprot_ac>`/`<int:position>` | `locus` |
-| GET | [hostname]/metadom/api/domain/`<str:Pfam_id>`/`<int:position>` | `locus` |
-
-#### Future Input
-
-* `<str:gencode_translation_name>` : the gencode translation name. String type
-* `<str:uniprot_ac>` : the uniprot Accession Code. String type
-* `<str:Pfam_id>` : the Pfam domain identifier. String type
+    TODO: docker-compose up command
