@@ -76,7 +76,11 @@ var metadomain_svg = d3.select("#metadomain_svg").attr("width", 400)
 // indicates the maximum tolerance score
 var maxTolerance = 1.8;
 
+// indicates if the metadomain landscape is visible
 var metadomain_graph_visible = true;
+
+// indicates if clinvar variants are annotated in the schematic protein representation
+var clinvar_variants_visible = false;
 
 // indicates the various colors to indicate the tolerance
 var toleranceColorGradient = [ {
@@ -747,35 +751,34 @@ function createSchematicProtein(groupedTolerance) {
 		.style("clip-path","url(#clip)")
 		.on("mouseover", function(d, i) {
 		    if (!d.values[0].selected) {
-			d3.select(this).style("fill", "orange").style("fill-opacity", 0.5);
+		    	d3.select(this).style("fill", "orange").style("fill-opacity", 0.5);
 		    }
 		    // show the tooltip
 		    positionTip.show(d);
 		    // change the cursor
 		    d3.select(this).style("cursor", "pointer");
-		}).on("mouseout", function(d, i) {
+		}).on("mouseout", function(d, i) {			
 		    if (!d.values[0].selected) {
-			d3.select(this).style("fill-opacity", 0.2);
-			d3.select(this).style("fill", "grey");
+				d3.select(this).style("fill", draw_position_schematic_protein(d, this));
 		    }
 		    // hide the tooltip
 		    positionTip.hide(d);
 		}).on("click", function(d, i) {
 		    if (!d.values[0].selected) {
-			d3.select(this).style("fill", "red").style("fill-opacity", 0.7);
-			d.values[0].selected = true;			
-			addRowToPositionalInformationTable(d);
-			selected_positions += 1;
-			$("#selected_positions_information").removeClass('is-hidden');
+				d3.select(this).style("fill", "green").style("fill-opacity", 0.7);
+				d.values[0].selected = true;			
+				addRowToPositionalInformationTable(d);
+				selected_positions += 1;
+				$("#selected_positions_information").removeClass('is-hidden');
 		    } else {
-			d3.select(this).style("fill", "orange").style("fill-opacity", 0.5);
-			d.values[0].selected = false;
-			d3.select("#positional_table_info_" + d.values[0].protein_pos).remove();
-
-			selected_positions -= 1;
-			if (selected_positions <= 0){
-			    $("#selected_positions_information").addClass('is-hidden');
-			}
+				d3.select(this).style("fill", "orange").style("fill-opacity", 0.5);
+				d.values[0].selected = false;
+				d3.select("#positional_table_info_" + d.values[0].protein_pos).remove();
+	
+				selected_positions -= 1;
+				if (selected_positions <= 0){
+				    $("#selected_positions_information").addClass('is-hidden');
+				}
 		    }
 		});
 }
@@ -1013,6 +1016,52 @@ function toggleToleranceLandscapeOrMetadomainLandscape(){
 	default:
 	    break;
     }
+}
+
+function draw_position_schematic_protein(d, element){
+	pathogenic_missense_variant_count = 0;
+	if (clinvar_variants_visible){
+		// count any pathogenic variants at this position
+		if (d.values[0].ClinVar != null) {
+			pathogenic_missense_variant_count += d.values[0].ClinVar.length;
+		}
+		
+		// count pathogenic variants linked via meta-domain relationships
+		if (d.values[0].domains != null){
+			meta_domain_ids.forEach(domain_id => {
+				if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
+					pathogenic_missense_variant_count = Math.max(d.values[0].domains[domain_id].pathogenic_missense_variant_count, pathogenic_missense_variant_count);
+				}
+			});
+		}
+	}
+
+	// priortize if selected
+    if (d.values[0].selected) {
+    	d3.select(element).style("fill-opacity", 0.7);
+		return 'green';
+    }
+    
+    // if containing pathogenic variants, display it as red
+	if (pathogenic_missense_variant_count > 0){
+		d3.select(element).style("fill-opacity", 0.7);
+		return 'red';
+	}
+	
+	else{
+		d3.select(element).style("fill-opacity", 0.2);
+		return "grey";
+	}
+}
+
+function toggleClinvarVariantsInProtein(clinvar_checkbox){
+	var focusAxis = d3.select("#tolerance_axis");
+
+	clinvar_variants_visible = clinvar_checkbox.checked;
+	
+	focusAxis.selectAll(".toleranceAxisTick").style("fill", function(d, i) {
+		return draw_position_schematic_protein(d, this);
+	});
 }
 
 // Update the positional information table with new values
