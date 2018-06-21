@@ -12,7 +12,7 @@ _log = logging.getLogger(__name__)
 def create_app(settings=None):
     _log.info("Creating app")
 
-    app = Flask(__name__, static_folder='presentation/web/static',
+    app = Flask(__name__, static_folder='presentation/web/static', static_url_path='/metadome/static',
                template_folder='presentation/web/templates')
     app.config.from_object('metadome.default_settings')
     if settings:
@@ -71,10 +71,10 @@ def create_app(settings=None):
         # is while within this block. Therefore, you can now run........
         db.create_all()
         create_db()
-         
+          
         # now create all meta_domains
         create_metadomains(reconstruct=RECONSTRUCT_METADOMAINS)
-         
+          
         # retrieve all gene names and write to disk
         write_all_genes_names_to_disk()
         
