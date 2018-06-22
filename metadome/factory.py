@@ -5,7 +5,7 @@ from metadome.domain.services.database_creation import create_db
 from metadome.domain.infrastructure import write_all_genes_names_to_disk
 from metadome.domain.services.mail.mail import mail
 from metadome.domain.services.meta_domain_creation import create_metadomains
-from metadome.default_settings import RECONSTRUCT_METADOMAINS
+from metadome.default_settings import RECONSTRUCT_METADOMAINS, MAIL_SERVER
 
 _log = logging.getLogger(__name__)
 
@@ -48,7 +48,10 @@ def create_app(settings=None):
     
 
     # Add mail instance
-    mail.init_app(app)
+    if not MAIL_SERVER is None:
+        mail.init_app(app)
+    else:
+        _log.warn('MAILSERVER is not set in default_settings.py')
  
     # Initialize extensions
     from metadome import toolbar
