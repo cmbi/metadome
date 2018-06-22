@@ -84,16 +84,37 @@ Clone the repository and cd into the project folder:
     git clone https://github.com/cmbi/metadome.git
     cd metadome
 
-    TODO: docker-compose with volumes attached
-    
-    TODO: alter credentials for flask app and postgesql
+First configure the volumes to correspond with your data folder in the docker-compose.yml (line 12-22):
+```
+        volumes:                                            # formatted as <local file/directory>:<docker file/directory>, only change the local directories if needed
+            - .:/usr/src/app                                # This points to the current code directory, needed to run the MetaDome server, do not change
+            - ~/data:/usr/data                              # Please set the local folder you are okay with MetaDome to create additional files and folders
+            - ~/data/ClinVar/:/usr/data/ClinVar             # Please set the local folder to where your ClinVar vcf is stored
+            - ~/data/Gencode/:/usr/data/Gencode             # Please set the local folder to where your Gencode files are stored
+            - ~/data/gnomAD/:/usr/data/gnoMAD               # Please set the local folder to where your gnomAD vcf is stored
+            - ~/data/PFAM/:/usr/data/PFAM                   # Please set the local folder to where your PFAM is located
+            - ~/data/UniProt/:/usr/data/UniProt             # Please set the local folder to where your UniProt is located
+            - /usr/bin/docker:/usr/bin/docker               # Point the local file to where your docker executable is located
+            - /var/run/docker.sock:/var/run/docker.sock     # Point the local file to where your docker.sock is located
+            - interpro_temp:/usr/interpro_temp              # This points to the local interpro volume, specified below. Do not change
+```
 
+### (Optional) Credentials configuration
+If you are planning to expose the MetaDome server to a public adress, please make sure you get the security in order.
 
+	- Change the variable `POSTGRES_PASSWORD` for the postgresql database in `./metadome/postgres_credentials.py`
+	- Change the variable `SECRET_KEY_CRED` in `./metadome/flask_app_credentials.py`
 
-Run the unit tests to check that everything works:
-
-    TODO
+Otherwise you will be using default passwords and API secrets.
 
 ## Running
 
-    TODO: docker-compose up command
+If you followed the above steps, you can now run the webserver via the command:
+
+    docker-compose docker-compose.yml up -d
+
+And tear it down via:
+
+    docker-compose docker-compose.yml stop
+
+Note: Launching the server without a pre-build database will first make it generate all mappings between gencode, swissprot and Pfam. This process, depending on your configuration, may take 2 weeks. If you require a pre-build database, do not hesitate to contact us.
