@@ -1,6 +1,6 @@
 # Flask settings
 from metadome.flask_app_credentials import SECRET_KEY_CRED
-DEBUG = True
+DEBUG = False
 SECRET_KEY = SECRET_KEY_CRED
 
 # FLask-SQLAchemy settings
