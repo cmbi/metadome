@@ -3,7 +3,7 @@ FROM python:3.5
 RUN mkdir -p /usr/externals
 
 # Install BLAST+
-RUN wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-x64-linux.tar.gz
+RUN wget http://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-x64-linux.tar.gz
 RUN tar -zxvf ncbi-blast-2.6.0+-x64-linux.tar.gz
 RUN mv ncbi-blast-2.6.0+ /usr/externals/blast
 
