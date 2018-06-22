@@ -2,7 +2,7 @@ import logging
 from metadome.domain.wrappers.blast import run_blast, interpret_blast_as_uniprot
 from metadome.domain.wrappers.gencode import retrieveSwissProtIDs,\
     NoSwissProtEntryFoundException
-from metadome.default_settings import UNIPROT_SPROT_CANONICAL, UNIPROT_TREMBL,\
+from metadome.default_settings import UNIPROT_SPROT_CANONICAL,\
     UNIPROT_MAX_BLAST_RESULTS, UNIPROT_SPROT_CANONICAL_AND_ISOFORM,\
     UNIPROT_SPROT_ISOFORM
 
@@ -24,9 +24,6 @@ def retrieveIdenticalUniprotMatch(geneTranslation, uniprot_database="sp", specie
     if uniprot_database=="sp":
         _log.debug('Querying the gene translation to Uniprot_Sprot database')
         blast_db=UNIPROT_SPROT_CANONICAL_AND_ISOFORM
-    elif uniprot_database=="tr":
-        _log.debug('Querying the gene translation to Uniprot_TREMBL database')
-        blast_db=UNIPROT_TREMBL
     else:
         raise NoneExistingUniprotDatabaseProvidedException("Possible options are 'sp' for SwissProt and 'tr' for Uniprot_Trembl, provided was '"+str(uniprot_database)+"'")
     
