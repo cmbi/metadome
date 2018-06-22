@@ -85,6 +85,10 @@ Clone the repository and cd into the project folder:
     cd metadome
 
     TODO: docker-compose with volumes attached
+    
+    TODO: alter credentials for flask app and postgesql
+
+
 
 Run the unit tests to check that everything works:
 
