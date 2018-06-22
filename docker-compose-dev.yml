@@ -1,15 +1,12 @@
+# This is a development version for the docker-compose of this webserver, 
+# it checks for any changes in the code and reboots the server if there are any changes
+# please start via the run_dev.sh script.
 version: '2'
 services:
-    app:
+    app: 
         build: .
         command: watchmedo auto-restart -d /usr/src/app -p "*" --ignore-pattern "*.log;*.project;*.pydevproject;*.coverage*;*.cpython*;*/__pycache__*;.git/*;dbschema.png" -D -R -- flask run -h 0.0.0.0
         environment:
             - FLASK_APP=metadome/application.py
         ports:
             - "5000:5000"
-        volumes:
-            - .:/usr/src/app
-            - interpro_temp:/usr/interpro_temp
-            - ~/data:/usr/data
-            - /usr/bin/docker:/usr/bin/docker
-            - /var/run/docker.sock:/var/run/docker.sock
