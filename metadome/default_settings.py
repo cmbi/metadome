@@ -1,6 +1,7 @@
 # Flask settings
+from metadome.flask_app_credentials import SECRET_KEY_CRED
 DEBUG = True
-SECRET_KEY = 'asfdcq93n4c981q34hfn39890'
+SECRET_KEY = SECRET_KEY_CRED
 
 # FLask-SQLAchemy settings
 from metadome.postgres_credentials import POSTGRES_USER, POSTGRES_PASSWORD
