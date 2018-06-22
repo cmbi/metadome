@@ -23,7 +23,6 @@ services:
     db:
         image: postgres
         environment:
-           - POSTGRES_USER=metadom_user
-           - POSTGRES_PASSWORD=example
+           - ./metadome/postgres_credentials.py
 volumes:
    interpro_temp:
