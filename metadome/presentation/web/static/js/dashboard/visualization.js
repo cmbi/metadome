@@ -63,13 +63,6 @@ var main_xAxis = d3.axisBottom(main_x2).ticks(0);
 var main_yAxis = d3.axisLeft(main_y).ticks(0);
 
 /*******************************************************************************
- * Global variables for positional meta domain details
- ******************************************************************************/
-
-var metadomain_svg = d3.select("#metadomain_svg").attr("width", 400)
-.attr("height", 500);
-
-/*******************************************************************************
  * Config variables for visuals
  ******************************************************************************/
 
@@ -188,7 +181,7 @@ var positionTip = d3.tip()
 
 //Reset all graph elements based on the obj
 function resetGraph(){
-    	// reset the variables
+    // reset the variables
 	selected_positions = 0;
 	$("#selected_positions_information").addClass('is-hidden');
 	d3.selectAll('.tr').remove();
@@ -201,13 +194,6 @@ function resetGraph(){
 	// reset the svg
 	main_svg.selectAll("*").remove();
 	main_svg = d3.select("#landscape_svg");
-
-	// reset the metadomain_svg
-	metadomain_svg.selectAll("*").remove();
-	metadomain_svg = d3.select('#metadomain_svg');
-	
-	// reset the positional text
-	document.getElementById("positional_details_text").innerHTML = '<p>Click on one of the selected positions to obtain more information</p>';
 }
 
 // Creates all graph elements based on the obj
@@ -347,31 +333,30 @@ function createGnomADTableBody(chr, chr_pos, ref_codon, ref_residue, gnomADVaria
 
 // Adds positional information for a selected position
 function createPositionalInformation(position_data){
-    // Reset the positional information 
-    metadomain_svg.selectAll("*").remove();
-    metadomain_svg = d3.select('#metadomain_svg');
-    document.getElementById("positional_details_text").innerHTML = '';
+    // Reset the positional information
+    document.getElementById("positional_information_overlay_title").innerHTML = '';
+    document.getElementById("positional_information_overlay_body").innerHTML = '';
+
     
     // Add information on position to the HTML
-    document.getElementById("positional_details_text").innerHTML += '<label class="label">Chr: '+position_data.values[0].chr+', strand: '+position_data.values[0].strand+'</label>';
-    document.getElementById("positional_details_text").innerHTML += '<label class="label">Gene: '+ position_data.values[0].chr_positions +'</label>';
-    document.getElementById("positional_details_text").innerHTML += '<label class="label">Protein: p.'+ position_data.values[0].protein_pos +' '+ position_data.values[0].ref_aa_triplet+'</label>';
-    document.getElementById("positional_details_text").innerHTML += '<label class="label">cDNA: '+ position_data.values[0].cdna_pos +' '+ position_data.values[0].ref_codon +'</label>';
+    document.getElementById("positional_information_overlay_title").innerHTML += '<label class="label">Chr: '+position_data.values[0].chr+', strand: '+position_data.values[0].strand+'</label>';
+    document.getElementById("positional_information_overlay_title").innerHTML += '<label class="label">Gene: '+ position_data.values[0].chr_positions +'</label>';
+    document.getElementById("positional_information_overlay_title").innerHTML += '<label class="label">Protein: p.'+ position_data.values[0].protein_pos +' '+ position_data.values[0].ref_aa_triplet+'</label>';
+    document.getElementById("positional_information_overlay_title").innerHTML += '<label class="label">cDNA: '+ position_data.values[0].cdna_pos +' '+ position_data.values[0].ref_codon +'</label>';
     
     // Add clinvar at position information
-    document.getElementById("positional_details_text").innerHTML += '<hr>';
     if ("ClinVar" in position_data.values[0]){
-	document.getElementById("positional_details_text").innerHTML += '<label class="label">ClinVar SNVs at position:</label>';
+	document.getElementById("positional_information_overlay_body").innerHTML += '<label class="label">ClinVar SNVs at position:</label>';
 	
 	// Add ClinVar variant table
-	document.getElementById("positional_details_text").innerHTML += createClinVarTableHeader()+ createClinVarTableBody(position_data.values[0].chr, position_data.values[0].chr_positions, position_data.values[0].ref_codon, position_data.values[0].ref_aa_triplet, position_data.values[0].ClinVar)+ createTableFooter();
+	document.getElementById("positional_information_overlay_body").innerHTML += createClinVarTableHeader()+ createClinVarTableBody(position_data.values[0].chr, position_data.values[0].chr_positions, position_data.values[0].ref_codon, position_data.values[0].ref_aa_triplet, position_data.values[0].ClinVar)+ createTableFooter();
     }
     else{
-	document.getElementById("positional_details_text").innerHTML += '<label class="label">No ClinVar SNVs found at position</label>';
+	document.getElementById("positional_information_overlay_body").innerHTML += '<label class="label">No ClinVar SNVs found at position</label>';
     }
     
     // Add meta domain variants
-    document.getElementById("positional_details_text").innerHTML += '<hr>';
+    document.getElementById("positional_information_overlay_body").innerHTML += '<hr>';
     var domain_information = "";
     var meta_domain_information = "";
     if (Object.keys(position_data.values[0].domains).length > 0){
@@ -436,19 +421,7 @@ function createPositionalInformation(position_data){
     }
     
     // Add the domain and meta-domain information to the html element
-    document.getElementById("positional_details_text").innerHTML += domain_information + meta_domain_information;
-//  "(pos: "+d.values[0].metadomain.consensus_pos+")"
-//    metadomain_svg.append("text")
-//	.attr("class", "postionalInformation")
-//	.attr("text-anchor", "right")
-//		.attr("x", 0)
-//		.attr("y", 50)
-//		.attr("dy", 0)
-//		.attr("font-size", "14px")
-//	.style("fill", "black")
-//	.text(function(d, i) {
-//	    return position_data.values[0].chr_positions;
-//	});
+    document.getElementById("positional_information_overlay_body").innerHTML += domain_information + meta_domain_information;
 }
 
 function drawMetaDomainLandscape(domain_data, data){
@@ -1119,6 +1092,7 @@ function addRowToPositionalInformationTable(d) {
 	    d3.selectAll('.tr').classed("is-selected", false);
 	    d3.select(this).classed("is-selected", true);
 	    createPositionalInformation(d);
+	    $("#positional_information_overlay").addClass('is-active');
 	}).on("mouseover", function(d, i) {
 	    d3.select(this).style("cursor", "pointer");
 	});
