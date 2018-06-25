@@ -248,7 +248,7 @@ function createGraph(obj) {
 	createSchematicProtein(dataGroup);
 
 	// Finally draw the context zoom
-	addContextZoomView(domain_data, dataGroup);
+	addContextZoomView(domain_data, dataGroup.length);
 	
 	// Add behaviour according to the settings
 	toggleToleranceLandscapeOrMetadomainLandscape();
@@ -835,7 +835,7 @@ function annotateDomains(protDomain, tolerance_data) {
 }
 
 // Draw the context area for zooming
-function addContextZoomView(domain_data, dataGroup) {
+function addContextZoomView(domain_data, number_of_positions) {
 	// add the brush element
 	var brush = d3.brushX()
 		.extent([ [ 0, 0 ], [ main_width, main_heightContext ] ])
@@ -854,7 +854,7 @@ function addContextZoomView(domain_data, dataGroup) {
 		})
 		.attr("y", 20)
 		.attr("width", function(d) {
-		    return main_x2(dataGroup.length);
+		    return main_x2(number_of_positions);
 		})
 		.attr("height", main_heightContext-40)
 		.attr("rx", 10)
@@ -889,12 +889,12 @@ function addContextZoomView(domain_data, dataGroup) {
 	context.append("g")
 		.attr("class", "brush")
 		.call(brush)
-		.call(brush.move, main_x2.range());
+		.call(brush.move);
 
 	main_svg.append("text")
 		.attr("text-anchor", "left")
 		.attr("x", 0)
-		.attr("y", main_marginContext.top + 50)
+		.attr("y", main_marginContext.top + (main_heightContext*(3/5)))
 		.attr("dy", 0)
 		.attr("class", "label")
 		.text("Zoom-in")
