@@ -115,6 +115,6 @@ If you followed the above steps, you can now run the webserver via the command:
 
 And tear it down via:
 
-    docker-compose docker-compose.yml stop
+    docker-compose -f docker-compose.yml stop
 
 Note: Launching the server without a pre-build database will first make it generate all mappings between gencode, swissprot and Pfam. This process, depending on your configuration, may take 2 weeks. If you require a pre-build database, do not hesitate to contact us.
