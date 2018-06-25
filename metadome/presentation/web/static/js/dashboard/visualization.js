@@ -692,7 +692,12 @@ function createSchematicProtein(groupedTolerance) {
 		.style("fill", "black")
 		.style("clip-path", "url(#clip)")
 		.text(function(d, i) {
-		    return d.values[0].protein_pos;
+			if (d.values[0].protein_pos%5 == 0){
+			    return d.values[0].ref_aa +" ("+d.values[0].protein_pos+")";
+			}
+			else{
+				return d.values[0].ref_aa;
+			}
 		});
 
 	// Add a rectangle per position
@@ -1200,7 +1205,10 @@ function rescaleLandscape(){
 	})
 	.attr("text-anchor", "middle")
 	.style("opacity", function(d, i) {
-	    var textwidth = d3.select('#toleranceAxisText_' + d.values[0].protein_pos).node().getComputedTextLength();
+		var textwidth = 13;
+		if (d.values[0].protein_pos%5 == 0){
+			textwidth = d3.select('#toleranceAxisText_' + d.values[0].protein_pos).node().getComputedTextLength();
+		}
 	    var rectwidth = d3.select('#toleranceAxisRect_' + d.values[0].protein_pos).node().width.animVal.value;
 	    if ((textwidth *0.75) >= rectwidth) {
 		return 0;
