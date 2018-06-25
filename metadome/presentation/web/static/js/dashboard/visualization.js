@@ -56,7 +56,6 @@ var main_x = d3.scaleLinear().range([ 40, main_width -40 ]).nice();
 var main_x2 = d3.scaleLinear().range([ 0, main_width ]);
 var main_y = d3.scaleLinear().range([ main_heightLandscape, 0 ]);
 var main_y_metadomain = d3.scaleLinear().range([ main_heightLandscape, 0 ]);
-var main_y2 = d3.scaleLinear().range([ main_heightContext, 0 ]);
 
 // Set axis
 var main_xAxis = d3.axisBottom(main_x2).ticks(0);
@@ -121,13 +120,6 @@ var toleranceLine = d3.line().x(function(d) {
 	return main_x (d.values[0].protein_pos);
 }).y(function(d) {
 	return main_y(d.values[0].sw_dn_ds);
-});
-
-// Define Area of the context area
-var contextArea = d3.area().curve(d3.curveMonotoneX).x(function(d) {
-	return main_x2(d.protein_pos);
-}).y0(main_heightContext).y1(function(d) {
-	return main_y2(d.sw_dn_ds);
 });
 
 /*******************************************************************************
@@ -226,7 +218,6 @@ function createGraph(obj) {
 	}));
 	main_y.domain([ 0, maxTolerance ]);
 	main_x2.domain(main_x .domain());
-	main_y2.domain(main_y.domain());
 
 	// create a group from the tolerance data
 	var dataGroup = d3.nest().key(function(d) {
@@ -257,7 +248,7 @@ function createGraph(obj) {
 	createSchematicProtein(dataGroup);
 
 	// Finally draw the context zoom
-	addContextZoomView(positional_annotation);
+	addContextZoomView(domain_data, dataGroup);
 	
 	// Add behaviour according to the settings
 	toggleToleranceLandscapeOrMetadomainLandscape();
@@ -844,7 +835,7 @@ function annotateDomains(protDomain, tolerance_data) {
 }
 
 // Draw the context area for zooming
-function addContextZoomView(tolerance) {
+function addContextZoomView(domain_data, dataGroup) {
 	// add the brush element
 	var brush = d3.brushX()
 		.extent([ [ 0, 0 ], [ main_width, main_heightContext ] ])
@@ -857,11 +848,36 @@ function addContextZoomView(tolerance) {
 		.attr("transform", "translate(" + main_marginContext.left + "," + main_marginContext.top + ")");
 
 	// append context area
-	context.append("path")
-		.datum(tolerance)
+	context.append("rect")
+		.attr("x", function(d) {
+		    return main_x2(0);
+		})
+		.attr("y", 20)
+		.attr("width", function(d) {
+		    return main_x2(dataGroup.length);
+		})
+		.attr("height", main_heightContext-40)
+		.attr("rx", 10)
+		.attr("ry", 10)
 		.style("fill", "grey")
-		.style("clip-path", "url(#clip)")
-		.attr("d", contextArea);
+		.style("clip-path", "url(#clip)");
+	
+	// Append each domain
+	context.selectAll(".rect")
+		.data(domain_data).enter()
+		.append("rect")
+		.attr("x", function(d) {
+		    return main_x2(d.start - 0.5);
+		})
+		.attr("y", 10)
+		.attr("width", function(d) {
+		    return main_x2(d.stop + 1) - main_x2(d.start);
+		})
+		.attr("height", main_heightContext-20)
+		.attr("rx", 10)
+		.attr("ry", 10)
+		.style("fill", "grey")
+		.style("clip-path", "url(#clip)");
 
 	// append xAxis for context view
 	context.append("g")
