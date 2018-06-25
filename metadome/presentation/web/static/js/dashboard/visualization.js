@@ -184,13 +184,12 @@ function resetGraph(){
     // reset the variables
 	selected_positions = 0;
 	$("#selected_positions_information").addClass('is-hidden');
+	document.getElementById("selected_positions_explanation").innerHTML = 'Click on one of positions in the schematic protein to obtain more information';
+	$("#position_information_table").addClass('is-hidden');
 	d3.selectAll('.tr').remove();
 
-	selected_positions -= 1;
-	if (selected_positions <= 0){
-	    $("#selected_positions_information").addClass('is-hidden');
-	}
-
+	selected_positions = 0;
+	
 	// reset the svg
 	main_svg.selectAll("*").remove();
 	main_svg = d3.select("#landscape_svg");
@@ -202,6 +201,9 @@ function createGraph(obj) {
 	
 	// reset the Graph
 	resetGraph();
+	
+	// Make the Selected positions visible
+	$("#selected_positions_information").removeClass('is-hidden');
 	
 	// Add defs to the svg
 	var defs = main_svg.append("defs")
@@ -742,7 +744,8 @@ function createSchematicProtein(groupedTolerance) {
 				d.values[0].selected = true;			
 				addRowToPositionalInformationTable(d);
 				selected_positions += 1;
-				$("#selected_positions_information").removeClass('is-hidden');
+				$("#position_information_table").removeClass('is-hidden');
+			    document.getElementById("selected_positions_explanation").innerHTML = 'Click on one of the selected positions in the table to view more information';
 		    } else {
 				d3.select(this).style("fill", "orange").style("fill-opacity", 0.5);
 				d.values[0].selected = false;
@@ -750,7 +753,8 @@ function createSchematicProtein(groupedTolerance) {
 	
 				selected_positions -= 1;
 				if (selected_positions <= 0){
-				    $("#selected_positions_information").addClass('is-hidden');
+				    $("#position_information_table").addClass('is-hidden');
+					document.getElementById("selected_positions_explanation").innerHTML = 'Click on one of positions in the schematic protein to obtain more information';
 				}
 		    }
 		});
