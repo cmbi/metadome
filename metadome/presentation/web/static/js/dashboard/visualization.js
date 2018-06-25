@@ -139,7 +139,7 @@ var domainTip = d3.tip()
 	.attr('class', 'd3-tip')
 	.offset([ -10, 0 ])
 	.html(function(d) {
-	    return "<span><div style='text-align: center;'> Domain " + d.Name + " ("+d.ID+") </br> click for meta-domain annotation</div></span>";
+	    return "<span><div style='text-align: center;'> Domain " + d.Name + " ("+d.ID+") </br> click for more information </div></span>";
 	});
 
 //Define tooltip for pfamdomains
@@ -171,7 +171,7 @@ var positionTip = d3.tip()
 		    }
 		}
 	    }
-	    positionTip_str += "</span>";
+	    positionTip_str += "</br> Click to select this position</span>";
 	    return positionTip_str;
 	});
 
