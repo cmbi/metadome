@@ -20,6 +20,11 @@ class MalformedAARegionException(Exception):
 class GeneRepository:
     
     @staticmethod
+    def retrieve_all_transcript_ids_with_mappings():
+        """Retrieves all transcripts for which there are mappings"""
+        return [transcript for transcript in db.session.query(Gene.gencode_transcription_id).filter(Gene.protein_id != None).all()]
+    
+    @staticmethod
     def retrieve_all_gene_names_from_file():
         """Retrieves all gene names present in the static file"""
         gene_names = []
