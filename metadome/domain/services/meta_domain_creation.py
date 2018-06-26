@@ -4,7 +4,6 @@ from metadome.domain.data_generation.mapping.meta_domain_mapping import generate
 import logging
 import os
 from metadome.default_settings import METADOMAIN_DIR
-from metadome.domain.wrappers.hmmer import interpret_hmm_alignment_file
 
 _log = logging.getLogger(__name__)
 
