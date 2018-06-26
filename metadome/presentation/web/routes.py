@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, g, render_template, url_for, request, session
+from flask import Blueprint, g, render_template
 from flask_mail import Message
 import json
 import traceback
@@ -6,7 +6,6 @@ from metadome import get_version
 from metadome.domain.repositories import GeneRepository
 from metadome.domain.services.mail.mail import mail
 from metadome.presentation.web.forms import SupportForm
-from metadome.presentation import api
 from metadome.default_settings import DEFAULT_RECIPIENT, MAIL_SERVER
 
 import logging
