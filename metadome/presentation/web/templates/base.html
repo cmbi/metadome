@@ -8,6 +8,7 @@
 <script src="{{ url_for('static', filename='js/d3.v4.min-4.13.0.js') }}"></script>
 <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/jquery-ui-1.12.1.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap-tour-standalone-v0.12.0.min.js') }}"></script>
 
 <title>{% block title %}{% endblock %}</title>
 
@@ -17,6 +18,8 @@
   href="{{ url_for('static', filename='css/bulma/0.7.1/bulma.min.css') }}">
 <link rel="stylesheet"
   href="{{ url_for('static', filename='css/jquery_ui/jquery-ui-1.12.1.css') }}">
+<link rel="stylesheet"
+  href="{{ url_for('static', filename='css/bootstrap-tour/v0.12.0/bootstrap-tour-standalone.min.css') }}">
 <link rel="stylesheet"
   href="{{ url_for('static', filename='css/site.css') }}">
 
@@ -38,6 +41,9 @@
       </div>
 
       <div class="navbar-end">
+        <div class="navbar-item">
+          <a class="link is-info" id="start_tour">Help</a>
+        </div>
         <div class="navbar-item">
           <a class="link is-info" href="{{ url_for('web.about') }}">About
             MetaDome</a>
@@ -69,6 +75,14 @@
       </div>
     </div>
   </footer>
+  <script>
+  $(document).ready(function() {
+      $("#start_tour").click(function() {
+         window.location.replace("{{ url_for('web.dashboard') }}" +
+                                 "?tour=true");
+      });
+    });
+  </script>
   {% block js %} {% endblock %}
 
 </body>
