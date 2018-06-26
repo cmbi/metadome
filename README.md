@@ -118,3 +118,30 @@ And tear it down via:
     docker-compose -f docker-compose.yml stop
 
 Note: Launching the server without a pre-build database will first make it generate all mappings between gencode, swissprot and Pfam. This process, depending on your configuration, may take 2 weeks. If you require a pre-build database, do not hesitate to contact us.
+
+
+# Citing MetaDome server
+
+We anticipate the publication of a method paper describing this web-service in late 2018. Until that is published, please use the following citation when referencing the results in your report:
+```
+MetaDome web-service, Nijmegen, The Netherlands
+ (URL: https://stuart.radboudumc.nl/metadome) 
+ [date (month, year) accessed].
+```
+Together with:
+
+```
+Aggregation of population‐based genetic variation 
+ over protein domain homologues and its potential 
+ use in genetic diagnostics.
+Laurens Wiel, Hanka Venselaar, Joris A. Veltman, 
+ Gert Vriend and Christian Gilissen.
+Human Mutation. (2017) 38, 1454–1463
+```
+
+# Contact
+
+If you want to provide feedback please have a look at our
+[existing issues][1] (and if necessary, create a new issue).
+
+[1]: https://github.com/cmbi/metadome/issues
