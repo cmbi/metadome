@@ -8,6 +8,77 @@ $("#geneName").keyup(function(event) {
     }
 });
 
+function get_query_param(param) {
+	var result =  window.location.search.match(
+			new RegExp("(\\?|&)" + param + "(\\[\\])?=([^&]*)"));
+    return result ? result[3] : false;
+}
+
+function show_tour_data_input(index) {
+    switch (index) {
+    case 2:
+    	fill_gene_and_show_transcript_example();
+    	break;
+    case 3:
+    	show_graph_example();
+    	break;
+    }
+}
+
+function fill_gene_and_show_transcript_example(){
+	// TODO: Fill the fields with demo data
+    // e.g.: $('#pdb_id_div').addClass('hidden');
+}
+
+function show_graph_example(){
+	// TODO: add testdata for graph
+	// e.g.: createGraph(obj);
+}
+
+//Setup tour
+var tour = new Tour({
+  backdrop: true,
+  orphan: true,
+  storage: false,
+  onNext: function (tour) {
+    show_tour_data_input(tour.getCurrentStep() + 1)
+  },
+  onPrev: function (tour) {
+    show_tour_data_input(tour.getCurrentStep() - 1)
+  },
+  onEnd: function (tour) {  window.location.reload(true); window.location.replace("{{ url_for('web.dashboard') }}");},
+  steps: [
+  {
+    element: "",
+    title: "Start Tour",
+    content: "Welcome to MetaDome. This tour explains the usage of MetaDome." +
+             " Once the tour is complete, you can get started!" +
+             "<br><br>Click next to begin."
+  },
+  {
+    element: "#geneName",
+    title: "Input here your gene name of interest",
+    content: "TEST"
+  },
+  {
+    element: "#gtID",
+    title: "Select your desired transcript",
+    content: "TEST"
+  },
+  {
+    element: "#graph",
+    title: "Visualization",
+    content: "TEST"
+  }
+]});
+tour.init();
+
+// Start the tour automatically if redirected to the index page via the
+// help button.
+if (get_query_param('tour')) {
+	tour.restart();
+}
+
 // Function to send AJAX request to the webserver to get all transcripts
 // belonging to a gene name
 function getTranscript() {
