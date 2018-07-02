@@ -1,6 +1,6 @@
 # Flask settings
 from metadome.flask_app_credentials import SECRET_KEY_CRED
-DEBUG = False
+DEBUG = True
 SECRET_KEY = SECRET_KEY_CRED
 
 # FLask-SQLAchemy settings
@@ -11,6 +11,10 @@ SQLALCHEMY_DATABASE_URI = "postgresql://"+POSTGRES_USER+":"+POSTGRES_PASSWORD+"@
 SQLALCHEMY_ECHO = True
 SQLALCHEMY_POOL_TIMEOUT = 10
 
+# Flask-Celery settings
+# CELERY_BROKER_URL='redis://metadome_redis_1:6379'
+# CELERY_RESULT_BACKEND='redis://metadome_redis_1:6379'
+
 # Visualiation specific settings
 ALLELE_FREQUENCY_CUTOFF = 0.0
 SLIDING_WINDOW_SIZE = 10
@@ -19,8 +23,8 @@ SLIDING_WINDOW_SIZE = 10
 DEBUG_TB_ENABLED = DEBUG
 
 # E-mail
-MAIL_SERVER = None # add your smtp server here if needed
-DEFAULT_RECIPIENT = None # where should the support emails be sent to
+MAIL_SERVER = 'smtp.umcn.nl' # add your smtp server here if needed
+DEFAULT_RECIPIENT = 'metadome@wie.science' # where should the support emails be sent to
 
 # local data directory
 DATA_DIR = "/usr/data/"
@@ -62,6 +66,10 @@ UNIPROT_SPROT_SPECIES_FILTER = "HUMAN"
 METADOMAIN_DIR = DATA_DIR+"metadomains/"
 RECONSTRUCT_METADOMAINS = False
 METADOMAIN_ALIGNMENT_FILE_NAME = 'metadomain_alignments' # Alignments are saved as: METADOMAIN_DIR+<Pfam_id>+'/'+METADOMAIN_ALIGNMENT_FILE_NAME
+
+# Pre-build visualization files
+PRE_BUILD_VISUALIZATION_DIR = DATA_DIR+"metadome_visualization/"
+PRE_BUILD_VISUALIZATION_FILE_NAME = 'metadome_visualization.json' # Visualizations are saved as: PRE_BUILD_VISUALIZATION_DIR+<Transcript_id>+'/'+PRE_BUILD_VISUALIZATION_FILE_NAME
 
 # PFAM specific files
 PFAM_DIR = DATA_DIR+"PFAM/Pfam30.0"

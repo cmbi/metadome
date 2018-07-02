@@ -26,4 +26,6 @@ COPY requirements.txt /usr/src/app/
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . /usr/src/app
 
-EXPOSE 5000
+# only for development TODO: remove
+RUN apt-get update
+RUN apt-get install graphviz -y

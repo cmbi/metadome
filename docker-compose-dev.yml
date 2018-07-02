@@ -5,8 +5,13 @@ version: '2'
 services:
     app: 
         build: .
-        command: watchmedo auto-restart -d /usr/src/app -p "*" --ignore-pattern "*.log;*.project;*.pydevproject;*.coverage*;*.cpython*;*/__pycache__*;.git/*;dbschema.png" -D -R -- flask run -h 0.0.0.0
+        command: watchmedo auto-restart -d /usr/src/app -p "*" --ignore-pattern "*.log;*.project;*.pydevproject;*.coverage*;*.cpython*;*/__pycache__*;.git/*;dbschema.png" -D -R -- gunicorn -b 0.0.0.0:5000 metadome.application:app
         environment:
             - FLASK_APP=metadome/application.py
         ports:
             - "5000:5000"
+    celery:
+        build: .
+        command: watchmedo auto-restart -d /usr/src/app -p "*.py"  -D -R -- celery -A metadome.application:celery worker --loglevel=info
+        environment:
+            - C_FORCE_ROOT=1

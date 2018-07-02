@@ -1,10 +1,12 @@
 from metadome.domain.repositories import GeneRepository
-from metadome.domain.services.prebuilding_visualization import prebuild_visualization
 from flask import Blueprint, jsonify, render_template
 from builtins import Exception
 import traceback
 
 import logging
+# from metadome.tasks import retrieve_prebuild_visualization
+from metadome.metadome import process_visualization_request
+from metadome import tasks
 
 _log = logging.getLogger(__name__)
 
@@ -42,7 +44,38 @@ def get_tolerance_landscape():
 
 @bp.route('/gene/getToleranceLandscape/<transcript_id>/', methods=['GET'])
 def get_tolerance_landscape_for_transcript(transcript_id):
-    return prebuild_visualization(transcript_id)
+    # create a celery job id
+    
+#     from metadome.presentation.api.routes_mock import mockup_tol_and_metadom, mock_ptpn11
+#     return jsonify(mock_ptpn11())
+    _log.debug('get_tolerance_landscape_for_transcript')
+    job_id, job_name = process_visualization_request(transcript_id, False)
+        
+    _log.debug('got job: '+str(job_id)+", "+str(job_name))
+    
+    return jsonify({'job_id': job_id,
+                      'job_name': job_name,})
+    
+@bp.route('/gene/getJobStatus/<job_name>/<job_id>/', methods=['GET'])
+def get_job_status(job_name, job_id):
+    task = tasks.get_task(job_name)
+    
+    async_result = task.AsyncResult(job_id)
+    
+    return jsonify({'job_id': job_id,
+                      'job_name': job_name,
+                      'status': async_result.status})
+
+    
+@bp.route('/gene/getJobResult/<job_name>/<job_id>/', methods=['GET'])
+def get_job_result(job_name, job_id):
+    task = tasks.get_task(job_name)
+
+    result = task.AsyncResult(job_id).get()
+    if len(result) <= 0:
+        return jsonify({'error': 'empty result'}), 500
+
+    return result
 
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover

@@ -6,11 +6,12 @@ from metadome.domain.infrastructure import write_all_genes_names_to_disk
 from metadome.domain.services.mail.mail import mail
 from metadome.domain.services.meta_domain_creation import create_metadomains
 from metadome.default_settings import RECONSTRUCT_METADOMAINS, MAIL_SERVER
+from celery import Celery
 
 _log = logging.getLogger(__name__)
 
 def create_app(settings=None):
-    _log.info("Creating app")
+    _log.info("Creating flask app")
 
     app = Flask(__name__, static_folder='presentation/web/static', static_url_path='/metadome/static',
                template_folder='presentation/web/templates')
@@ -73,14 +74,34 @@ def create_app(settings=None):
         # Extensions like Flask-SQLAlchemy now know what the "current" app
         # is while within this block. Therefore, you can now run........
         db.create_all()
-        create_db()
-          
+#         create_db()
+              
         # now create all meta_domains
         create_metadomains(reconstruct=RECONSTRUCT_METADOMAINS)
-          
+              
         # retrieve all gene names and write to disk
         write_all_genes_names_to_disk()
         
-    
-
     return app
+
+def make_celery(app):
+    _log.info("Creating celery app")
+    
+#     app = app or create_app()
+    
+    celery = Celery(__name__, backend='redis://metadome_redis_1',  broker='redis://metadome_redis_1', BROKER_TRANSPORT = 'redis')
+#     celery.conf.update(app.config)
+#     TaskBase = celery.Task
+#     
+#     class ContextTask(TaskBase):
+#         abstract = True
+#         
+#         def __call__(self, *args, **kwargs):
+#             with app.app_context():
+#                 return TaskBase.__call__(self, *args, **kwargs)
+#     
+#     celery.Task = ContextTask
+    
+#     import metadome.tasks
+    
+    return celery
