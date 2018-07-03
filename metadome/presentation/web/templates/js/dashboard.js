@@ -79,24 +79,6 @@ if (get_query_param('tour')) {
 	tour.restart();
 }
 
-// Show the correct input widget depending on the selected input method.
-//$('#input_type').change(function() { show_data_input(); });
-//// Update the input type selection list to exclude invalid combinations.
-//$('#output_type').change(update_input_types);
-//// Ensure that the correct input field is displayed when the form reloads
-//// due to form errors, page refreshing, or the back button.
-//$('#input_type').trigger('change');
-//// Ensure the correct input field is displayed when the form is cleared.
-//$('#btn_clear').click(function() { $('#xssp_form')[0].reset();
-//  show_data_input();
-//});
-//// Ensure that the input types listed are correct for the selected output
-//// type.
-//var selected = $('#input_type').children(":selected").attr('value');
-//update_input_types();
-//$('#input_type option[value=' + selected + ']').prop('selected', true);
-//});
-
 // Function to send AJAX request to the webserver to get all transcripts
 // belonging to a gene name
 function getTranscript() {
@@ -237,9 +219,7 @@ function loadDoc() {
 						d3.select("svg").selectAll("*").remove();
 						$("#graph_control_field").addClass('is-hidden');
 						$("#toleranceGraphContainer").addClass('is-hidden');
-					} else {
-						console.log(obj);
-						
+					} else {						
 						$("#toleranceGraphContainer").removeClass('is-hidden');
 						$("#graph_control_field").removeClass('is-hidden');
 						var geneName = document.getElementById("geneName").value;
