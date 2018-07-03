@@ -1,12 +1,11 @@
 from metadome.domain.repositories import GeneRepository
+from metadome.domain.services.metadome import process_visualization_request
+
 from flask import Blueprint, jsonify, render_template
 from builtins import Exception
-import traceback
 
+import traceback
 import logging
-# from metadome.tasks import retrieve_prebuild_visualization
-from metadome.metadome import process_visualization_request
-from metadome import tasks
 
 _log = logging.getLogger(__name__)
 
@@ -16,13 +15,14 @@ bp = Blueprint('api', __name__)
 #########    Route end points    #########
 ##########################################
 
-@bp.route('/gene/geneToTranscript', methods=['GET'])
+@bp.route('/get_transcripts', methods=['GET'])
 def get_default_transcript_ids():
     """This endpoint is a stub, to ensure deeper endpoints may be used"""
     pass
 
-@bp.route('/gene/geneToTranscript/<string:gene_name>', methods=['GET'])
-def get_transcript_ids_for_gene(gene_name):  
+@bp.route('/get_transcripts/<string:gene_name>', methods=['GET'])
+def get_transcript_ids_for_gene(gene_name):
+    _log.debug('get_transcript_ids_for_gene')
     # retrieve the transcript ids for this gene
     trancripts = GeneRepository.retrieve_all_transcript_ids(gene_name)
     
@@ -37,44 +37,55 @@ def get_transcript_ids_for_gene(gene_name):
     
     return jsonify(trancript_ids=transcripts_with_data, no_protein_data=transcripts_with_no_data, message=message)
 
-@bp.route('/gene/getToleranceLandscape', methods=['GET'])
-def get_tolerance_landscape():
+@bp.route('/submit_gene_analysis', methods=['GET'])
+def submit_gene_analysis_job_stub():
     """This endpoint is a stub, to ensure deeper endpoints may be used"""
     pass
 
-@bp.route('/gene/getToleranceLandscape/<transcript_id>/', methods=['GET'])
-def get_tolerance_landscape_for_transcript(transcript_id):
+@bp.route('/submit_gene_analysis/<transcript_id>/', methods=['GET'])
+def submit_gene_analysis_job_for_transcript(transcript_id):
     # create a celery job id
-    
-#     from metadome.presentation.api.routes_mock import mockup_tol_and_metadom, mock_ptpn11
-#     return jsonify(mock_ptpn11())
-    _log.debug('get_tolerance_landscape_for_transcript')
+    _log.debug('submit_gene_analysis_job_for_transcript')
     job_id, job_name = process_visualization_request(transcript_id, False)
         
     _log.debug('got job: '+str(job_id)+", "+str(job_name))
     
     return jsonify({'job_id': job_id,
                       'job_name': job_name,})
-    
-@bp.route('/gene/getJobStatus/<job_name>/<job_id>/', methods=['GET'])
+
+@bp.route('/status', methods=['GET'])
+def get_job_status_stub():
+    """This endpoint is a stub, to ensure deeper endpoints may be used"""
+    pass
+
+@bp.route('/status/<job_name>/<job_id>/', methods=['GET'])
 def get_job_status(job_name, job_id):
-    task = tasks.get_task(job_name)
+    from metadome.tasks import get_task
+    task = get_task(job_name)
+     
+    result = task.AsyncResult(job_id).get()
     
-    async_result = task.AsyncResult(job_id)
-    
+    if len(result) <= 0:
+        return jsonify({'error': 'empty result'}), 500
+     
     return jsonify({'job_id': job_id,
                       'job_name': job_name,
-                      'status': async_result.status})
-
-    
-@bp.route('/gene/getJobResult/<job_name>/<job_id>/', methods=['GET'])
+                      'status': result.status})
+ 
+@bp.route('/result', methods=['GET'])
+def get_job_result_stub():
+    """This endpoint is a stub, to ensure deeper endpoints may be used"""
+    pass
+     
+@bp.route('/result/<job_name>/<job_id>/', methods=['GET'])
 def get_job_result(job_name, job_id):
-    task = tasks.get_task(job_name)
-
+    from metadome.tasks import get_task
+    task = get_task(job_name)
+    
     result = task.AsyncResult(job_id).get()
     if len(result) <= 0:
         return jsonify({'error': 'empty result'}), 500
-
+ 
     return result
 
 @bp.errorhandler(Exception)
