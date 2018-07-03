@@ -74,7 +74,7 @@ def create_app(settings=None):
         # Extensions like Flask-SQLAlchemy now know what the "current" app
         # is while within this block. Therefore, you can now run........
         db.create_all()
-#         create_db()
+        create_db()
               
         # now create all meta_domains
         create_metadomains(reconstruct=RECONSTRUCT_METADOMAINS)
