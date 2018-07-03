@@ -14,24 +14,6 @@ import os
 
 _log = logging.getLogger(__name__)
 
-def get_celery_worker_status():
-    ERROR_KEY = "ERROR"
-    try:
-        from celery.task.control import inspect
-        insp = inspect()
-        d = insp.stats()
-        if not d:
-            d = { ERROR_KEY: 'No running Celery workers were found.' }
-    except IOError as e:
-        from errno import errorcode
-        msg = "Error connecting to the backend: " + str(e)
-        if len(e.args) > 0 and errorcode.get(e.args[0]) == 'ECONNREFUSED':
-            msg += ' Check that the RabbitMQ server is running.'
-        d = { ERROR_KEY: msg }
-    except ImportError as e:
-        d = { ERROR_KEY: str(e)}
-    return d
-
 def get_task(job_name):
     """
     Get the task for the given input_type and output_type combination.
@@ -51,6 +33,25 @@ def get_task(job_name):
  
     _log.debug("Got task '{}'".format(task.__name__))
     return task
+
+def get_celery_worker_status():
+    """Used for retrieving celery status. Usefule for debug purposes"""
+    ERROR_KEY = "ERROR"
+    try:
+        from celery.task.control import inspect
+        insp = inspect()
+        d = insp.stats()
+        if not d:
+            d = { ERROR_KEY: 'No running Celery workers were found.' }
+    except IOError as e:
+        from errno import errorcode
+        msg = "Error connecting to the backend: " + str(e)
+        if len(e.args) > 0 and errorcode.get(e.args[0]) == 'ECONNREFUSED':
+            msg += ' Check that the RabbitMQ server is running.'
+        d = { ERROR_KEY: msg }
+    except ImportError as e:
+        d = { ERROR_KEY: str(e)}
+    return d
 
 @celery_app.task(bind=True)
 def mock_response(self):
