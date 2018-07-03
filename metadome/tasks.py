@@ -7,10 +7,11 @@ from metadome.domain.services.annotation.gene_region_annotators import annotateT
 from metadome.domain.services.annotation.annotation import annotateSNVs
 
 from celery import current_app as celery_app
-from flask import current_app as flask_app, jsonify
+from flask import current_app as flask_app
 
-import logging
+import json
 import os
+import logging
 
 _log = logging.getLogger(__name__)
 
@@ -61,8 +62,8 @@ def mock_response(self):
     return mock_ptpn11()
 
 @celery_app.task(bind=True)
-def retrieve_prebuild_visualization(transcript_id):
-    _log.info("Getting prebuild viualization for '{}'".format(transcript_id))
+def retrieve_prebuild_visualization(self, transcript_id):
+    _log.info("Getting prebuild visualization for '{}'".format(transcript_id))
  
     # Determine path to the file and check that it exists.
     visualization_path = flask_app.config['PRE_BUILD_VISUALIZATION_DIR'] + transcript_id + '/' + flask_app.config['PRE_BUILD_VISUALIZATION_FILE_NAME']
@@ -72,11 +73,39 @@ def retrieve_prebuild_visualization(transcript_id):
     # Unzip the file and return the contents
     _log.info("Reading '{}'".format(visualization_path))
     with open(visualization_path) as f:
-        visualization_content = f.read()
+        visualization_content = json.load(f)
     return visualization_content
  
 @celery_app.task(bind=True)
-def create_prebuild_visualization(transcript_id):
+def create_prebuild_visualization(self, transcript_id):
+    _log.info("Attempting to create visualization for '{}'".format(transcript_id))
+    
+    result = analyse_transcript(transcript_id)
+    
+    if 'error' in result.keys():
+        _log.info("Something went wrong while trying to create visualization for '{}'".format(transcript_id))
+        return result
+    _log.info("Succeeded in creating visualization for '{}', saving as prebuild...".format(transcript_id))
+    
+    # Check if the directory already exists
+    base_visualization_dir = flask_app.config['PRE_BUILD_VISUALIZATION_DIR']
+    if not os.path.exists(base_visualization_dir):
+        os.makedirs(base_visualization_dir)
+        
+    # Check if the directory for the gene already exists
+    visualization_dir = base_visualization_dir + transcript_id + '/'
+    if not os.path.exists(visualization_dir):
+        os.makedirs(visualization_dir)
+    
+    # Determine path to the file and check that it exists.
+    visualization_path = visualization_dir + flask_app.config['PRE_BUILD_VISUALIZATION_FILE_NAME']
+             
+    with open(visualization_path, 'w') as f:
+        json.dump(result, f)
+        
+    return result
+
+def analyse_transcript(transcript_id):
     # Retrieve the gene from the database
     gene = GeneRepository.retrieve_gene(transcript_id)
     # build the gene region
@@ -164,19 +193,12 @@ def create_prebuild_visualization(transcript_id):
                         # add the MetaDomain information if there is any
                         d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[pfam_domain['ID']], protein_to_consensus_positions, db_position)
                                  
-        result = jsonify({"transcript_id":transcript_id, "protein_ac":gene_region.uniprot_ac, "gene_name":gene_region.gene_name, "positional_annotation":region_positional_annotation, "domains":Pfam_domains})
-         
-        # save result
-        # Determine path to the file and check that it exists.
-        visualization_path = flask_app.config['PRE_BUILD_VISUALIZATION_DIR'] + transcript_id + '/' + flask_app.config['PRE_BUILD_VISUALIZATION_FILE_NAME']
-             
-        with open(visualization_path) as f:
-            f.write(result)
+        result = {"transcript_id":transcript_id, "protein_ac":gene_region.uniprot_ac, "gene_name":gene_region.gene_name, "positional_annotation":region_positional_annotation, "domains":Pfam_domains}
     else:
-        result = jsonify({'error': 'No gene region could be build for transcript '+str(transcript_id)}), 500
+        result = {'error': 'No gene region could be build for transcript '+str(transcript_id)}
      
     return result
- 
+
 def create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_positions, protein_pos):
     metadom_entry = {}
     metadom_entry['consensus_pos'] = protein_to_consensus_positions[protein_pos]
