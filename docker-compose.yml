@@ -11,17 +11,17 @@ services:
         depends_on:
             - db
             - celery
-        volumes:                                            # formatted as <local file/directory>:<docker file/directory>, only change the local directories if needed
-            - .:/usr/src/app                                # This points to the current code directory, needed to run the MetaDome server, do not change
-            - ~/data:/usr/data                              # Please set the local folder you are okay with MetaDome to create additional files and folders
-            - ~/data/ClinVar/:/usr/data/ClinVar             # Please set the local folder to where your ClinVar vcf is stored
-            - ~/data/Gencode/:/usr/data/Gencode             # Please set the local folder to where your Gencode files are stored
-            - ~/data/gnoMAD/:/usr/data/gnoMAD               # Please set the local folder to where your gnomAD vcf is stored
-            - ~/data/PFAM/:/usr/data/PFAM                   # Please set the local folder to where your PFAM is located
-            - ~/data/UniProt/:/usr/data/UniProt             # Please set the local folder to where your UniProt is located
+        volumes:
+            - .:/usr/src/app
+            - data:/usr/data
+            - clinvar:/usr/data/ClinVar
+            - gencode:/usr/data/Gencode
+            - gnomad:/usr/data/gnoMAD
+            - pfam:/usr/data/PFAM
+            - uniprot:/usr/data/UniProt
             - /usr/bin/docker:/usr/bin/docker               # Point the local file to where your docker executable is located
             - /var/run/docker.sock:/var/run/docker.sock     # Point the local file to where your docker.sock is located
-            - interpro_temp:/usr/interpro_temp              # This points to the local interpro volume, specified below. Do not change
+            - interpro_temp:/usr/interpro_temp
     celery:
         restart: always
         build:
@@ -33,17 +33,17 @@ services:
         depends_on:
             - db
             - redis
-        volumes:                                            # formatted as <local file/directory>:<docker file/directory>, only change the local directories if needed
-            - .:/usr/src/app                                # This points to the current code directory, needed to run the MetaDome server, do not change
-            - ~/data:/usr/data                              # Please set the local folder you are okay with MetaDome to create additional files and folders
-            - ~/data/ClinVar/:/usr/data/ClinVar             # Please set the local folder to where your ClinVar vcf is stored
-            - ~/data/Gencode/:/usr/data/Gencode             # Please set the local folder to where your Gencode files are stored
-            - ~/data/gnoMAD/:/usr/data/gnoMAD               # Please set the local folder to where your gnomAD vcf is stored
-            - ~/data/PFAM/:/usr/data/PFAM                   # Please set the local folder to where your PFAM is located
-            - ~/data/UniProt/:/usr/data/UniProt             # Please set the local folder to where your UniProt is located
+        volumes:
+            - .:/usr/src/app
+            - data:/usr/data
+            - clinvar:/usr/data/ClinVar
+            - gencode:/usr/data/Gencode
+            - gnomad:/usr/data/gnoMAD
+            - pfam:/usr/data/PFAM
+            - uniprot:/usr/data/UniProt
             - /usr/bin/docker:/usr/bin/docker               # Point the local file to where your docker executable is located
             - /var/run/docker.sock:/var/run/docker.sock     # Point the local file to where your docker.sock is located
-            - interpro_temp:/usr/interpro_temp              # This points to the local interpro volume, specified below. Do not change
+            - interpro_temp:/usr/interpro_temp
     db:
         restart: always
         image: postgres
@@ -55,4 +55,40 @@ services:
         ports:
           - "6379:6379"
 volumes:
-   interpro_temp:
+   data: 
+      driver_opts:
+        type: none
+        # Please set the 'device' here to a local folder you are okay with MetaDome to create additional files and folders
+        device: <ABSOLUTE PATH>
+        o: bind
+   clinvar:
+      driver_opts:
+        type: none
+        # Please set the 'device' here to a local folder to where your ClinVar vcf is stored
+        device: <ABSOLUTE PATH>
+        o: bind
+   gencode:
+      driver_opts:
+        type: none
+        # Please set the 'device' here to a local folder to where your Gencode files are stored
+        device: <ABSOLUTE PATH>
+        o: bind
+   gnomad:
+      driver_opts:
+        type: none
+        # Please set the 'device' here to a local folder to where your gnomAD vcf is stored
+        device: <ABSOLUTE PATH>
+        o: bind
+   pfam: 
+      driver_opts:
+        type: none
+        # Please set the 'device' here to a local folder to where your PFAM is located
+        device: <ABSOLUTE PATH>
+        o: bind
+   uniprot: 
+      driver_opts:
+        type: none
+        # Please set the 'device' here to a local folder to where your UniProt is located
+        device: <ABSOLUTE PATH>
+        o: bind
+   interpro_temp: # Do not change this
