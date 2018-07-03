@@ -5,7 +5,7 @@ from flask import current_app as flask_app
 
 _log = logging.getLogger(__name__)
 
-def process_visualization_request(transcript_id, rebuild, job_name):    
+def process_visualization_request(transcript_id, rebuild, job_name=None):    
     _log.debug('Received processing visualization request with transcript id = "'+str(transcript_id)+'" and rebuild = "'+str(rebuild)+'"')
     
     # obtain the strategy
@@ -20,11 +20,11 @@ def process_visualization_request(transcript_id, rebuild, job_name):
 
 class MetadomeStrategyFactory(object):
     @classmethod
-    def create(cls, transcript_id, rebuild, job_name):
+    def create(cls, transcript_id, rebuild, job_name=None):
         visualization_path = flask_app.config['PRE_BUILD_VISUALIZATION_DIR'] + transcript_id + '/' + flask_app.config['PRE_BUILD_VISUALIZATION_FILE_NAME']
         
         # check f this was a previous job
-        if not job_name is None:
+        if job_name is None:
             # check if there need be a rebuild
             if rebuild:
                 job_name = 'create'
@@ -38,9 +38,8 @@ class MetadomeStrategyFactory(object):
                 # This is the first time this trancript id is queried
                 # create the directory
                 job_name = 'create'
-            
-        #TODO: remove the mocking
-        job_name = 'retrieve'
+        
+        # Select the strategy based on the job name
         if job_name == 'create':
             return CreateVisualizationStrategy(job_name, transcript_id)
         elif job_name == 'retrieve':
