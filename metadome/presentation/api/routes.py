@@ -46,7 +46,7 @@ def submit_gene_analysis_job_stub():
 def submit_gene_analysis_job_for_transcript(transcript_id):
     # create a celery job id
     _log.debug('submit_gene_analysis_job_for_transcript')
-    job_id, job_name = process_visualization_request(transcript_id, False)
+    job_id, job_name = process_visualization_request(transcript_id=transcript_id, rebuild=False)
         
     _log.debug('got job: '+str(job_id)+", "+str(job_name))
     
@@ -67,7 +67,7 @@ def get_job_status(job_name, job_id):
     
     if len(result) <= 0:
         return jsonify({'error': 'empty result'}), 500
-     
+    
     return jsonify({'job_id': job_id,
                       'job_name': job_name,
                       'status': result.status})
@@ -85,8 +85,11 @@ def get_job_result(job_name, job_id):
     result = task.AsyncResult(job_id).get()
     if len(result) <= 0:
         return jsonify({'error': 'empty result'}), 500
+    
+    if 'error' in result.keys():
+        return jsonify(result), 500
  
-    return result
+    return jsonify(result)
 
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover
