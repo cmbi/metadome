@@ -1,6 +1,6 @@
 # Flask settings
 from metadome.flask_app_credentials import SECRET_KEY_CRED
-DEBUG = True
+DEBUG = False
 SECRET_KEY = SECRET_KEY_CRED
 
 # FLask-SQLAchemy settings
@@ -12,8 +12,8 @@ SQLALCHEMY_ECHO = True
 SQLALCHEMY_POOL_TIMEOUT = 10
 
 # Flask-Celery settings
-# CELERY_BROKER_URL='redis://metadome_redis_1:6379'
-# CELERY_RESULT_BACKEND='redis://metadome_redis_1:6379'
+CELERY_BROKER_URL='redis://metadome_redis_1'
+CELERY_RESULT_BACKEND='redis://metadome_redis_1'
 
 # Visualiation specific settings
 ALLELE_FREQUENCY_CUTOFF = 0.0
@@ -23,8 +23,8 @@ SLIDING_WINDOW_SIZE = 10
 DEBUG_TB_ENABLED = DEBUG
 
 # E-mail
-MAIL_SERVER = 'smtp.umcn.nl' # add your smtp server here if needed
-DEFAULT_RECIPIENT = 'metadome@wie.science' # where should the support emails be sent to
+MAIL_SERVER = None # add your smtp server here if needed
+DEFAULT_RECIPIENT = None # where should the support emails be sent to
 
 # local data directory
 DATA_DIR = "/usr/data/"
