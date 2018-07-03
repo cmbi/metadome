@@ -2,25 +2,20 @@ import logging
 import os
 
 from flask import current_app as flask_app
-# from metadome import tasks
 
 _log = logging.getLogger(__name__)
-
 
 def process_visualization_request(transcript_id, rebuild):    
     _log.debug('Received processing visualization request with transcript id = "'+str(transcript_id)+'" and rebuild = "'+str(rebuild)+'"')
     
     # obtain the strategy
     strategy = MetadomeStrategyFactory.create(transcript_id, rebuild)
-
     
     _log.debug("Using '{}'".format(strategy.__class__.__name__))
     celery_id, job_name = strategy()
     _log.info("Job has id '{}'".format(celery_id))
-#     result = task.delay(transcript_id)
-#     _log.debug('For job "'+str(job_name)+'" got task "'+str(task.__name__)+'", with id: "'+str(result.id)+'"')
     
-    # return task id
+    # return task id and job name
     return celery_id, job_name
 
 class MetadomeStrategyFactory(object):
@@ -50,9 +45,9 @@ class MetadomeStrategyFactory(object):
             
             # start a building task
             job_name = 'create'
+            
+        #TODO: remove the mocking
         job_name = 'mock_it'
-    #     task = tasks.get_task(job_name)
-#         task = tasks.get_task('mock_it')
         if job_name == 'pdb_id':
             return CreateVisualizationStrategy(transcript_id)
         elif job_name == 'mock_it':
@@ -66,15 +61,18 @@ class CreateVisualizationStrategy(object):
         self.pdb_id = pdb_id
 
     def __call__(self):
-        from metadome.tasks import get_task
-        task = get_task('pdb_id', self.output_format)
-        _log.debug("Calling task '{}'".format(task.__name__))
-
-        if 'hssp' in self.output_format:
-            result = task.delay(self.pdb_id, self.output_format)
-        else:
-            result = task.delay(self.pdb_id)
-        return result.id
+        # TODO: replace with proper function
+        pass
+    
+#         from metadome.tasks import get_task
+#         task = get_task('pdb_id', self.output_format)
+#         _log.debug("Calling task '{}'".format(task.__name__))
+# 
+#         if 'hssp' in self.output_format:
+#             result = task.delay(self.pdb_id, self.output_format)
+#         else:
+#             result = task.delay(self.pdb_id)
+#         return result.id
     
 class MockVisualizationStrategy(object):
     def __init__(self, job_name):
@@ -87,41 +85,3 @@ class MockVisualizationStrategy(object):
 
         result = task.delay()
         return result.id, self.job_name
-
-
-#     from metadome.tasks import get_task
-#     task = get_task('pdb_id', self.output_format)
-#     _log.debug("Calling task '{}'".format(task.__name__))
-# 
-#     if 'hssp' in self.output_format:
-#         result = task.delay(self.pdb_id, self.output_format)
-#     else:
-#         result = task.delay(self.pdb_id)
-#     return result.id
-#     
-#     # Save the PDB file if necessary
-#     
-#     file_path = None
-#     if input_type == 'pdb_file':
-#         assert 'file_' in uploaded_files
-#         pdb_file = uploaded_files['file_']
-#         assert hasattr(pdb_file, 'filename')
-# 
-#         filename = secure_filename(pdb_file.filename)
-#         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-#         pdb_file.save(file_path)
-#         _log.debug("User uploaded '{}'. File saved to {}".format(
-#             pdb_file.filename, file_path))
-# 
-#     # Create and run the job via the strategy for the given input and
-#     # output types.
-#     _log.debug("Input type '{}' and output type '{}'".format(
-#         input_type, output_type))
-# 
-#     strategy = XsspStrategyFactory.create(input_type, output_type, pdb_id,
-#                                           file_path, sequence)
-#     _log.debug("Using '{}'".format(strategy.__class__.__name__))
-#     celery_id = strategy()
-#     _log.info("Job has id '{}'".format(celery_id))
-# 
-#     return celery_id
