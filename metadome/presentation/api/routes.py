@@ -63,14 +63,15 @@ def get_job_status(job_name, job_id):
     from metadome.tasks import get_task
     task = get_task(job_name)
      
-    result = task.AsyncResult(job_id).get()
+    result = task.AsyncResult(job_id)
     
-    if len(result) <= 0:
-        return jsonify({'error': 'empty result'}), 500
-    
-    return jsonify({'job_id': job_id,
+    response = {'job_id': job_id,
                       'job_name': job_name,
-                      'status': result.status})
+                      'status': result.status}
+    if result.failed():
+        response.update({'message': result.traceback})
+    
+    return jsonify(response)
  
 @bp.route('/result', methods=['GET'])
 def get_job_result_stub():
