@@ -81,27 +81,29 @@ def create_app(settings=None):
               
         # retrieve all gene names and write to disk
         write_all_genes_names_to_disk()
-        
+
     return app
 
 def make_celery(app):
     _log.info("Creating celery app")
     
-#     app = app or create_app()
+    app = app or create_app()
     
-    celery = Celery(__name__, backend='redis://metadome_redis_1',  broker='redis://metadome_redis_1', BROKER_TRANSPORT = 'redis')
-#     celery.conf.update(app.config)
-#     TaskBase = celery.Task
-#     
-#     class ContextTask(TaskBase):
-#         abstract = True
-#         
-#         def __call__(self, *args, **kwargs):
-#             with app.app_context():
-#                 return TaskBase.__call__(self, *args, **kwargs)
-#     
-#     celery.Task = ContextTask
+    celery = Celery(__name__, backend=app.config['CELERY_RESULT_BACKEND'],  broker=app.config['CELERY_BROKER_URL'])
     
-#     import metadome.tasks
+    celery.conf.update(BROKER_TRANSPORT = 'redis')
+    TaskBase = celery.Task
+     
+    class ContextTask(TaskBase):
+        abstract = True
+         
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+     
+    celery.Task = ContextTask
+    
+    # needed here to register celery tasks, this should not be anywhere else
+    import metadome.tasks
     
     return celery
