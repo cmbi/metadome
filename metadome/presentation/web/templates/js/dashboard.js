@@ -260,7 +260,7 @@ function loadDoc() {
 			if (typeof gtID !== 'undefined' && gtID.length > 0) {
 				// the variable is defined
 				xhttp.open("GET",
-						"{{ url_for('api.get_tolerance_landscape') }}" + "/"
+						"{{ url_for('api.submit_gene_analysis_job_stub') }}" + "/"
 								+ gtID + "/", true);
 				xhttp.setRequestHeader("Content-type",
 						"application/x-www-form-urlencoded");
