@@ -47,32 +47,26 @@ class MetadomeStrategyFactory(object):
             job_name = 'create'
             
         #TODO: remove the mocking
-        job_name = 'mock_it'
-        if job_name == 'pdb_id':
-            return CreateVisualizationStrategy(transcript_id)
+        job_name = 'create'
+        if job_name == 'create':
+            return CreateVisualizationStrategy(job_name, transcript_id)
         elif job_name == 'mock_it':
             return MockVisualizationStrategy(job_name)
         else:
             raise ValueError("Unexpected input type '{}'".format(transcript_id))
 
 class CreateVisualizationStrategy(object):
-    def __init__(self, output_format, pdb_id):
-        self.output_format = output_format
-        self.pdb_id = pdb_id
+    def __init__(self, job_name, transcript_id):
+        self.job_name = job_name
+        self.transcript_id = transcript_id
 
     def __call__(self):
-        # TODO: replace with proper function
-        pass
-    
-#         from metadome.tasks import get_task
-#         task = get_task('pdb_id', self.output_format)
-#         _log.debug("Calling task '{}'".format(task.__name__))
-# 
-#         if 'hssp' in self.output_format:
-#             result = task.delay(self.pdb_id, self.output_format)
-#         else:
-#             result = task.delay(self.pdb_id)
-#         return result.id
+        from metadome.tasks import get_task
+        task = get_task('create')
+        _log.debug("Calling task '{}'".format(task.__name__))
+        
+        result = task.delay(self.transcript_id)
+        return result.id, self.job_name
     
 class MockVisualizationStrategy(object):
     def __init__(self, job_name):
