@@ -12,11 +12,11 @@
           missense variants at an aligned homologous domain position is often paired with the
           absence of population variation and vice versa. We realized that this type of information 
           could be of great benefit to genetic diagnostics and that therefore it would be helpful
-          to have an easy-to-use web service that could provide access to this wealth of 
+          to have an easy-to-use web server that could provide access to this wealth of 
           information without the need for a bioinformatics intermediate.
         </p>
         <p>
-          The MetaDome web service is a further extension to our framework that maps population 
+          The MetaDome web server is a further extension to our framework that maps population 
           variation and known pathogenic mutations onto “meta-domains”. MetaDome takes as input
           the gene of interest and allows the user to select the preferred transcript. 
           Using this information MetaDome provides protein domain and pathogenic variant 
@@ -33,18 +33,18 @@
         <p>
           MetaDome is primarily developed in Python and makes use of the 
           <a href="http://flask.pocoo.org/" target="_blank">Flask framework</a> 
-          for the web service and the communication between the front-end with 
+          for the web server and the communication between the front-end with 
           the back-end and with the database. The software architecture follows 
           the <a href="https://en.wikipedia.org/wiki/Domain-driven_design" target="_blank">
           Domain-driven design paradigm</a>. 
           The code is open source and can be found at our <a href="https://github.com/cmbi/metadome"
           target="_blank">GitHub repository</a>. 
-          Here are also detailed instructions on how to deploy the MetaDome web service. 
+          Here are also detailed instructions on how to deploy the MetaDome web server. 
           To ensure MetaDome can be deployed to any environment we have containerized the 
           application via <a href="https://www.docker.com/" target="_blank">Docker</a>.
         </p>
         <p>
-          The visualization medium of the MetaDome web service is a fully interactive and 
+          The visualization medium of the MetaDome web server is a fully interactive and 
           responsive HTML web page generated partially by the Flask framework and 
           navigation aesthetics are made using the CSS framework <a href="https://bulma.io/" target="_blank">Bulma</a>. 
           The visualizations of all data is performed via JavaScript which relies heavily on the 
@@ -105,7 +105,7 @@
           the same homologous positions.
         </p>
         <p>
-          These Stockholm files are retrieved by the MetaDome web service when a user request meta-domain
+          These Stockholm files are retrieved by the MetaDome web server when a user request meta-domain
           information for a position of their interest. Upon retrieval of this Stockholm file, 
           the mapping database is used to obtain the corresponding genomic positions for each residue. 
           These genomic positions are then used to annotate gnomAD or ClinVar variation found for the same columns.
