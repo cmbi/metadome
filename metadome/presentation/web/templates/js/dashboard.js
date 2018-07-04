@@ -31,8 +31,15 @@ function fill_gene_and_show_transcript_example(){
 }
 
 function show_graph_example(){
-	// TODO: add testdata for graph
-	// e.g.: createGraph(obj);
+	// Retrieve the example json to fill in the graph
+	$.getJSON("{{ url_for('static', filename='json/example_T_gene.json') }}", function(json) {	    
+	    $("#toleranceGraphContainer").removeClass('is-hidden');
+	    $("#graph_control_field").removeClass('is-hidden');
+	    var geneName = document.getElementById("geneName").value;
+	    var geneDetails = document.getElementById("geneDetails");
+	    geneDetails.innerHTML = 'Gene: '+json.gene_name+' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='+json.transcript_id+'" target="_blank">'+json.transcript_id+'</a>, protein: <a href="https://www.uniprot.org/uniprot/'+json.protein_ac+'" target="_blank">'+json.protein_ac+'</a>)';
+	    createGraph(json);
+	});
 }
 
 //Setup tour
