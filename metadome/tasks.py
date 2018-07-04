@@ -187,11 +187,12 @@ def analyse_transcript(transcript_id):
                 if d['protein_pos'] >= domain["start"] and d['protein_pos'] <= domain["stop"]:
                     # add the domain id for this position
                     d['domains'][domain['ID']] = None 
-                    # retrieve the context for this protein
-                    protein_to_consensus_positions = meta_domains[domain['ID']].consensus_pos_per_protein[gene_region.uniprot_ac]
-                    if domain["metadomain"] and db_position in protein_to_consensus_positions.keys():
-                        # add the MetaDomain information if there is any
-                        d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[pfam_domain['ID']], protein_to_consensus_positions, db_position)
+                    if not meta_domains[domain['ID']] is None:
+                        # retrieve the context for this protein
+                        protein_to_consensus_positions = meta_domains[domain['ID']].consensus_pos_per_protein[gene_region.uniprot_ac]
+                        if domain["metadomain"] and db_position in protein_to_consensus_positions.keys():
+                            # add the MetaDomain information if there is any
+                            d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[pfam_domain['ID']], protein_to_consensus_positions, db_position)
                                  
         result = {"transcript_id":transcript_id, "protein_ac":gene_region.uniprot_ac, "gene_name":gene_region.gene_name, "positional_annotation":region_positional_annotation, "domains":Pfam_domains}
     else:
