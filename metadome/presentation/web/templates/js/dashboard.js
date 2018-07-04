@@ -195,7 +195,7 @@ function saveSvg(svgEl, name) {
 // Function to get the data from the inputfield and send AJAX requests to the
 // webserver, returning arrays with json objects.
 function loadDoc() {
-    	resetGraphControl();
+    resetGraphControl();
 	var selection = document.getElementsByClassName("dropdown")[0];
 
 	if (typeof selection !== 'undefined' && selection !== null && selection.length > 0) {
@@ -213,27 +213,53 @@ function loadDoc() {
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
 					var obj = JSON.parse(xhttp.responseText);
-					$("#loading_overlay").removeClass('is-active');
-
 					if (typeof obj == 'undefined' || obj == null || obj.length == 0) {
 						d3.select("svg").selectAll("*").remove();
 						$("#graph_control_field").addClass('is-hidden');
 						$("#toleranceGraphContainer").addClass('is-hidden');
-					} else {						
-						$("#toleranceGraphContainer").removeClass('is-hidden');
-						$("#graph_control_field").removeClass('is-hidden');
-						var geneName = document.getElementById("geneName").value;
-						var geneDetails = document.getElementById("geneDetails");
-						geneDetails.innerHTML = 'Gene: '+obj.gene_name+' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='+obj.transcript_id+'" target="_blank">'+obj.transcript_id+'</a>, protein: <a href="https://www.uniprot.org/uniprot/'+obj.protein_ac+'" target="_blank">'+obj.protein_ac+'</a>)';
-						
-						// Draw the graph
-						createGraph(obj);
-
-						// Download for the whole svg as svg
-						d3.select('#dlSVG').on('click', function() {
-							var fileName = 'Gene_'+obj.gene_name+'_transcript_'+obj.transcript_id+'_protein_'+obj.protein_ac+'_metadome';
-							saveSvg(document.getElementById('landscape_svg'), fileName);
-						});
+						$("#loading_overlay").removeClass('is-active');
+					} else {
+						// check if the job is done or we are retrieving the results of a job
+						if( obj.job_id != null && obj.job_name != null){
+							if (obj.status == 'SUCCESS'){
+								// if the status is SUCCESS, retrieve the results
+								xhttp.open("GET",
+										"{{ url_for('api.get_job_result_stub') }}" + "/"
+												+ obj.job_name + "/"
+												+ obj.job_id + "/", true);
+								xhttp.setRequestHeader("Content-type",
+										"application/x-www-form-urlencoded");
+								xhttp.send();
+							}
+							else{								
+								// check status
+								xhttp.open("GET",
+										"{{ url_for('api.get_job_status_stub') }}" + "/"
+												+ obj.job_name + "/"
+												+ obj.job_id + "/", true);
+								xhttp.setRequestHeader("Content-type",
+										"application/x-www-form-urlencoded");
+								xhttp.send();
+							}
+						}
+						else{
+							$("#loading_overlay").removeClass('is-active');
+							
+							$("#toleranceGraphContainer").removeClass('is-hidden');
+							$("#graph_control_field").removeClass('is-hidden');
+							var geneName = document.getElementById("geneName").value;
+							var geneDetails = document.getElementById("geneDetails");
+							geneDetails.innerHTML = 'Gene: '+obj.gene_name+' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='+obj.transcript_id+'" target="_blank">'+obj.transcript_id+'</a>, protein: <a href="https://www.uniprot.org/uniprot/'+obj.protein_ac+'" target="_blank">'+obj.protein_ac+'</a>)';
+							
+							// Draw the graph
+							createGraph(obj);
+	
+							// Download for the whole svg as svg
+							d3.select('#dlSVG').on('click', function() {
+								var fileName = 'Gene_'+obj.gene_name+'_transcript_'+obj.transcript_id+'_protein_'+obj.protein_ac+'_metadome';
+								saveSvg(document.getElementById('landscape_svg'), fileName);
+							});
+						}
 					}
 				}
 			};
