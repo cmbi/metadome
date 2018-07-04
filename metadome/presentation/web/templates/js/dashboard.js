@@ -16,21 +16,58 @@ function get_query_param(param) {
 
 function show_tour_data_input(index) {
     switch (index) {
-    case 2:
-    	fill_gene_and_show_transcript_example();
+    case 1:
+    	tour_fill_gene_name();
     	break;
     case 3:
-    	show_graph_example();
+    	tour_fill_succes_message_transcripts();
+    	break;
+    case 4:
+    	tour_fill_fail_message_transcripts();
+    	break;
+    case 5:
+    	tour_fill_succes_message_transcripts();
+    	tour_fill_transcripts();
+    	break;
+    case 7:
+    	$("#loading_overlay").addClass('is-active');
+    	break;
+    case 8:
+    	$("#loading_overlay").removeClass('is-active');
+    	tour_fill_graph_example();
     	break;
     }
 }
 
-function fill_gene_and_show_transcript_example(){
-	// TODO: Fill the fields with demo data
-    // e.g.: $('#pdb_id_div').addClass('hidden');
+function tour_fill_gene_name(){
+	$('#geneName').val('T');
 }
 
-function show_graph_example(){
+function tour_fill_succes_message_transcripts(){
+	document.getElementById("geneNameHelpMessage").innerHTML = "Retrieved transcripts for gene 'T'";
+	$("#geneNameHelpMessage").removeClass('is-danger');
+	$("#geneNameHelpMessage").addClass('is-success');
+}
+
+function tour_fill_fail_message_transcripts(){
+	document.getElementById("geneNameHelpMessage").innerHTML = "No transcripts available in database for gene 'T'";
+	$("#geneNameHelpMessage").removeClass('is-success');
+	$("#geneNameHelpMessage").addClass('is-danger');
+}
+
+function tour_fill_transcripts(){
+	clearDropdown();
+	$("#getToleranceButton").addClass('is-info');
+	$("#getToleranceButton").removeClass('is-static');
+	var dropdown = document.getElementById("gtID");
+	dropdown.setAttribute('class', 'dropdown');
+	var opt = new Option();
+	opt.value = 1;
+	opt.text = "ENST00000296946.2";
+	dropdown.options.add(opt);
+}
+
+function tour_fill_graph_example(){
 	// Retrieve the example json to fill in the graph
 	$.getJSON("{{ url_for('static', filename='json/example_T_gene.json') }}", function(json) {	    
 	    $("#toleranceGraphContainer").removeClass('is-hidden');
@@ -55,28 +92,69 @@ var tour = new Tour({
   },
   onEnd: function (tour) {  window.location.reload(true); window.location.replace("{{ url_for('web.dashboard') }}");},
   steps: [
-  {
-    element: "",
-    title: "Start Tour",
-    content: "Welcome to MetaDome. This tour explains the usage of MetaDome." +
-             " Once the tour is complete, you can get started!" +
-             "<br><br>Click next to begin."
-  },
-  {
-    element: "#geneName",
-    title: "Input here your gene name of interest",
-    content: "TEST"
-  },
-  {
-    element: "#gtID",
-    title: "Select your desired transcript",
-    content: "TEST"
-  },
-  {
-    element: "#graph",
-    title: "Visualization",
-    content: "TEST"
-  }
+	  {
+		element: "",
+		title: "Start Tour",
+		content: "Welcome to MetaDome.<br><br>"+
+				" This tour explains the usage of MetaDome "+
+				"through the use of an example.<br><br>"+
+				"You can click 'end tour' any time to start "+
+				"analysing your own gene of interest. " +
+				"<br><br>Click next to begin."
+	  },
+	  {
+	    element: "#geneName",
+	    title: "Gene of interest",
+	    content: "Input here your gene name of interest<br><br>"+
+	    		"For this example we fill in the 'T' gene"
+	  },
+	  {
+		element: "#getTranscriptsButton",
+		title: "Get Transcripts",
+		content: "Click the 'Get Transcripts' button to retrieve"+
+				" all the transcripts for your gene of interest"
+	  },
+	  {
+		element: "#geneNameHelpMessage",
+		title: "Get Transcripts (Succeeded)",			
+		content: "After clicking the 'Get Transcripts' button, we "+
+				"check if there are any transcripts available for "+
+				"your gene of interest.<br><br>"+
+				"This is the message you see when the retrieval is "+
+				"succesful."
+	  },
+	  {
+		element: "#geneNameHelpMessage",
+		title: "Get Transcripts (Failed)",	
+		content: "This is the message you see when the retrieval is "+
+				"unsuccesful."
+	  },
+	  {
+		element: "#gtID",
+		title: "Select Transcript",
+		content: "Select the transcript of your interest from the "+
+				"dropdown menu."
+	  },
+	  {
+		element: "#getToleranceButton",
+		title: "Analyse Protein",
+		content: "Click the 'Analyse Protein' button to perform the "+
+				" analysis."
+	  },
+	  {
+		element: "#loading_overlay",
+		title: "Loading screen <br>(Click next to continue)",
+		content: "This analysis may take up between 5 "+
+				"minutes and up to an hour to compute. Luckily all "+
+				"analyses results are stored after they complete, "+
+				"so the next time you are interested in this gene, "+
+				"it will load almost instantly."
+	  },
+	  {
+		element: "#graph",
+		title: "Visualization",
+		content: "UNDER CONSTUCTION"
+	  }
 ]});
 tour.init();
 
