@@ -23,7 +23,7 @@ $( function() {
 
 
 <!-- Staring definition of site content -->
-<section class="section">
+<section class="section" id="content">
   <!-- Loading screen -->
   <div class="modal" id="loading_overlay">
     <div class="modal-background" style="background: rgba(0, 0, 0, 0.5);"></div>
@@ -65,9 +65,6 @@ $( function() {
   
   <!-- Start of the page content -->
   <div class="container">
-    <div id="content">
-    </div>
-
     <!-- Tolerance landscape form -->
     <div class="field">
 
@@ -111,7 +108,7 @@ $( function() {
               Show <abbr title="A bar chart over each domain annotated with gnomAD and Pathogenic ClinVar missense counts, present in other domains throughout the human genome for that domain position">Meta-domain landscape</abbr>
             </label>
             <label class="radio"> 
-              <input value="tolerance_landscape" name="landscape_checkbox" type="radio" onclick="toggleToleranceLandscapeOrMetadomainLandscape()">
+              <input value="tolerance_landscape" name="landscape_checkbox" type="radio" onclick="toggleToleranceLandscapeOrMetadomainLandscape()"  id="checkbox_for_landscape_alternative">
               Show Gene's <abbr title="A graph that displays missense over synonymous ratios per position for the entire protein, based on gnomAD variants">Tolerance Landscape</abbr>
             </label>
           </div>
