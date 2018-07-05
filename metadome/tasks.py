@@ -1,4 +1,4 @@
-from metadome.domain.repositories import GeneRepository
+from metadome.domain.repositories import GeneRepository, RepositoryException
 from metadome.domain.models.entities.gene_region import GeneRegion
 from metadome.domain.services.computation.gene_region_computations import compute_tolerance_landscape
 from metadome.domain.models.entities.meta_domain import MetaDomain
@@ -107,7 +107,11 @@ def create_prebuild_visualization(self, transcript_id):
 
 def analyse_transcript(transcript_id):
     # Retrieve the gene from the database
-    gene = GeneRepository.retrieve_gene(transcript_id)
+    try:
+        gene = GeneRepository.retrieve_gene(transcript_id)
+    except RepositoryException as e:
+        return {'error': 'No gene region could be build for transcript '+str(transcript_id)+', reason:'+e}
+    
     # build the gene region
     gene_region = GeneRegion(gene)
      
