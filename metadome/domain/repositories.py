@@ -13,6 +13,9 @@ from sqlalchemy.sql.expression import and_, distinct
 
 _log = logging.getLogger(__name__)
 
+class RepositoryException(Exception):
+    pass
+
 class MalformedAARegionException(Exception):
     pass
 
@@ -52,10 +55,17 @@ class GeneRepository:
             gene = db.session.query(Gene).filter(Gene.gencode_transcription_id == transcription_id).one()
             return gene
         except MultipleResultsFound as e:
-            _log.error("GeneRepository.retrieve_gene(transcription_id): Multiple results found while expecting uniqueness for transcription_id '"+str(transcription_id)+"'. "+e)
-        except NoResultFound as  e:
-            _log.error("GeneRepository.retrieve_gene(transcription_id): Expected results but found none for transcription_id '"+str(transcription_id)+"'. "+e)
-        return None
+            error_message = "GeneRepository.retrieve_gene(transcription_id): Multiple results found while expecting uniqueness for transcription_id '"+str(transcription_id)+"'. "+e
+            _log.error(error_message)
+            raise RepositoryException(error_message)
+        except NoResultFound as e:
+            error_message = "GeneRepository.retrieve_gene(transcription_id): Expected results but found none for transcription_id '"+str(transcription_id)+"'. "+e
+            _log.error(error_message)
+            raise RepositoryException(error_message)
+        except Exception as e:
+            error_message = "GeneRepository.retrieve_gene(transcription_id): Unexpected exception for transcription_id '"+str(transcription_id)+"'. "+e
+            _log.error(error_message)
+            raise RepositoryException(error_message)
     
 class InterproRepository:
     
