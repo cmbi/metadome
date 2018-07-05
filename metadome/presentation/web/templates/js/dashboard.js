@@ -36,7 +36,29 @@ function show_tour_data_input(index) {
     	$("#loading_overlay").removeClass('is-active');
     	tour_fill_graph_example();
     	break;
+    case 11:
+    	window.setTimeout(tour_check_alternative_visualization, 500);
+    	window.setTimeout(toggleToleranceLandscapeOrMetadomainLandscape,1000);
+    	window.setTimeout(tour_check_default_visualization, 2000);
+    	window.setTimeout(toggleToleranceLandscapeOrMetadomainLandscape,2000);
+    	break;
+    case 12:
+    	tour_switch_clinvar_variants();
+    	window.setTimeout(tour_switch_clinvar_variants,2000);
+    	
+    	break;
     }
+}
+
+function tour_switch_clinvar_variants(){
+	$('#clinvar_checkbox').trigger( "click" );
+}
+
+function tour_check_default_visualization(){
+	$('#checkbox_for_landscape_default').prop('checked', true);
+}
+function tour_check_alternative_visualization(){
+	$('#checkbox_for_landscape_alternative').prop('checked', true);
 }
 
 function tour_fill_gene_name(){
@@ -70,7 +92,8 @@ function tour_fill_transcripts(){
 function tour_fill_graph_example(){
 	// Retrieve the example json to fill in the graph
 	$.getJSON("{{ url_for('static', filename='json/example_T_gene.json') }}", function(json) {	    
-	    $("#toleranceGraphContainer").removeClass('is-hidden');
+		document.getElementById("toleranceGraphContainer").setAttribute("style", "pointer-events: none;");
+		$("#toleranceGraphContainer").removeClass('is-hidden');
 	    $("#graph_control_field").removeClass('is-hidden');
 	    var geneName = document.getElementById("geneName").value;
 	    var geneDetails = document.getElementById("geneDetails");
@@ -144,17 +167,65 @@ var tour = new Tour({
 	  {
 		element: "#loading_overlay",
 		title: "Loading screen <br>(Click next to continue)",
-		content: "This analysis may take up between 5 "+
-				"minutes and up to an hour to compute. Luckily all "+
-				"analyses results are stored after they complete, "+
-				"so the next time you are interested in this gene, "+
-				"it will load almost instantly."
+		content: "This analysis may take between 5 "+
+				"minutes and up to an hour to complete. <br><br>"+
+				"For now you can just Click next to continue.<br><br> "+
+				"Luckily all results are stored after they "+
+				"complete, so the next time you query this "+
+				"transcript it will load in a matter of seconds."
 	  },
 	  {
-		element: "#graph",
+		element: "#content",
+		title: "Analysis results",
+		content: "When the analyses complete, you obtain a "+
+				"wealth of information. <br><br> We will now " +
+				"go over each part in detail.",
+	  },
+	  {
+		element: "#graph_control_field",
+		title: "Graph Control",
+		content: "This is called the graph control field. Here, " +
+				"you may switch between different representations " +
+				"of your result visualization, download the " +
+				"visualization and and select if you would like " +
+				"to display any known ClinVar variants.",
+	  },
+	  {
+		element: "#landscape_svg",
 		title: "Visualization",
-		content: "UNDER CONSTUCTION"
-	  }
+		content: "Here you may find the visualization of your results." +
+				"It is a graphic representation of the protein of your " +
+				"transcript of interest.<br><br> By default the " +
+				"metadomain variants are displayed.",
+	  },
+	  {
+		element: "#checkbox_for_landscape",
+		title: "Switching between visualizations",
+		content: "Here you can switch between the 'Meta-domain " +
+				"Landscape' and the 'Tolerance Landscape' " +
+				"visualization modes.",
+		backdropContainer: "#landscape_svg"
+	  },
+	  {
+		element: "#clinvar_checkbox",
+		title: "Switching ClinVar variants",
+		content: "Here you can toggle the display of any ClinVar " +
+				"variants for your gene of interest.",
+		backdropContainer: "#landscape_svg"
+	  },
+	  {
+		element: "#tolerance_axis",
+		title: "Visualization",
+		content: "test",
+		backdropContainer: "#landscape_svg"
+	  },
+	  {
+		element: "#schematic_protein_zoom_text",
+		title: "Zoom",
+		content: "test",
+		placement: 'left',
+		backdropContainer: "#landscape_svg"
+	  },
 ]});
 tour.init();
 
