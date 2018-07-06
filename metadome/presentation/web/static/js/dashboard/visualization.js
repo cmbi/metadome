@@ -61,6 +61,14 @@ var main_y_metadomain = d3.scaleLinear().range([ main_heightLandscape, 0 ]);
 var main_xAxis = d3.axisBottom(main_x2).ticks(0);
 var main_yAxis = d3.axisLeft(main_y).ticks(0);
 
+// add the brush element
+var brush = d3.brushX().extent([ [ 0, 0 ], [ main_width, main_heightContext ] ]).on("brush end", brushed);
+// Define the brushed function
+function brushed() {
+	var s = d3.event.selection || main_x2.range();
+	main_x.domain(s.map(main_x2.invert, main_x2));
+	rescaleLandscape();
+}
 /*******************************************************************************
  * Config variables for visuals
  ******************************************************************************/
@@ -841,11 +849,7 @@ function annotateDomains(protDomain, tolerance_data) {
 
 // Draw the context area for zooming
 function addContextZoomView(domain_data, number_of_positions) {
-	// add the brush element
-	var brush = d3.brushX()
-		.extent([ [ 0, 0 ], [ main_width, main_heightContext ] ])
-		.on("brush end", brushed);
-
+	
 	// append context view
 	var context = main_svg.append("g")
 		.attr("class", "context")
@@ -893,11 +897,13 @@ function addContextZoomView(domain_data, number_of_positions) {
 	// append yAxis for context view
 	context.append("g")
 		.attr("class", "brush")
+		.attr("id", "brush_for_zooming")
 		.call(brush)
 		.call(brush.move);
 
 	main_svg.append("text")
 		.attr("text-anchor", "left")
+		.attr("id", "schematic_protein_zoom_text")
 		.attr("x", 0)
 		.attr("y", main_marginContext.top + (main_heightContext*(3/5)))
 		.attr("dy", 0)
@@ -906,12 +912,7 @@ function addContextZoomView(domain_data, number_of_positions) {
 		.style('pointer-events', 'none')
 		.style('user-select', 'none');
 
-	// Define the brushed function
-	function brushed() {
-		var s = d3.event.selection || main_x2.range();
-		main_x.domain(s.map(main_x2.invert, main_x2));
-		rescaleLandscape();
-	}
+	
 }
 
 // Draw the legend for the Tolerance graph
@@ -1240,6 +1241,11 @@ function rescaleLandscape(){
 	.attr("x2", function(d) {
 	    return main_x(d.protein_pos);
 	});
+}
+
+//This function resets the zooming
+function resetZoom(){
+	d3.select("#brush_for_zooming").call(brush.move, null);
 }
 
 /*******************************************************************************
