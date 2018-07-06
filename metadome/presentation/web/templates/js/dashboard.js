@@ -2,6 +2,14 @@
  * Controls all responsiveness for the tolerance.html page
  */
 
+// This function allows clicking events to be raised on d3js elements
+jQuery.fn.d3Click = function () {
+  this.each(function (i, e) {
+    var evt = new MouseEvent("click");
+    e.dispatchEvent(evt);
+  });
+};
+
 $("#geneName").keyup(function(event) {
     if (event.keyCode === 13) {
         $("#getTranscriptsButton").click();
@@ -16,42 +24,132 @@ function get_query_param(param) {
 
 function show_tour_data_input(index) {
     switch (index) {
-    case 1:
+    case 0:// reset
+    	tour_reset_gene_name();
+    	break;
+    case 1: // gene input
+    	// ensure no interaction is possible
+		document.getElementById("retrieve_transcripts_control").setAttribute("style", "pointer-events: none;");
+		document.getElementById("start_analysis_control").setAttribute("style", "pointer-events: none;");
+
+    	//reset
+    	document.getElementById("geneNameHelpMessage").innerHTML = "";
+    	
+    	// behaviour
     	tour_fill_gene_name();
     	break;
-    case 3:
+    case 2: // messages after get transcripts
+    	//reset
+    	resetDropdown();
+    	
+    	// behaviour
     	tour_fill_succes_message_transcripts();
     	break;
-    case 4:
-    	tour_fill_fail_message_transcripts();
-    	break;
-    case 5:
-    	tour_fill_succes_message_transcripts();
+    case 3: // start analysis
+    	// reset
+    	$("#loading_overlay").removeClass('is-active');
+    	
+    	// behaviour
     	tour_fill_transcripts();
     	break;
-    case 7:
+    case 4: // loading overlay
+    	// reset
+		$("#toleranceGraphContainer").addClass('is-hidden');
+		$("#graph_control_field").addClass('is-hidden');
+		$("#selected_positions_information").addClass('is-hidden');
+    	
+    	// behaviour
     	$("#loading_overlay").addClass('is-active');
     	break;
-    case 8:
+    case 5: // fill the graph
     	$("#loading_overlay").removeClass('is-active');
     	tour_fill_graph_example();
     	break;
-    case 11:
+    case 7:
+    	// resets
+    	resetZoom();
+    	break;
+    case 8: // zooming explanation
+    	// resets
+    	resetZoom();
+    	tour_turn_clinvar_variants_off();
+    	tour_check_default_visualization();toggleToleranceLandscapeOrMetadomainLandscape();
+		document.getElementById("graph_control_field_checkboxes").setAttribute("style", "pointer-events: none;");
+		break;
+    case 9: // landscape modes
+    	// resets
+    	resetZoom();
+    	tour_turn_clinvar_variants_off();
+    	
+    	// behaviour
     	window.setTimeout(tour_check_alternative_visualization, 500);
     	window.setTimeout(toggleToleranceLandscapeOrMetadomainLandscape,1000);
-    	window.setTimeout(tour_check_default_visualization, 2000);
-    	window.setTimeout(toggleToleranceLandscapeOrMetadomainLandscape,2000);
+    	window.setTimeout(tour_check_default_visualization, 2200);
+    	window.setTimeout(toggleToleranceLandscapeOrMetadomainLandscape,2200);
+		document.getElementById("graph_control_field_checkboxes").removeAttribute("style", "pointer-events: none;");
     	break;
-    case 12:
-    	tour_switch_clinvar_variants();
-    	window.setTimeout(tour_switch_clinvar_variants,2000);
+    case 10: // clinvar variants
+    	// resets
+		document.getElementById("graph_control_field_checkboxes").removeAttribute("style", "pointer-events: none;");
+    	resetZoom();
     	
+    	// behaviour
+    	tour_switch_clinvar_variants();
+    	window.setTimeout(tour_switch_clinvar_variants,1200);
+    	break;
+    case 11: // explanation of schematic protein
+    	// resets
+    	tour_check_default_visualization();
+    	tour_turn_clinvar_variants_off();
+    	tour_unselect_position_in_domain();
+    	resetZoom();
+		document.getElementById("graph_control_field_checkboxes").setAttribute("style", "pointer-events: none;");
+    	break;
+    case 12: // positional information
+    	// resets
+    	resetZoom();
+    	tour_turn_clinvar_variants_off();
+    	
+    	// Behaviour
+    	window.setTimeout(tour_select_position_in_domain, 500);
     	break;
     }
 }
 
+function tour_turn_clinvar_variants_off(){
+	if ($('#clinvar_checkbox').is(':checked') == true ){
+		tour_switch_clinvar_variants();
+	}
+}
+
 function tour_switch_clinvar_variants(){
 	$('#clinvar_checkbox').trigger( "click" );
+}
+
+function tour_switch_clinvar_variants_off(){
+	$('#clinvar_checkbox').trigger( "click" );
+}
+
+function tour_unselect_position_in_domain(){
+	var tour_selected_position;
+	d3.select('#toleranceAxisRect_68').attr("element_is_selected",function(d,i){ tour_selected_position = d.values[0].selected});
+	
+	if (tour_selected_position){
+		tour_trigger_position_of_interest();
+	}
+}
+
+function tour_select_position_in_domain(){
+	var tour_selected_position;
+	d3.select('#toleranceAxisRect_68').attr("element_is_selected",function(d,i){ tour_selected_position = d.values[0].selected});
+	
+	if (!tour_selected_position){
+		tour_trigger_position_of_interest();
+	}
+}
+
+function tour_trigger_position_of_interest(){
+	$('#toleranceAxisRect_68').d3Click();
 }
 
 function tour_check_default_visualization(){
@@ -64,17 +162,14 @@ function tour_check_alternative_visualization(){
 function tour_fill_gene_name(){
 	$('#geneName').val('T');
 }
+function tour_reset_gene_name(){
+	$('#geneName').val('');
+}
 
 function tour_fill_succes_message_transcripts(){
 	document.getElementById("geneNameHelpMessage").innerHTML = "Retrieved transcripts for gene 'T'";
 	$("#geneNameHelpMessage").removeClass('is-danger');
 	$("#geneNameHelpMessage").addClass('is-success');
-}
-
-function tour_fill_fail_message_transcripts(){
-	document.getElementById("geneNameHelpMessage").innerHTML = "No transcripts available in database for gene 'T'";
-	$("#geneNameHelpMessage").removeClass('is-success');
-	$("#geneNameHelpMessage").addClass('is-danger');
 }
 
 function tour_fill_transcripts(){
@@ -99,6 +194,10 @@ function tour_fill_graph_example(){
 	    var geneDetails = document.getElementById("geneDetails");
 	    geneDetails.innerHTML = 'Gene: '+json.gene_name+' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='+json.transcript_id+'" target="_blank">'+json.transcript_id+'</a>, protein: <a href="https://www.uniprot.org/uniprot/'+json.protein_ac+'" target="_blank">'+json.protein_ac+'</a>)';
 	    createGraph(json);
+	    // disable any mouse events on the elements
+		document.getElementById("graph_control_field_buttons").setAttribute("style", "pointer-events: none;");
+		document.getElementById("graph_control_field_checkboxes").setAttribute("style", "pointer-events: none;");
+		document.getElementById("selected_positions_information").setAttribute("style", "pointer-events: none;");
 	});
 }
 
@@ -119,76 +218,64 @@ var tour = new Tour({
 		element: "",
 		title: "Start Tour",
 		content: "Welcome to MetaDome.<br><br>"+
-				" This tour explains the usage of MetaDome "+
-				"through the use of an example.<br><br>"+
+				"This tour explains the usage of MetaDome "+
+				"via an example.<br><br>"+
 				"You can click 'end tour' any time to start "+
 				"analysing your own gene of interest. " +
 				"<br><br>Click next to begin."
 	  },
 	  {
-	    element: "#geneName",
+	    element: "#retrieve_transcripts_control",
 	    title: "Gene of interest",
-	    content: "Input here your gene name of interest<br><br>"+
-	    		"For this example we fill in the 'T' gene"
-	  },
-	  {
-		element: "#getTranscriptsButton",
-		title: "Get Transcripts",
-		content: "Click the 'Get Transcripts' button to retrieve"+
-				" all the transcripts for your gene of interest"
+	    content: "Input here your gene name of interest Then you" +
+	    		" can click the 'Get Transcripts' button to " +
+	    		"retrieve all the transcripts for your gene of " +
+	    		"interest.<br><br> For this example we fill in " +
+	    		"the 'T' gene."
 	  },
 	  {
 		element: "#geneNameHelpMessage",
-		title: "Get Transcripts (Succeeded)",			
+		title: "Get Transcripts",			
 		content: "After clicking the 'Get Transcripts' button, we "+
 				"check if there are any transcripts available for "+
 				"your gene of interest.<br><br>"+
-				"This is the message you see when the retrieval is "+
-				"succesful."
+				"If the gene was not present in our database you " +
+				"would have seen the following message:<br><br>" +
+				"<div class='help is-danger'>No transcripts " +
+				"available in database for gene 'T'</div>"				
 	  },
 	  {
-		element: "#geneNameHelpMessage",
-		title: "Get Transcripts (Failed)",	
-		content: "This is the message you see when the retrieval is "+
-				"unsuccesful."
-	  },
-	  {
-		element: "#gtID",
-		title: "Select Transcript",
-		content: "Select the transcript of your interest from the "+
-				"dropdown menu."
-	  },
-	  {
-		element: "#getToleranceButton",
-		title: "Analyse Protein",
-		content: "Click the 'Analyse Protein' button to perform the "+
-				" analysis."
+		element: "#start_analysis_control",
+		title: "Select transcript & analyse your protein",
+		content: "Select the transcript of your interest from this "+
+				"dropdown menu. You can than click the 'Analyse " +
+				"Protein' button to start the analysis."
 	  },
 	  {
 		element: "#loading_overlay",
-		title: "Loading screen <br>(Click next to continue)",
-		content: "This analysis may take between 5 "+
-				"minutes and up to an hour to complete. <br><br>"+
-				"For now you can just Click next to continue.<br><br> "+
+		title: "Loading screen",
+		content: "This analysis may take between 5 minutes and up " +
+				"to an hour to complete, but in this example: <br><br>" +
+				"<b>you can click next to continue</b>. <br><br> " +
 				"Luckily all results are stored after they "+
-				"complete, so the next time you query this "+
+				"complete, so the next time you query the same " +
 				"transcript it will load in a matter of seconds."
 	  },
 	  {
 		element: "#content",
 		title: "Analysis results",
-		content: "When the analyses complete, you obtain a "+
-				"wealth of information. <br><br> We will now " +
-				"go over each part in detail.",
+		content: "When the analysis completes, you obtain a "+
+				"wealth of information. <br><br> But don't worry, " +
+				"we will now go over each part in detail.",
 	  },
 	  {
 		element: "#graph_control_field",
 		title: "Graph Control",
-		content: "This is called the graph control field. Here, " +
-				"you may switch between different representations " +
-				"of your result visualization, download the " +
-				"visualization and and select if you would like " +
-				"to display any known ClinVar variants.",
+		content: "Here, you may switch between different " +
+				"representations of the analysis result visualizations," +
+				" download the current view as an '.svg', reset any " +
+				"zooming of the graph or select, or display any known " +
+				"ClinVar variants.",
 	  },
 	  {
 		element: "#landscape_svg",
@@ -199,32 +286,62 @@ var tour = new Tour({
 				"metadomain variants are displayed.",
 	  },
 	  {
+		element: "#schematic_protein_zoom_text",
+		title: "Zooming in",
+		content: "You can zoom in on regions of your interest by " +
+				"clicking anywhere in the gray area and dragging " +
+				"the mouse. If you just click on any part in the " +
+				"protein the zooming is reset.<br><br> Go ahead " +
+				"and try for yourself",
+		placement: 'left',
+		backdropContainer: "#landscape_svg"
+	  },
+	  {
 		element: "#checkbox_for_landscape",
 		title: "Switching between visualizations",
 		content: "Here you can switch between the 'Meta-domain " +
 				"Landscape' and the 'Tolerance Landscape' " +
-				"visualization modes.",
+				"visualization modes.<br><br> Go ahead " +
+				"and try for yourself",
 		backdropContainer: "#landscape_svg"
 	  },
 	  {
 		element: "#clinvar_checkbox",
 		title: "Switching ClinVar variants",
 		content: "Here you can toggle the display of any ClinVar " +
-				"variants for your gene of interest.",
+				"variants for your gene of interest. <br><br> Go ahead " +
+				"and try for yourself",
 		backdropContainer: "#landscape_svg"
 	  },
 	  {
 		element: "#tolerance_axis",
-		title: "Visualization",
-		content: "test",
+		title: "Schematic protein representation",
+		content: "For each gene a schematic protein is displayed for " +
+				"all the positions and the presence of any Pfam protein " +
+				"domains is annotated.<br><br> Here each position is " +
+				"hoverable and selectable. If you click a position you " +
+				"obtain much more information about it.",
 		backdropContainer: "#landscape_svg"
 	  },
 	  {
-		element: "#schematic_protein_zoom_text",
-		title: "Zoom",
-		content: "test",
-		placement: 'left',
+		element: "#toleranceAxisRect_68",
+		title: "Selecting positions of interest",
+		content: "If you click a position it will become highlighted. " +
+				"And you may view more detailed information for that " +
+				"position.",
 		backdropContainer: "#landscape_svg"
+	  },
+	  {
+		element: "#selected_positions_information",
+		title: "More info for a selected position",
+		content: "All the highlighted positions that you have selected " +
+				"will be put into this list. Here a short overview is " +
+				"displayed on any known gnomAD or ClinVar variants " +
+				"present at this position. Also variants that are " +
+				"homologously related to this position are displayed " +
+				"if the position is part of a Pfam protein domain." +
+				"<br><br> Clicking a selected position provides a " +
+				"pop-up with even more details.",
 	  },
 ]});
 tour.init();
