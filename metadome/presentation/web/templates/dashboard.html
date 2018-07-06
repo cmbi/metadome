@@ -101,7 +101,7 @@ $( function() {
       <div class="box is-hidden" id="graph_control_field">
       <div class="label"><label class="label"> Graph control </label></div>
       <div class="label"><label class="label" id="geneDetails"></label></div>
-        <div class="field is-grouped">
+        <div class="field is-grouped" id="graph_control_field_checkboxes">
           <div class="control" id="checkbox_for_landscape">
             <label class="radio"> 
               <input checked value="metadomain_landscape" name="landscape_checkbox" type="radio" onclick="toggleToleranceLandscapeOrMetadomainLandscape()" id="checkbox_for_landscape_default">
@@ -119,7 +119,7 @@ $( function() {
             </label>
           </div>
         </div>
-        <div class="field is-grouped">
+        <div class="field is-grouped" id="graph_control_field_buttons">
           <div class="control">
             <button id='dlSVG' name="downloadButton" type="button"
               class="button is-info is-outlined">Download current visualization</button>
