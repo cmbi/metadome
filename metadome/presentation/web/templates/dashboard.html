@@ -69,7 +69,7 @@ $( function() {
     <div class="field">
 
       <!-- Gene name input -->
-      <div class="field has-addons">
+      <div class="field has-addons" id="retrieve_transcripts_control">
         <div class="control is-expanded">
           <input class="input is-fullwidth" type="text" name="geneName"
             id="geneName" size="20" onclick="this.setSelectionRange(0, this.value.length)"
@@ -83,7 +83,7 @@ $( function() {
       <div id="geneNameHelpMessage" class="help"></div>
 
       <!-- Transcript selection -->
-      <div class="field has-addons">
+      <div class="field has-addons" id="start_analysis_control">
         <div class="control is-expanded">
           <div class="select is-fullwidth">
             <select name="gtID" id="gtID" required disabled>
@@ -123,6 +123,9 @@ $( function() {
           <div class="control">
             <button id='dlSVG' name="downloadButton" type="button"
               class="button is-info is-outlined">Download current visualization</button>
+          </div>
+          <div class="control">
+            <button class="button is-info" id="reset_zoom" onclick='resetZoom()'>Reset Zoom</button>
           </div>
           <div class="control">
             <button class="button" id="reset_button" onclick='location.href="{{ url_for("web.dashboard") }}"'>Reset Page</button>
