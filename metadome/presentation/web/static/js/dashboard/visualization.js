@@ -432,6 +432,25 @@ function drawMetaDomainLandscape(domain_data, data){
     		meta_domain_ids.add(domain_data[i].ID);
     	}
     }
+    
+    // receive the max pathogenic and normal variation
+    var global_max_normal = 0;
+    var global_max_pathogenic = 0;
+    var global_max_value = 0;
+    for (i = 0; i < data.length; i++){
+    	meta_domain_ids.forEach(domain_id => {
+			if (data[i].values[0].hasOwnProperty('domains') && data[i].values[0].domains[domain_id] != null){
+			    global_max_normal = Math.max(data[i].values[0].domains[domain_id].normal_missense_variant_count, global_max_normal);
+			    global_max_pathogenic = Math.max(data[i].values[0].domains[domain_id].pathogenic_missense_variant_count, global_max_pathogenic);
+			}
+		});    	
+    }
+	if (global_max_pathogenic == 0){
+		global_max_value = global_max_normal;
+	}
+	else {
+		global_max_value = global_max_pathogenic;
+	}
         
 	// Add barplot for the metadomain variation landscape
 	var meta_domain_landscape_canvas = main_svg.append("g")
@@ -441,18 +460,9 @@ function drawMetaDomainLandscape(domain_data, data){
 	// Call the tooltips
     meta_domain_landscape_canvas.call(domain_details_position_tip);
 
+    
 	// Define the axes based on the data
-	main_y_metadomain.domain([0, d3.max(data, function(d) {
-		max_value = 0;
-		meta_domain_ids.forEach(domain_id => {
-			if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
-			    max_value = Math.max(d.values[0].domains[domain_id].normal_missense_variant_count, max_value);
-			    max_value = Math.max(d.values[0].domains[domain_id].pathogenic_missense_variant_count, max_value);
-			}
-		});
-		return max_value;
-		}
-	)]);
+	main_y_metadomain.domain([0, global_max_value]);
 	
 	// Draw the meta-domain normal missense variation barplot
 	meta_domain_landscape_canvas.selectAll(".bar")
@@ -470,7 +480,7 @@ function drawMetaDomainLandscape(domain_data, data){
 				}
 			});
 
-			return main_y_metadomain(normal_missense_variant_count);
+			return main_y_metadomain((global_max_value/global_max_normal)*normal_missense_variant_count);
 		}
 		})
 	.attr("width", function(d, i) {
@@ -488,8 +498,8 @@ function drawMetaDomainLandscape(domain_data, data){
 					normal_missense_variant_count = Math.max(d.values[0].domains[domain_id].normal_missense_variant_count, normal_missense_variant_count);
 				}
 			});
-			
-			return main_heightLandscape - main_y_metadomain(normal_missense_variant_count);
+
+			return main_heightLandscape - main_y_metadomain((global_max_value/global_max_normal)*normal_missense_variant_count);
 		}
 		})
 	.style("clip-path", "url(#clip)")
@@ -537,7 +547,7 @@ function drawMetaDomainLandscape(domain_data, data){
 				}
 			});
 
-			return main_y_metadomain(pathogenic_missense_variant_count);
+			return main_y_metadomain((global_max_value/global_max_pathogenic)*pathogenic_missense_variant_count);
 		}
 		})
 	.attr("width", function(d, i) {
@@ -556,7 +566,7 @@ function drawMetaDomainLandscape(domain_data, data){
 				}
 			});
 			
-			return main_heightLandscape - main_y_metadomain(pathogenic_missense_variant_count);
+			return main_heightLandscape - main_y_metadomain((global_max_value/global_max_pathogenic)*pathogenic_missense_variant_count);
 		}
 		})
 	.style("clip-path", "url(#clip)")
