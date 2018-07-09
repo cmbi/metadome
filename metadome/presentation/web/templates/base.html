@@ -38,15 +38,18 @@
           <a class="link is-info" href="{{ url_for('web.dashboard') }}">Start
             Analysis</a>
         </div>
+        <div class="navbar-item">
+          <a class="link is-info" href="{{ url_for('web.dashboard') }}?tour=true">Start Tour</a>
+        </div>
       </div>
 
       <div class="navbar-end">
         <div class="navbar-item">
-          <a class="link is-info" id="start_tour">Help</a>
-        </div>
-        <div class="navbar-item">
           <a class="link is-info" href="{{ url_for('web.about') }}">About
             MetaDome</a>
+        </div>
+        <div class="navbar-item">
+          <a class="link is-info" href="{{ url_for('web.method') }}">Methods</a>
         </div>
         <div class="navbar-item">
           <a class="link is-info" href="{{ url_for('web.contact') }}">Contact
@@ -75,14 +78,6 @@
       </div>
     </div>
   </footer>
-  <script>
-  $(document).ready(function() {
-      $("#start_tour").click(function() {
-         window.location.replace("{{ url_for('web.dashboard') }}" +
-                                 "?tour=true");
-      });
-    });
-  </script>
   {% block js %} {% endblock %}
 
 </body>
