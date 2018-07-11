@@ -195,8 +195,9 @@ def analyse_transcript(transcript_id):
                         # retrieve the context for this protein
                         protein_to_consensus_positions = meta_domains[domain['ID']].consensus_pos_per_protein[gene_region.uniprot_ac]
                         if domain["metadomain"] and db_position in protein_to_consensus_positions.keys():
-                            # add the MetaDomain information if there is any
-                            d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[domain['ID']], protein_to_consensus_positions, db_position)
+                            # update the consensus positions to abide the users' expectation (start at 1, not zero)
+                            consensus_position = protein_to_consensus_positions[db_position]+1
+                            d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[domain['ID']], consensus_position, db_position)
                                  
         result = {"transcript_id":transcript_id, "protein_ac":gene_region.uniprot_ac, "gene_name":gene_region.gene_name, "positional_annotation":region_positional_annotation, "domains":Pfam_domains}
     else:
@@ -204,9 +205,9 @@ def analyse_transcript(transcript_id):
      
     return result
 
-def create_meta_domain_entry(gene_region, metadomain, protein_to_consensus_positions, protein_pos):
+def create_meta_domain_entry(gene_region, metadomain, consensus_position, protein_pos):
     metadom_entry = {}
-    metadom_entry['consensus_pos'] = protein_to_consensus_positions[protein_pos]
+    metadom_entry['consensus_pos'] = consensus_position
     metadom_entry['normal_missense_variant_count'] = 0
     metadom_entry['normal_synonymous_variant_count'] = 0
     metadom_entry['normal_nonsense_variant_count'] = 0
