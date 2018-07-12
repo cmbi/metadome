@@ -381,20 +381,20 @@ function getTranscript() {
 				$("#getToleranceButton").removeClass('is-static');
 				var dropdown = document.getElementById("gtID");
 				dropdown.setAttribute('class', 'dropdown');
-				var i = 0
-				for (; i < transcript_id_results.trancript_ids.length; i++) {
+				// Sort the results by sequence length
+				transcript_id_results.trancript_ids.sort(function(a,b){return (a.aa_length<b.aa_length) ? 1 : ((b.aa_length<a.aa_length) ? -1: 0);});
+				
+				// Add the transcripts as options
+				for (i = 0; i < transcript_id_results.trancript_ids.length; i++) {
 					var opt = new Option();
 					opt.value = i;
-					opt.text = transcript_id_results.trancript_ids[i];
+					opt.text = transcript_id_results.trancript_ids[i].gencode_id + " ("+ transcript_id_results.trancript_ids[i].aa_length +"aa)" ;
+					
+					if (!transcript_id_results.trancript_ids[i].has_protein_data){
+						opt.disabled = true;
+					}
+					
 					dropdown.options.add(opt);
-				}
-				for (var j = 0; i < transcript_id_results.trancript_ids.length + transcript_id_results.no_protein_data.length; i++) {
-					var opt = new Option();
-					opt.value = i;
-					opt.text = transcript_id_results.trancript_ids[j];
-					opt.disabled = true;
-					dropdown.options.add(opt);
-					j++;
 				}
 			}
 		}
@@ -538,9 +538,11 @@ function loadDoc() {
 			};
 			if (typeof gtID !== 'undefined' && gtID.length > 0) {
 				// the variable is defined
+				// retrieve only the gt_id
+				var gencode_id = gtID.split(" ")[0];
 				xhttp.open("GET",
 						"{{ url_for('api.submit_gene_analysis_job_stub') }}" + "/"
-								+ gtID + "/", true);
+								+ gencode_id + "/", true);
 				xhttp.setRequestHeader("Content-type",
 						"application/x-www-form-urlencoded");
 				xhttp.send();
