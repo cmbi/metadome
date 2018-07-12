@@ -180,7 +180,7 @@ function tour_fill_transcripts(){
 	dropdown.setAttribute('class', 'dropdown');
 	var opt = new Option();
 	opt.value = 1;
-	opt.text = "ENST00000296946.2";
+	opt.text = "ENST00000296946.2 (435aa)";
 	dropdown.options.add(opt);
 }
 
