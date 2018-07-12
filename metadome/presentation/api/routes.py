@@ -32,10 +32,17 @@ def get_transcript_ids_for_gene(gene_name):
     else:
         message = "No transcripts available in database for gene '"+gene_name+"'"
     
-    transcripts_with_data = [t.gencode_transcription_id for t in trancripts if not t.protein_id is None]
-    transcripts_with_no_data = [t.gencode_transcription_id for t in trancripts if t.protein_id is None]
+    transcript_results = []
+    for t in trancripts:
+        transcript_entry = {}
+        transcript_entry['aa_length'] = t.sequence_length
+        transcript_entry['gencode_id'] = t.gencode_transcription_id
+        transcript_entry['has_protein_data'] = not t.protein_id is None
+        transcript_results.append(transcript_entry)
     
-    return jsonify(trancript_ids=transcripts_with_data, no_protein_data=transcripts_with_no_data, message=message)
+    
+    
+    return jsonify(trancript_ids=transcript_results, message=message)
 
 @bp.route('/submit_gene_analysis', methods=['GET'])
 def submit_gene_analysis_job_stub():
