@@ -25,7 +25,12 @@ class GeneRepository:
     @staticmethod
     def retrieve_all_transcript_ids_with_mappings():
         """Retrieves all transcripts for which there are mappings"""
-        return [transcript for transcript in db.session.query(Gene.gencode_transcription_id).filter(Gene.protein_id != None).all()]
+        # Open as session
+        _session = db.create_scoped_session()
+        result = [transcript for transcript in _session.query(Gene.gencode_transcription_id).filter(Gene.protein_id != None).all()]
+        # Close this session, thus all items are cleared and memory usage is kept at a minimum
+        _session.remove()
+        return result
     
     @staticmethod
     def retrieve_all_gene_names_from_file():
@@ -41,28 +46,45 @@ class GeneRepository:
     @staticmethod
     def retrieve_all_gene_names_from_db():
         """Retrieves all gene names present in the database"""
-        return [gene_name for gene_name in db.session.query(Gene.gene_name).distinct(Gene.gene_name).all()]
+        # Open as session
+        _session = db.create_scoped_session()
+        result = [gene_name for gene_name in _session.query(Gene.gene_name).distinct(Gene.gene_name).all()]
+        # Close this session, thus all items are cleared and memory usage is kept at a minimum
+        _session.remove()
+        return result
     
     @staticmethod
     def retrieve_all_transcript_ids(gene_name):
         """Retrieves all transcript ids for a gene name"""
-        return [transcript for transcript in db.session.query(Gene).filter(func.lower(Gene.gene_name) == gene_name.lower()).all()]
+        # Open as session
+        _session = db.create_scoped_session()
+        result = [transcript for transcript in _session.query(Gene).filter(func.lower(Gene.gene_name) == gene_name.lower()).all()]
+        # Close this session, thus all items are cleared and memory usage is kept at a minimum
+        _session.remove()
+        return result
     
     @staticmethod
     def retrieve_gene(transcription_id):
         """Retrieves the gene object for a given transcript id"""
+        # Open as session
+        _session = db.create_scoped_session()    
         try:
-            gene = db.session.query(Gene).filter(Gene.gencode_transcription_id == transcription_id).one()
-            return gene
+            result = _session.query(Gene).filter(Gene.gencode_transcription_id == transcription_id).one()
+            # Close this session, thus all items are cleared and memory usage is kept at a minimum
+            _session.remove()
+            return result
         except MultipleResultsFound as e:
+            _session.remove()
             error_message = "GeneRepository.retrieve_gene(transcription_id): Multiple results found while expecting uniqueness for transcription_id '"+str(transcription_id)+"'. "+e
             _log.error(error_message)
             raise RepositoryException(error_message)
         except NoResultFound as e:
+            _session.remove()
             error_message = "GeneRepository.retrieve_gene(transcription_id): Expected results but found none for transcription_id '"+str(transcription_id)+"'. "+e
             _log.error(error_message)
             raise RepositoryException(error_message)
         except Exception as e:
+            _session.remove()
             error_message = "GeneRepository.retrieve_gene(transcription_id): Unexpected exception for transcription_id '"+str(transcription_id)+"'. "+e
             _log.error(error_message)
             raise RepositoryException(error_message)
@@ -84,42 +106,65 @@ class InterproRepository:
     
     @staticmethod
     def get_domains_for_ext_domain_id(ext_domain_id):
-        """Retrieves all interpro entries of the corresponding ext_db_id"""
-        return [interpro_domain for interpro_domain in db.session.query(Interpro).filter(Interpro.ext_db_id == ext_domain_id).all()]
+        """Retrieves all interpro entries of the corresponding ext_db_id"""    
+        # Open as session
+        _session = db.create_scoped_session()
+        result = [interpro_domain for interpro_domain in _session.query(Interpro).filter(Interpro.ext_db_id == ext_domain_id).all()]
+        # Close this session, thus all items are cleared and memory usage is kept at a minimum
+        _session.remove()
+        return result
     
     @staticmethod
     def get_domains_for_protein(protein_id):
         """Retrieves all interpro entries for a given protein_id"""
-        return [interpro_domain for interpro_domain in db.session.query(Interpro).filter(Interpro.protein_id == protein_id).all()]
+        # Open as session
+        _session = db.create_scoped_session()
+        result = [interpro_domain for interpro_domain in _session.query(Interpro).filter(Interpro.protein_id == protein_id).all()]
+        # Close this session, thus all items are cleared and memory usage is kept at a minimum
+        _session.remove()
+        return result
     
 class ProteinRepository:
     
     @staticmethod
     def retrieve_protein_ac_for_multiple_protein_ids(_protein_ids):
-        """Retrieves all uniprot accession codes for multiple Protein objects as {protein_id: uniprot_ac}"""
+        """Retrieves all uniprot accession codes for multiple Protein objects as {protein_id: uniprot_ac}"""        
+        # Open as session
+        _session = db.create_scoped_session()
         _protein_ac_per_protein_id = {}
-        for protein in db.session.query(Protein).filter(Protein.id.in_(_protein_ids)).all():
+        for protein in _session.query(Protein).filter(Protein.id.in_(_protein_ids)).all():
             _protein_ac_per_protein_id[protein.id] = protein.uniprot_ac
+        # Close this session, thus all items are cleared and memory usage is kept at a minimum
+        _session.remove()
         return _protein_ac_per_protein_id
     
     @staticmethod
     def retrieve_protein_id_for_multiple_protein_acs(_protein_acs):
         """Retrieves all protein ids for multiple Protein objects as {protein_ac: uniprot_id}"""
+        # Open as session
+        _session = db.create_scoped_session()
         _protein_id_per_protein_ac = {}
-        for protein in db.session.query(Protein).filter(Protein.uniprot_ac.in_(_protein_acs)).all():
+        for protein in _session.query(Protein).filter(Protein.uniprot_ac.in_(_protein_acs)).all():
             _protein_id_per_protein_ac[protein.uniprot_ac] = protein.id
-        return _protein_id_per_protein_ac
-    
+        # Close this session, thus all items are cleared and memory usage is kept at a minimum
+        _session.remove()
+        return _protein_id_per_protein_ac    
     
     @staticmethod
     def retrieve_protein(protein_id):
         """Retrieves the protein object for a given protein id"""
-        try:
-            protein = db.session.query(Protein).filter(Protein.id == protein_id).one()
+        # Open as session
+        _session = db.create_scoped_session()
+        try:    
+            protein = _session.query(Protein).filter(Protein.id == protein_id).one()
+            # Close this session, thus all items are cleared and memory usage is kept at a minimum
+            _session.remove()
             return protein
         except MultipleResultsFound as e:
+            _session.remove()
             _log.error("ProteinRepository.retrieve_protein(protein_id): Multiple results found while expecting uniqueness for protein_id '"+str(protein_id)+"'. "+e)
         except NoResultFound as  e:
+            _session.remove()
             _log.error("ProteinRepository.retrieve_protein(protein_id): Expected results but found none for protein_id '"+str(protein_id)+"'. "+e)
         return None
 
@@ -128,23 +173,37 @@ class MappingRepository:
     @staticmethod
     def get_mappings_for_multiple_protein_ids(_protein_ids):
         """Retrieves all mappings for a multiple Protein objects as {protein_id: [ Mapping ]}"""
+        # Open as session
+        _session = db.create_scoped_session()
         _mappings_per_protein = {}
-        for mapping in db.session.query(Mapping).filter(Mapping.protein_id.in_(_protein_ids)).all():
+        for mapping in _session.query(Mapping).filter(Mapping.protein_id.in_(_protein_ids)).all():
             if not mapping.protein_id in _mappings_per_protein:
                 _mappings_per_protein[mapping.protein_id] = []
                 
             _mappings_per_protein[mapping.protein_id].append(mapping)
+        # Close this session, thus all items are cleared and memory usage is kept at a minimum
+        _session.remove()
         return _mappings_per_protein
     
     @staticmethod
     def get_mappings_for_protein(_protein):
         """Retrieves all mappings for a Protein object"""
-        return [x for x in db.session.query(Mapping).filter(Mapping.protein_id == _protein.id).all()]
+        # Open as session
+        _session = db.create_scoped_session()
+        result = [x for x in _session.query(Mapping).filter(Mapping.protein_id == _protein.id).all()]
+        # Close this session, thus all items are cleared and memory usage is kept at a minimum
+        _session.remove()
+        return result
     
     @staticmethod
     def get_mappings_for_gene(_gene):
         """Retrieves all mappings for a Gene object"""
-        return [x for x in Mapping.query().filter(Mapping.gene_id == _gene.id).all()]
+        # Open as session
+        _session = db.create_scoped_session()
+        result = [x for x in _session.query(Mapping).filter(Mapping.gene_id == _gene.id).all()]
+        # Close this session, thus all items are cleared and memory usage is kept at a minimum
+        _session.remove()
+        return result
     
 class SequenceRepository:
     
