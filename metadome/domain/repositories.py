@@ -144,7 +144,7 @@ class MappingRepository:
     @staticmethod
     def get_mappings_for_gene(_gene):
         """Retrieves all mappings for a Gene object"""
-        return [x for x in db.session.query(Mapping).filter(Mapping.gene_id == _gene.id).all()]
+        return [x for x in Mapping.query().filter(Mapping.gene_id == _gene.id).all()]
     
 class SequenceRepository:
     
