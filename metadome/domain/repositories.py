@@ -75,17 +75,17 @@ class GeneRepository:
             return result
         except MultipleResultsFound as e:
             _session.remove()
-            error_message = "GeneRepository.retrieve_gene(transcription_id): Multiple results found while expecting uniqueness for transcription_id '"+str(transcription_id)+"'. "+e
+            error_message = "GeneRepository.retrieve_gene(transcription_id): Multiple results found while expecting uniqueness for transcription_id '"+str(transcription_id)+"'. "+str(e)
             _log.error(error_message)
             raise RepositoryException(error_message)
         except NoResultFound as e:
             _session.remove()
-            error_message = "GeneRepository.retrieve_gene(transcription_id): Expected results but found none for transcription_id '"+str(transcription_id)+"'. "+e
+            error_message = "GeneRepository.retrieve_gene(transcription_id): Expected results but found none for transcription_id '"+str(transcription_id)+"'. "+str(e)
             _log.error(error_message)
             raise RepositoryException(error_message)
         except Exception as e:
             _session.remove()
-            error_message = "GeneRepository.retrieve_gene(transcription_id): Unexpected exception for transcription_id '"+str(transcription_id)+"'. "+e
+            error_message = "GeneRepository.retrieve_gene(transcription_id): Unexpected exception for transcription_id '"+str(transcription_id)+"'. "+str(e)
             _log.error(error_message)
             raise RepositoryException(error_message)
     
@@ -162,10 +162,10 @@ class ProteinRepository:
             return protein
         except MultipleResultsFound as e:
             _session.remove()
-            _log.error("ProteinRepository.retrieve_protein(protein_id): Multiple results found while expecting uniqueness for protein_id '"+str(protein_id)+"'. "+e)
+            _log.error("ProteinRepository.retrieve_protein(protein_id): Multiple results found while expecting uniqueness for protein_id '"+str(protein_id)+"'. "+str(e))
         except NoResultFound as  e:
             _session.remove()
-            _log.error("ProteinRepository.retrieve_protein(protein_id): Expected results but found none for protein_id '"+str(protein_id)+"'. "+e)
+            _log.error("ProteinRepository.retrieve_protein(protein_id): Expected results but found none for protein_id '"+str(protein_id)+"'. "+str(e))
         return None
 
 class MappingRepository:
