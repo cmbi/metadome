@@ -1,5 +1,5 @@
 from mock import patch
-from nose.tools import ok_
+from nose.tools import ok_, eq_
 
 from metadome.domain.repositories import GeneRepository
 
@@ -57,13 +57,14 @@ def test_session_always_removed(mock_create_session):
 @patch('metadome.domain.repositories._log.error')
 def test_logs_error(mock_log_error, mock_create_session):
 
+    error_message = "test fail"
     class FailSession:
         def query(self, id_):
-            raise Exception("test fail")
+            raise Exception(error_message)
 
     try:
         l = GeneRepository.retrieve_all_transcript_ids_with_mappings()
-    except:
-        pass
+    except Exception as e:
+        eq_(str(e), error_message)
 
     ok_(mock_log_error.assert_called)
