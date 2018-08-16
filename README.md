@@ -84,20 +84,7 @@ Clone the repository and cd into the project folder:
     git clone https://github.com/cmbi/metadome.git
     cd metadome
 
-First configure the volumes to correspond with your data folder in the docker-compose.yml (line 12-22):
-```
-        volumes:                                            # formatted as <local file/directory>:<docker file/directory>, only change the local directories if needed
-            - .:/usr/src/app                                # This points to the current code directory, needed to run the MetaDome server, do not change
-            - ~/data:/usr/data                              # Please set the local folder you are okay with MetaDome to create additional files and folders
-            - ~/data/ClinVar/:/usr/data/ClinVar             # Please set the local folder to where your ClinVar vcf is stored
-            - ~/data/Gencode/:/usr/data/Gencode             # Please set the local folder to where your Gencode files are stored
-            - ~/data/gnomAD/:/usr/data/gnoMAD               # Please set the local folder to where your gnomAD vcf is stored
-            - ~/data/PFAM/:/usr/data/PFAM                   # Please set the local folder to where your PFAM is located
-            - ~/data/UniProt/:/usr/data/UniProt             # Please set the local folder to where your UniProt is located
-            - /usr/bin/docker:/usr/bin/docker               # Point the local file to where your docker executable is located
-            - /var/run/docker.sock:/var/run/docker.sock     # Point the local file to where your docker.sock is located
-            - interpro_temp:/usr/interpro_temp              # This points to the local interpro volume, specified below. Do not change
-```
+First configure the volumes (at the \<ABSOLUTE PATH\>) to correspond with your data folders in the docker-compose.yml (lines 64, 70, 76, 82, 88, 94):
 
 ### (Optional) Credentials configuration
 If you are planning to expose the MetaDome server to a public adress, please make sure you get the security in order.
@@ -107,13 +94,16 @@ If you are planning to expose the MetaDome server to a public adress, please mak
 
 Otherwise you will be using default passwords and API secrets.
 
-### Set up for the first run
+## Running the server
+### First time set-up
 
 Run the following command to execute the install script:
 
     docker-compose run app python install.py
 
-## Running
+Note: Launching the server this way, by creating the database from scratch, will first make it generate all mappings between gencode, swissprot and Pfam. This process, depending on your configuration, may take 2 weeks. If you require a pre-build database, do not hesitate to contact us.
+
+### Starting the server
 
 If you followed the above steps, you can now run the webserver via the command:
 
@@ -122,9 +112,6 @@ If you followed the above steps, you can now run the webserver via the command:
 And tear it down via:
 
     docker-compose -f docker-compose.yml stop
-
-Note: Launching the server without a pre-build database will first make it generate all mappings between gencode, swissprot and Pfam. This process, depending on your configuration, may take 2 weeks. If you require a pre-build database, do not hesitate to contact us.
-
 
 # Citing MetaDome server
 
