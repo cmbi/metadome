@@ -107,6 +107,12 @@ If you are planning to expose the MetaDome server to a public adress, please mak
 
 Otherwise you will be using default passwords and API secrets.
 
+## First time running
+
+@Coos: please write here the steps to first initialize the database
+
+Note: Launching the server this way, by creating the database from scratch, will first make it generate all mappings between gencode, swissprot and Pfam. This process, depending on your configuration, may take 2 weeks. If you require a pre-build database, do not hesitate to contact us.
+
 ## Running
 
 If you followed the above steps, you can now run the webserver via the command:
@@ -116,9 +122,6 @@ If you followed the above steps, you can now run the webserver via the command:
 And tear it down via:
 
     docker-compose -f docker-compose.yml stop
-
-Note: Launching the server without a pre-build database will first make it generate all mappings between gencode, swissprot and Pfam. This process, depending on your configuration, may take 2 weeks. If you require a pre-build database, do not hesitate to contact us.
-
 
 # Citing MetaDome server
 
