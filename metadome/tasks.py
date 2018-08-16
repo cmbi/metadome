@@ -134,8 +134,16 @@ def analyse_transcript(transcript_id):
                 try:
                     if not pfam_domain['ID'] in meta_domains.keys():
                         # construct a meta-domain if possible
-                        meta_domains[pfam_domain['ID']] = MetaDomain(domain.ext_db_id)
-                        pfam_domain["metadomain"] = True
+                        temp_meta_domain = MetaDomain(domain.ext_db_id)
+                        
+                        # Ensure there are enough instances to actually perform the metadomain trick
+                        if temp_meta_domain.n_instances < 2:
+                            pfam_domain["metadomain"] = False
+                            meta_domains[pfam_domain['ID']] = None
+                        else:
+                            pfam_domain["metadomain"] = True
+                            meta_domains[pfam_domain['ID']] = temp_meta_domain
+                        
                     else:
                         pfam_domain["metadomain"] = not(meta_domains[pfam_domain['ID']] is None)
                 except:
