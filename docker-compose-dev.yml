@@ -10,8 +10,12 @@ services:
             - FLASK_APP=metadome/application.py
         ports:
             - "5000:5000"
+        volumes:
+          - ".:/usr/src/app"
     celery:
         build: .
         command: watchmedo auto-restart -d /usr/src/app -p "*.py"  -D -R -- celery -A metadome.application:celery worker --loglevel=info
         environment:
             - C_FORCE_ROOT=1
+        volumes:
+          - ".:/usr/src/app"
