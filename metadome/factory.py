@@ -65,6 +65,7 @@ def create_app(settings=None):
     app.register_blueprint(web_bp, url_prefix='/metadome')
     
     # Database
+    from metadome.database import db
     db.init_app(app)
     with app.app_context():
         db.create_all()
