@@ -107,6 +107,12 @@ If you are planning to expose the MetaDome server to a public adress, please mak
 
 Otherwise you will be using default passwords and API secrets.
 
+### Set up for the first run
+
+Run the following command to execute the install script:
+
+    docker-compose run app python install.py
+
 ## Running
 
 If you followed the above steps, you can now run the webserver via the command:

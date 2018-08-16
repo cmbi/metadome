@@ -1,11 +1,8 @@
 import logging
 
 from flask import Flask
-from metadome.domain.services.database_creation import create_db
-from metadome.domain.infrastructure import write_all_genes_names_to_disk
 from metadome.domain.services.mail.mail import mail
-from metadome.domain.services.meta_domain_creation import create_metadomains
-from metadome.default_settings import RECONSTRUCT_METADOMAINS, MAIL_SERVER
+from metadome.default_settings import MAIL_SERVER
 from celery import Celery
 
 _log = logging.getLogger(__name__)
@@ -68,19 +65,9 @@ def create_app(settings=None):
     app.register_blueprint(web_bp, url_prefix='/metadome')
     
     # Database
-    from metadome.database import db
     db.init_app(app)
     with app.app_context():
-        # Extensions like Flask-SQLAlchemy now know what the "current" app
-        # is while within this block. Therefore, you can now run........
         db.create_all()
-        create_db()
-              
-        # now create all meta_domains
-        create_metadomains(reconstruct=RECONSTRUCT_METADOMAINS)
-              
-        # retrieve all gene names and write to disk
-        write_all_genes_names_to_disk()
 
     return app
 
