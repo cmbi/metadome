@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from metadome.database import db
 from metadome.domain.models.mapping import Mapping
@@ -30,6 +31,9 @@ class GeneRepository:
 
         try :
             return [transcript for transcript in _session.query(Gene.gencode_transcription_id).filter(Gene.protein_id != None).all()]
+        except:
+            _log.error(traceback.format_exc())
+            raise
         finally:
             # Close this session, thus all items are cleared and memory usage is kept at a minimum
             _session.remove()
@@ -51,6 +55,9 @@ class GeneRepository:
 
         try:
             return [gene_name for gene_name in _session.query(Gene.gene_name).distinct(Gene.gene_name).all()]
+        except:
+            _log.error(traceback.format_exc())
+            raise
         finally:
             # Close this session, thus all items are cleared and memory usage is kept at a minimum
             _session.remove()
@@ -63,6 +70,9 @@ class GeneRepository:
 
         try:
             return [transcript for transcript in _session.query(Gene).filter(func.lower(Gene.gene_name) == gene_name.lower()).all()]
+        except:
+            _log.error(traceback.format_exc())
+            raise
         finally:
             # Close this session, thus all items are cleared and memory usage is kept at a minimum
             _session.remove()
@@ -113,6 +123,9 @@ class InterproRepository:
 
         try:
             return [interpro_domain for interpro_domain in _session.query(Interpro).filter(Interpro.ext_db_id == ext_domain_id).all()]
+        except:
+            _log.error(traceback.format_exc())
+            raise
         finally:
             # Close this session, thus all items are cleared and memory usage is kept at a minimum
             _session.remove()
@@ -125,6 +138,9 @@ class InterproRepository:
 
         try:
             return [interpro_domain for interpro_domain in _session.query(Interpro).filter(Interpro.protein_id == protein_id).all()]
+        except:
+            _log.error(traceback.format_exc())
+            raise
         finally:
             # Close this session, thus all items are cleared and memory usage is kept at a minimum
             _session.remove()
@@ -154,6 +170,9 @@ class ProteinRepository:
             for protein in _session.query(Protein).filter(Protein.uniprot_ac.in_(_protein_acs)).all():
                 _protein_id_per_protein_ac[protein.uniprot_ac] = protein.id
             return _protein_id_per_protein_ac
+        except:
+            _log.error(traceback.format_exc())
+            raise
         finally:
             # Close this session, thus all items are cleared and memory usage is kept at a minimum
             _session.remove()
@@ -172,6 +191,9 @@ class ProteinRepository:
         except NoResultFound as  e:
             _log.error("ProteinRepository.retrieve_protein(protein_id): Expected results but found none for protein_id '"+str(protein_id)+"'. "+str(e))
             return None
+        except:
+            _log.error(traceback.format_exc())
+            raise
         finally:
             # Close this session, thus all items are cleared and memory usage is kept at a minimum
             _session.remove()
@@ -192,6 +214,9 @@ class MappingRepository:
 
                 _mappings_per_protein[mapping.protein_id].append(mapping)
             return _mappings_per_protein
+        except:
+            _log.error(traceback.format_exc())
+            raise
         finally:
             # Close this session, thus all items are cleared and memory usage is kept at a minimum
             _session.remove()
@@ -204,6 +229,9 @@ class MappingRepository:
 
         try:
             return [x for x in _session.query(Mapping).filter(Mapping.protein_id == _protein.id).all()]
+        except:
+            _log.error(traceback.format_exc())
+            raise
         finally:
             # Close this session, thus all items are cleared and memory usage is kept at a minimum
             _session.remove()
@@ -217,6 +245,9 @@ class MappingRepository:
 
         try:
             return [x for x in _session.query(Mapping).filter(Mapping.gene_id == _gene.id).all()]
+        except:
+            _log.error(traceback.format_exc())
+            raise
         finally:
             # Close this session, thus all items are cleared and memory usage is kept at a minimum
             _session.remove()

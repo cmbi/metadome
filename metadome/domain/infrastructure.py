@@ -1,3 +1,5 @@
+import traceback
+
 from metadome.database import db
 from metadome.domain.models.protein import Protein
 from metadome.domain.models.gene import Gene
@@ -27,6 +29,9 @@ def filter_gene_names_present_in_database(gene_names_of_interest):
         _log.info("Filtered '"+str(n_filtered_gene_names)+"' out of '"+str(n_gene_names)+"' gene names that are already present in the database ...")
 
         return list(gene_names_of_interest)
+    except:
+        _log.error(traceback.format_exc())
+        raise
     finally:
         # Close this session, thus all items are cleared and memory usage is kept at a minimum
         _session.remove()
@@ -88,6 +93,9 @@ def add_gene_mapping_to_database(gene_mapping):
                     _session.add(gene_translation)
             # Commit the changes of this mapping
             _session.commit()
+    except:
+        _log.error(traceback.format_exc())
+        raise
     finally:
         # Close this session, thus all items are cleared and memory usage is kept at a minimum
         _session.remove()
