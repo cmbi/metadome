@@ -94,13 +94,16 @@ If you are planning to expose the MetaDome server to a public adress, please mak
 
 Otherwise you will be using default passwords and API secrets.
 
-## First time running
+## Running the server
+### First time set-up
 
-@Coos: please write here the steps to first initialize the database
+Run the following command to execute the install script:
+
+    docker-compose run app python install.py
 
 Note: Launching the server this way, by creating the database from scratch, will first make it generate all mappings between gencode, swissprot and Pfam. This process, depending on your configuration, may take 2 weeks. If you require a pre-build database, do not hesitate to contact us.
 
-## Running
+### Starting the server
 
 If you followed the above steps, you can now run the webserver via the command:
 
