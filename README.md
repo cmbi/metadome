@@ -115,9 +115,9 @@ And tear it down via:
 
 # Citing MetaDome server
 
-We anticipate the publication of a method paper describing this web-service in late 2018. Until that is published, please use the following citation when referencing the results in your report:
+We anticipate the publication of a method paper describing this web server in late 2018. Until that is published, please use the following citation when referencing the results in your report:
 ```
-MetaDome web-service, Nijmegen, The Netherlands
+MetaDome web server, Nijmegen, The Netherlands
  (URL: https://stuart.radboudumc.nl/metadome) 
  [date (month, year) accessed].
 ```
