@@ -246,6 +246,12 @@ function createGraph(obj) {
 		group.values[0].selected = false;
 	})
 	
+	// create an overview of coverage per domain ID
+	var domain_metadomain_coverage = {}
+	for (i = 0; i < domain_data.length; i++) { 
+		domain_metadomain_coverage[domain_data[i].ID] = domain_data[i].meta_domain_alignment_depth;
+	}
+	
 	// Draw all individual user interface elements based on the data
 	annotateDomains(domain_data, positional_annotation);
 	createToleranceGraph(dataGroup);
@@ -253,7 +259,7 @@ function createGraph(obj) {
 	drawMetaDomainLandscape(domain_data, dataGroup);
 
 	// Add schematic protein overview as a custom Axis
-	createSchematicProtein(dataGroup);
+	createSchematicProtein(domain_metadomain_coverage, dataGroup);
 
 	// Finally draw the context zoom
 	addContextZoomView(domain_data, dataGroup.length);
@@ -333,7 +339,7 @@ function createGnomADTableBody(chr, chr_pos, ref_codon, ref_residue, gnomADVaria
 }
 
 // Adds positional information for a selected position
-function createPositionalInformation(position_data){
+function createPositionalInformation(domain_metadomain_coverage, position_data){
     // Reset the positional information
     document.getElementById("positional_information_overlay_title").innerHTML = '<div class="label"><label class="title">Positional information (p.'+ position_data.values[0].protein_pos+')</label></div><label class="label" >'+document.getElementById("geneDetails").innerHTML +'</label>';
     document.getElementById("positional_information_overlay_body").innerHTML = '';
@@ -364,8 +370,12 @@ function createPositionalInformation(position_data){
 		    
 		    // add meta domain information
 		    if (!(position_data.values[0].domains[domain_id_list[i]] == null)){
+		    	// compute coverage
+		    	position_coverage = Math.round(((position_data.values[0].domains[domain_id_list[i]].other_codons.length/domain_metadomain_coverage[domain_id_list[i]])*100)*10)/10;
+		    	
+		    	// Add information to the report
 				meta_domain_information += '<hr><label class="label">Meta-domain information for domain '+domain_id_list[i]+':</label>';
-				meta_domain_information += '<p>Aligned to consensus position '+ position_data.values[0].domains[domain_id_list[i]].consensus_pos+', related to '+ position_data.values[0].domains[domain_id_list[i]].other_codons.length+' other codons throughout the genome</p>';
+				meta_domain_information += '<p>Aligned to consensus position '+ position_data.values[0].domains[domain_id_list[i]].consensus_pos+', related to '+ position_data.values[0].domains[domain_id_list[i]].other_codons.length +' other codons throughout the genome (with a '+position_coverage+'\% alignment coverage).</p>';
 				
 				
 				var gnomAD_table = '<hr><label class="label">Variants in gnomAD SNVs at homologous positions:</label>';
@@ -661,7 +671,7 @@ function createToleranceGraph(dataGroup) {
 }
 
 // Draw the axis and labels
-function createSchematicProtein(groupedTolerance) {
+function createSchematicProtein(domain_metadomain_coverage, groupedTolerance) {
 	// Add the Axis
 	var focusAxis = main_svg.append("g")
 		.attr("class", "focusAxis")
@@ -755,7 +765,7 @@ function createSchematicProtein(groupedTolerance) {
 		    if (!d.values[0].selected) {
 				d3.select(this).style("fill", "green").style("fill-opacity", 0.7);
 				d.values[0].selected = true;			
-				addRowToPositionalInformationTable(d);
+				addRowToPositionalInformationTable(domain_metadomain_coverage, d);
 				selected_positions += 1;
 				$("#position_information_table").removeClass('is-hidden');
 			    document.getElementById("selected_positions_explanation").innerHTML = 'Click on one of the selected positions in the table to view more information';
@@ -1077,7 +1087,7 @@ function toggleClinvarVariantsInProtein(clinvar_checkbox){
 }
 
 // Update the positional information table with new values
-function addRowToPositionalInformationTable(d) {
+function addRowToPositionalInformationTable(domain_metadomain_coverage, d) {
 	var new_row = d3.select('#position_information_tbody').append('tr').attr('class', 'tr').attr("id", "positional_table_info_" + d.values[0].protein_pos);
 	
 	new_row.append('th').text(d.values[0].protein_pos);
@@ -1126,7 +1136,7 @@ function addRowToPositionalInformationTable(d) {
 	new_row.on("click", function() {
 	    d3.selectAll('.tr').classed("is-selected", false);
 	    d3.select(this).classed("is-selected", true);
-	    createPositionalInformation(d);
+	    createPositionalInformation(domain_metadomain_coverage, d);
 	    $("#positional_information_overlay").addClass('is-active');
 	}).on("mouseover", function(d, i) {
 	    d3.select(this).style("cursor", "pointer");
