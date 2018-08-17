@@ -147,7 +147,7 @@ var domain_details_position_tip = d3.tip()
 	.attr('class', 'd3-tip')
 	.offset([ -10, 0 ])
 	.html(function(d) {
-	    return "<span> Missense count: " + d + "</span>";
+	    return "<span> "+ d +"</span>";
 	});
 
 
@@ -525,7 +525,7 @@ function drawMetaDomainLandscape(domain_data, data){
 				});
 			}
 		   // show the tooltip
-		   domain_details_position_tip.show(normal_missense_variant_count);
+		   domain_details_position_tip.show("Homologous gnomAD missense count: "+normal_missense_variant_count);
 		   // amplify the element
 		   d3.select(this).style("fill", "orange");
 		   // move the element to front
@@ -592,7 +592,7 @@ function drawMetaDomainLandscape(domain_data, data){
 				});
 			}
 		   // show the tooltip
-		   domain_details_position_tip.show(pathogenic_missense_variant_count);
+		   domain_details_position_tip.show("Homologous pathogenic missense count: "+pathogenic_missense_variant_count);
 		   // amplify the element
 		   d3.select(this).style("fill", "orange");
 		   // move the element to front
@@ -604,6 +604,68 @@ function drawMetaDomainLandscape(domain_data, data){
 	   domain_details_position_tip.hide(d);
 	   // reset the color
 	   d3.select(this).style("fill", "red");
+	   // move the element to the back
+	   d3.select(this).moveToBack();
+	});
+	
+	// Draw not aligned barplots
+	meta_domain_landscape_canvas.selectAll(".bar")
+	.data(data)
+	.enter()
+	.append("rect")
+	.attr("class", "not_aligned_position_plot")
+	.attr("x", function(d) { return main_x(d.values[0].protein_pos); })
+	.attr("y", function(d) { 
+		if (d.values[0].domains != null){
+			not_aligned_poition = 0;
+			
+			for (i = 0; i < domain_data.length; i++){
+		    	if (domain_data[i].start <= d.values[0].protein_pos && d.values[0].protein_pos < domain_data[i].stop && d.values[0].domains[domain_data[i].ID] == null){
+		    		not_aligned_poition = 1;
+		    	}
+		    }
+			
+			return main_y_metadomain((global_max_value/10)*not_aligned_poition);
+		}
+		})
+	.attr("width", function(d, i) {
+	    if (d.values[1].protein_pos != d.values[0].protein_pos){
+			return main_x(d.values[1].protein_pos) - main_x(d.values[0].protein_pos);
+	    	    } else {
+	    		return main_x(d.values[1].protein_pos +1) - main_x(d.values[0].protein_pos);
+	    	    }
+		})
+	.attr("height", function(d) { 
+		if (d.values[0].domains != null){
+			
+			return main_heightLandscape - main_y_metadomain(global_max_value/10);
+		}
+		})
+	.style("clip-path", "url(#clip)")
+	.style("fill", "black")
+	.on("mouseover", function(d) {
+		if (metadomain_graph_visible){
+			pathogenic_missense_variant_count = 0;
+			if (d.values[0].domains != null){
+				meta_domain_ids.forEach(domain_id => {
+					if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
+						pathogenic_missense_variant_count = Math.max(d.values[0].domains[domain_id].pathogenic_missense_variant_count, pathogenic_missense_variant_count);
+					}
+				});
+			}
+		   // show the tooltip
+		   domain_details_position_tip.show("Position not aligned to homologous");
+		   // amplify the element
+		   d3.select(this).style("fill", "orange");
+		   // move the element to front
+		   d3.select(this).moveToFront();
+		}
+	})
+	.on("mouseout", function(d) {
+	   // hide the tooltip
+	   domain_details_position_tip.hide(d);
+	   // reset the color
+	   d3.select(this).style("fill", "black");
 	   // move the element to the back
 	   d3.select(this).moveToBack();
 	});
@@ -1214,6 +1276,16 @@ function rescaleLandscape(){
     	    	    } else {
     	    		return main_x(d.values[1].protein_pos +1) - main_x(d.values[0].protein_pos);
     	    	    }
+    		});
+
+    metadomain_landscape.selectAll(".not_aligned_position_plot")
+    	.attr("x", function(d) { return main_x(d.values[0].protein_pos-0.5); })
+    	.attr("width", function(d, i) {
+    	    if (d.values[1].protein_pos != d.values[0].protein_pos){
+    	    	return main_x(d.values[1].protein_pos) - main_x(d.values[0].protein_pos);
+	    	    } else {
+	    		return main_x(d.values[1].protein_pos +1) - main_x(d.values[0].protein_pos);
+	    	    }
     		});
 
     var focusAxis = d3.select("#tolerance_axis");
