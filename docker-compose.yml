@@ -49,6 +49,10 @@ services:
         image: postgres
         environment:
            - ./metadome/postgres_credentials.py
+        ports:
+          - "5432:5432"
+        volumes:
+            - metadome_postgres_db:/var/lib/postgresql/data
     redis:
         restart: always
         image: redis
@@ -91,4 +95,10 @@ volumes:
         # Please set the 'device' here to a local folder to where your UniProt is located
         device: <ABSOLUTE PATH>
         o: bind
-   interpro_temp: # Do not change this
+   metadome_postgres_db:
+      driver_opts:
+        type: none
+        # Please set the 'device' here to a local folder you are okay with MetaDome creating a postgres database
+        device: <ABSOLUTE PATH>
+        o: bind
+   interpro_temp: # Do not change this, this should be the last line with nothing behind it.
