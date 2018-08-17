@@ -206,7 +206,15 @@ def analyse_transcript(transcript_id):
                             # update the consensus positions to abide the users' expectation (start at 1, not zero)
                             consensus_position = protein_to_consensus_positions[db_position]+1
                             d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[domain['ID']], consensus_position, db_position)
-                                 
+                            
+                            # compute alignment depth, added one for the current codon
+                            current_alignment_depth = len(d['domains'][domain['ID']]['other_codons'])+1
+                            
+                            # update the max number of alignments for this domain
+                            if not 'meta_domain_alignment_depth' in domain.keys():
+                                domain['meta_domain_alignment_depth'] = 0
+                            domain['meta_domain_alignment_depth'] = max(current_alignment_depth, domain['meta_domain_alignment_depth'])
+                            
         result = {"transcript_id":transcript_id, "protein_ac":gene_region.uniprot_ac, "gene_name":gene_region.gene_name, "positional_annotation":region_positional_annotation, "domains":Pfam_domains}
     else:
         result = {'error': 'No gene region could be build for transcript '+str(transcript_id)}
@@ -228,7 +236,7 @@ def create_meta_domain_entry(gene_region, metadomain, consensus_position, protei
      
     # Retrieve the meta codons for this position
     meta_codons = metadomain.get_codons_aligned_to_consensus_position(metadom_entry['consensus_pos'])
-     
+    
     # iterate over meta_codons and add to metadom_entry
     for meta_codon in meta_codons:
         # Check if we are dealing with the gene and protein_pos of interest
