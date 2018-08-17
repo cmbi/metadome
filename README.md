@@ -10,16 +10,16 @@ Please ensure you have the following software installed on your machine:
 	docker
     docker-compose
 
-You can install docker from [here](https://www.docker.com/get-docker) and docker-compose from [here](https://docs.docker.com/compose/install/#install-compose)
+You can get docker [here](https://www.docker.com/get-docker) and docker-compose [here](https://docs.docker.com/compose/install/#install-compose)
 
 ## Data Requirements
 
-The MetaDome webserver makes use of the following data resources
+The MetaDome web server makes use of the following data resources
 
 ### Gencode
 
 MetaDome uses version v19 of Gencode for GRCH37.
-From [here](https://www.gencodegenes.org/releases/19.html), please download the following files:
+Available [here](https://www.gencodegenes.org/releases/19.html), please download the following files:
     
     gencode.v19.annotation.gtf
     gencode.v19.annotation.gff3
@@ -28,12 +28,12 @@ From [here](https://www.gencodegenes.org/releases/19.html), please download the 
     gencode.v19.metadata.SwissProt
     ucsc.gencode.v19.wgEncodeGencodeBasic.txt
 
-And put this in your preferred data storage folder under '/Gencode/'
+Please put these in your preferred data storage folder under '/Gencode/'
 
 ### UniProt
 
 MetaDome was tested with UniProt version 2016_09.
-From [here](ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/), please download the following files:
+Available [here](ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/), please download the following files:
 
     uniprot_sprot.dat.gz
     uniprot_sprot_varsplic.fasta.gz
@@ -41,9 +41,9 @@ From [here](ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledg
 
 Unzip 'uniprot_sprot_varsplic.fasta.gz' and 'uniprot_sprot.fasta.gz' and combine them to a new file: uniprot_sprot_canonical_and_varsplic.fasta
 
-Next you should build a blast database from this new file 'uniprot_sprot_canonical_and_varsplic.fasta'. See [here](https://www.ncbi.nlm.nih.gov/books/NBK279688/) for a further explanation on how to do this if you are unfamiliar with that.
+Next you should build a blast database from this new file named 'uniprot_sprot_canonical_and_varsplic.fasta'. See [here](https://www.ncbi.nlm.nih.gov/books/NBK279688/) for a further explanation on how to do this if you are unfamiliar with that.
 
-Next, put all this in your preferred data storage folder under '/UniProt/'
+Next, put all of this in your preferred data storage folder under '/UniProt/'
 
 ### ClinVar
 
@@ -79,7 +79,7 @@ Put all this in your preferred data storage folder under '/PFAM/'
 
 ## Installation
 
-Clone the repository and cd into the project folder:
+Clone the repository and go into the project folder:
 
     git clone https://github.com/cmbi/metadome.git
     cd metadome
