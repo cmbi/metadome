@@ -1207,6 +1207,10 @@ function addRowToPositionalInformationTable(domain_metadomain_coverage, d) {
     		    related_gnomad += d.values[0].domains[domain_id_list[i]].normal_variant_count;
     		    related_clinvar += d.values[0].domains[domain_id_list[i]].pathogenic_variant_count;
 		}
+		else{
+			related_gnomad = "-";
+			related_clinvar = "-";
+		}
 	    }
 	}
 	new_row.append('td').text(domain_ids);
