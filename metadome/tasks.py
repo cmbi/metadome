@@ -110,7 +110,7 @@ def analyse_transcript(transcript_id):
     try:
         gene = GeneRepository.retrieve_gene(transcript_id)
     except RepositoryException as e:
-        return {'error': 'No gene region could be build for transcript '+str(transcript_id)+', reason:'+e}
+        return {'error': 'No gene region could be build for transcript {}, reason: {}'.format(transcript_id, e)}
     
     # build the gene region
     gene_region = GeneRegion(gene)
