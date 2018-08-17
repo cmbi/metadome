@@ -845,8 +845,28 @@ function annotateDomains(protDomain, tolerance_data) {
 			// Activate the overlay
 		    $("#domain_information_overlay").addClass('is-active');
 		    
+		    domain_information_overlay_content
+		    
+		    // Add title to box
+		    document.getElementById("domain_information_overlay_title").innerHTML = '';
+		    document.getElementById("domain_information_overlay_title").innerHTML += '<label class="label" >';
+		    document.getElementById("domain_information_overlay_title").innerHTML += d.Name+' (' + d.ID + '), p.'+d.start+' - p.'+d.stop;
+		    document.getElementById("domain_information_overlay_title").innerHTML += '</label>';
+
 		    // Format the HTML in the correct format
-		    document.getElementById("domain_information_overlay_title").innerHTML = '<label class="label" >'+document.getElementById("geneDetails").innerHTML +'</label><label class="label"> Domain: ' + d.Name+' (<a href="http://pfam.xfam.org/family/' + d.ID + '" target="_blank">' + d.ID + '</a>), located at p.'+d.start+' - p.'+d.stop+' </label><label class="label"> </label>';
+		    document.getElementById("domain_information_overlay_content").innerHTML = '';
+		    // Add domain occurrence details
+		    document.getElementById("domain_information_overlay_content").innerHTML += '<label class="label" >';
+		    document.getElementById("domain_information_overlay_content").innerHTML += 'Domain: ' + d.Name+' (<a href="http://pfam.xfam.org/family/' + d.ID + '" target="_blank">' + d.ID + '</a>), located at p.'+d.start+' - p.'+d.stop;
+		    document.getElementById("domain_information_overlay_content").innerHTML += ' in ';
+		    document.getElementById("domain_information_overlay_content").innerHTML += document.getElementById("geneDetails").innerHTML +'.<br>';
+		    
+		    // if there is any, add meta-domain details
+		    if (d.metadomain){
+			    document.getElementById("domain_information_overlay_content").innerHTML += 'This domain has '+d.meta_domain_alignment_depth+' homologous occurrences throughout the human genome.';
+		    }
+		    document.getElementById("domain_information_overlay_content").innerHTML += '</label>';
+
 		});
 
 	// function to move item to front of svg
