@@ -9,7 +9,6 @@ from metadome.domain.repositories import GeneRepository
 from metadome.default_settings import GENE_NAMES_FILE
 import os
 
-
 _log = logging.getLogger(__name__)
 
 def filter_gene_names_present_in_database(gene_names_of_interest):
