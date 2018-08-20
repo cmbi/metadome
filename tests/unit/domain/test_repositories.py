@@ -4,7 +4,7 @@ from nose.tools import ok_, eq_, raises
 from psycopg2 import OperationalError
 
 from metadome.domain.repositories import GeneRepository
-from metadome.domain.models.error import RecoverableError
+from metadome.domain.error import RecoverableError
 
 
 @patch('metadome.database.db.create_scoped_session')

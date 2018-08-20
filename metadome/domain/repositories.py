@@ -14,7 +14,7 @@ from metadome.domain.models.mapping import Mapping
 from metadome.domain.models.gene import Gene
 from metadome.domain.models.protein import Protein
 from metadome.domain.models.interpro import Interpro
-from metadome.domain.models.error import RecoverableError
+from metadome.domain.error import RecoverableError
 
 _log = logging.getLogger(__name__)
 
