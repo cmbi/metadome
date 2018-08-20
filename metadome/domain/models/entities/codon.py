@@ -53,6 +53,13 @@ class Codon(object):
     
     def three_letter_amino_acid_residue(self):
         """Returns a three letter representation of the amino acid residue for this codon"""
+        # Check if this is a Pyrrolysine
+        if self.amino_acid_residue == 'O':
+            return 'Pyl'
+        # Check if this is a Selenocysteine
+        if self.amino_acid_residue == 'U':
+            return 'Sec'
+        # Return one of the 20 amino acid residues
         return protein_letters_1to3[self.amino_acid_residue];
     
     def pretty_print_cDNA_region(self):
