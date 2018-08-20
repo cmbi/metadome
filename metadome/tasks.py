@@ -5,6 +5,7 @@ from metadome.domain.models.entities.meta_domain import MetaDomain
 from metadome.domain.services.annotation.gene_region_annotators import annotateTranscriptWithClinvarData,\
     annotateTranscriptWithGnomADData
 from metadome.domain.services.annotation.annotation import annotateSNVs
+from metadome.domain.models.error import RecoverableError
 
 from celery import current_app as celery_app
 from flask import current_app as flask_app
@@ -54,14 +55,18 @@ def get_celery_worker_status():
         d = { ERROR_KEY: str(e)}
     return d
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True,
+                 autoretry_for=(RecoverableError,),
+                 retry_kwargs={'max_retries': 50})
 def mock_response(self):
     _log.info('Mocking PTPN11...')
          
     from metadome.presentation.api.routes_mock import mockup_tol_and_metadom, mock_ptpn11
     return mock_ptpn11()
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True,
+                 autoretry_for=(RecoverableError,),
+                 retry_kwargs={'max_retries': 50})
 def retrieve_prebuild_visualization(self, transcript_id):
     _log.info("Getting prebuild visualization for '{}'".format(transcript_id))
  
@@ -76,7 +81,9 @@ def retrieve_prebuild_visualization(self, transcript_id):
         visualization_content = json.load(f)
     return visualization_content
  
-@celery_app.task(bind=True)
+@celery_app.task(bind=True,
+                 autoretry_for=(RecoverableError,),
+                 retry_kwargs={'max_retries': 50})
 def create_prebuild_visualization(self, transcript_id):
     _log.info("Attempting to create visualization for '{}'".format(transcript_id))
     

@@ -1,7 +1,10 @@
 from mock import patch
-from nose.tools import ok_, eq_
+from nose.tools import ok_, eq_, raises
+
+from psycopg2 import OperationalError
 
 from metadome.domain.repositories import GeneRepository
+from metadome.domain.models.error import RecoverableError
 
 
 @patch('metadome.database.db.create_scoped_session')
@@ -68,3 +71,19 @@ def test_logs_error(mock_log_error, mock_create_session):
         eq_(str(e), error_message)
 
     ok_(mock_log_error.assert_called)
+
+
+@raises(RecoverableError)
+@patch('metadome.database.db.create_scoped_session')
+def test_raises_recoverable_error(mock_create_session):
+    class FailSession:
+        def query(self, id_):
+            raise OperationalError('test fail')
+
+        def remove(self):
+            pass
+
+    session = FailSession()
+    mock_create_session.return_value = session
+
+    l = GeneRepository.retrieve_all_transcript_ids_with_mappings()
