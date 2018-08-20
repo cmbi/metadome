@@ -1,4 +1,0 @@
-
-
-class RecoverableError(Exception):
-    pass
