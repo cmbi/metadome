@@ -1,18 +1,13 @@
 import traceback
-import logging
-import os
-
-from sqlalchemy.sql.expression import distinct
-from sqlalchemy.exc import ResourceClosedError as AlchemyResourceClosedError
-from sqlalchemy.exc import OperationalError as AlchemyOperationalError
-from psycopg2 import OperationalError as PsycopOperationalError
 
 from metadome.database import db
 from metadome.domain.models.protein import Protein
 from metadome.domain.models.gene import Gene
+from sqlalchemy.sql.expression import distinct
+import logging
 from metadome.domain.repositories import GeneRepository
 from metadome.default_settings import GENE_NAMES_FILE
-from metadome.domain.models.error import RecoverableError
+import os
 
 
 _log = logging.getLogger(__name__)
@@ -35,8 +30,6 @@ def filter_gene_names_present_in_database(gene_names_of_interest):
         _log.info("Filtered '"+str(n_filtered_gene_names)+"' out of '"+str(n_gene_names)+"' gene names that are already present in the database ...")
 
         return list(gene_names_of_interest)
-    except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
-        raise RecoverableError(str(e))
     except:
         _log.error(traceback.format_exc())
         raise
@@ -101,8 +94,6 @@ def add_gene_mapping_to_database(gene_mapping):
                     _session.add(gene_translation)
             # Commit the changes of this mapping
             _session.commit()
-    except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
-        raise RecoverableError(str(e))
     except:
         _log.error(traceback.format_exc())
         raise
