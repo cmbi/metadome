@@ -5,7 +5,7 @@ from metadome.domain.models.entities.meta_domain import MetaDomain
 from metadome.domain.services.annotation.gene_region_annotators import annotateTranscriptWithClinvarData,\
     annotateTranscriptWithGnomADData
 from metadome.domain.services.annotation.annotation import annotateSNVs
-from metadome.domain.models.error import RecoverableError
+from metadome.domain.error import RecoverableError
 
 from celery import current_app as celery_app
 from flask import current_app as flask_app
