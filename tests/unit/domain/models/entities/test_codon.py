@@ -32,7 +32,7 @@ class Test_codon(unittest.TestCase):
         _mappings.append(mock_Mapping(id=3, base_pair='A', codon='TGA', codon_base_pair_position=2, amino_acid_residue='U', cDNA_position=3, chromosome_position=3))
          
         # Create the Codon
-        codon = Codon(_mappings)
+        codon = Codon(_mappings, 'test_transcript', 'test_protein_ac')
          
         self.assertTrue(codon.three_letter_amino_acid_residue() == 'Sec')
         
@@ -44,7 +44,7 @@ class Test_codon(unittest.TestCase):
         _mappings.append(mock_Mapping(id=3, base_pair='G', codon='TAG', codon_base_pair_position=2, amino_acid_residue='U', cDNA_position=3, chromosome_position=3))
          
         # Create the Codon
-        codon = Codon(_mappings)
+        codon = Codon(_mappings, 'test_transcript', 'test_protein_ac')
          
         self.assertTrue(codon.three_letter_amino_acid_residue() == 'Sec')
 
