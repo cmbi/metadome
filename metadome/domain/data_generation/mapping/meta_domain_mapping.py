@@ -3,7 +3,8 @@ from metadome.domain.wrappers.hmmer import FoundNoPfamHMMException,\
     map_sequence_to_aligned_sequence, convert_pfam_fasta_alignment_to_strict_fasta,\
     create_alignment_of_sequences_according_to_PFAM_HMM, interpret_hmm_alignment_file, convert_pfam_fasta_alignment_to_strict_sequence
 from metadome.domain.data_generation.mapping.Protein2ProteinMapping import createAlignedSequenceMapping    
-from metadome.domain.repositories import MappingRepository, SequenceRepository, InterproRepository, ProteinRepository
+from metadome.domain.repositories import MappingRepository, SequenceRepository, InterproRepository, ProteinRepository,\
+    GeneRepository
 from metadome.default_settings import METADOMAIN_DIR, METADOMAIN_ALIGNMENT_FILE_NAME
 import numpy as np
 import time
@@ -59,7 +60,11 @@ def generate_pfam_alignment_mappings(pfam_id):
     consensus_pos_per_protein = {}
     # the amount of domain occurrences found
     n_instances = 0 
-     
+    
+    # mapping from database context to accession codes used for this meta-domain
+    gencode_transcription_id_per_gene_id = {}
+    protein_ac_per_protein_id = {}
+    
     # retrieve the alignment
     hmmeralign_output = interpret_hmm_alignment_file(METADOMAIN_DIR+pfam_id+'/'+METADOMAIN_ALIGNMENT_FILE_NAME) 
     if not len (hmmeralign_output) == 0:
@@ -123,6 +128,9 @@ def generate_pfam_alignment_mappings(pfam_id):
         
         # Second, get all mappings for these proteins
         protein_mappings = MappingRepository.get_mappings_for_multiple_protein_ids(protein_ids)
+        
+        # keep track of all the gene ids
+        gene_ids = []
 
         for uniprot_ac in consensus_pos_per_protein.keys():
             for uniprot_pos in consensus_pos_per_protein[uniprot_ac].keys():
@@ -135,7 +143,17 @@ def generate_pfam_alignment_mappings(pfam_id):
                     if not domain_consensus_pos in mappings_per_consensus_pos.keys():
                         mappings_per_consensus_pos[domain_consensus_pos] = []
                     mappings_per_consensus_pos[domain_consensus_pos].append(mapping)
+                    
+                    # Add the gene id to the list of gene_ids
+                    gene_ids.append(mapping.gene_id)
+                    
+        # ensure uniqueness of the gene ids
+        gene_ids = [int(y) for y  in np.unique(gene_ids)]
+        
+        # create mapping from gene id and protein id to the accession codes
+        gencode_transcription_id_per_gene_id = GeneRepository.retrieve_transcript_id_for_multiple_gene_ids(gene_ids)
+        protein_ac_per_protein_id = ProteinRepository.retrieve_protein_ac_for_multiple_protein_ids(protein_ids)
    
     time_step = time.clock()
     _log.info("Finished the mappings for '"+str(n_instances) +"' '"+pfam_id+"' domain occurrences in "+str(time_step-start_time)+" seconds")
-    return mappings_per_consensus_pos, consensus_pos_per_protein, n_instances
+    return mappings_per_consensus_pos, consensus_pos_per_protein, n_instances, gencode_transcription_id_per_gene_id, protein_ac_per_protein_id
