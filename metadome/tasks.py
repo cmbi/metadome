@@ -5,10 +5,12 @@ from metadome.domain.models.entities.meta_domain import MetaDomain
 from metadome.domain.services.annotation.gene_region_annotators import annotateTranscriptWithClinvarData,\
     annotateTranscriptWithGnomADData
 from metadome.domain.services.annotation.annotation import annotateSNVs
+from metadome.controllers.job import get_visualization_error_path
 
 from celery import current_app as celery_app
 from flask import current_app as flask_app
 
+import traceback
 import json
 import os
 import logging
@@ -78,32 +80,37 @@ def retrieve_prebuild_visualization(self, transcript_id):
  
 @celery_app.task(bind=True)
 def create_prebuild_visualization(self, transcript_id):
-    _log.info("Attempting to create visualization for '{}'".format(transcript_id))
-    
-    result = analyse_transcript(transcript_id)
-    
-    if 'error' in result.keys():
-        _log.info("Something went wrong while trying to create visualization for '{}'".format(transcript_id))
+    try:
+        _log.info("Attempting to create visualization for '{}'".format(transcript_id))
+        
+        result = analyse_transcript(transcript_id)
+        
+        if 'error' in result.keys():
+            _log.info("Something went wrong while trying to create visualization for '{}'".format(transcript_id))
+            return result
+        _log.info("Succeeded in creating visualization for '{}', saving as prebuild...".format(transcript_id))
+        
+        # Check if the directory already exists
+        base_visualization_dir = flask_app.config['PRE_BUILD_VISUALIZATION_DIR']
+        if not os.path.exists(base_visualization_dir):
+            os.makedirs(base_visualization_dir)
+            
+        # Check if the directory for the gene already exists
+        visualization_dir = base_visualization_dir + transcript_id + '/'
+        if not os.path.exists(visualization_dir):
+            os.makedirs(visualization_dir)
+        
+        # Determine path to the file and check that it exists.
+        visualization_path = visualization_dir + flask_app.config['PRE_BUILD_VISUALIZATION_FILE_NAME']
+                 
+        with open(visualization_path, 'w') as f:
+            json.dump(result, f)
+            
         return result
-    _log.info("Succeeded in creating visualization for '{}', saving as prebuild...".format(transcript_id))
-    
-    # Check if the directory already exists
-    base_visualization_dir = flask_app.config['PRE_BUILD_VISUALIZATION_DIR']
-    if not os.path.exists(base_visualization_dir):
-        os.makedirs(base_visualization_dir)
-        
-    # Check if the directory for the gene already exists
-    visualization_dir = base_visualization_dir + transcript_id + '/'
-    if not os.path.exists(visualization_dir):
-        os.makedirs(visualization_dir)
-    
-    # Determine path to the file and check that it exists.
-    visualization_path = visualization_dir + flask_app.config['PRE_BUILD_VISUALIZATION_FILE_NAME']
-             
-    with open(visualization_path, 'w') as f:
-        json.dump(result, f)
-        
-    return result
+    except:
+        with open(get_visualization_error_path(transcript_id), 'r') as err_file:
+            err_file.write(traceback.format_exc())
+        raise
 
 def analyse_transcript(transcript_id):
     # Retrieve the gene from the database

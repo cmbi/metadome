@@ -550,3 +550,110 @@ function loadDoc() {
 		}
 	}
 }
+
+function retrieveInput() {
+    resetGraphControl();
+    var selection = document.getElementsByClassName("dropdown")[0];
+
+    if (typeof selection !== 'undefined' && selection !== null && selection.length > 0) {
+        var input = selection.options[selection.selectedIndex].text;
+        return input.toUpperCase();
+    }
+    else {
+        alert("no selection");
+    }
+}
+
+function visualize() {
+    var gtID = retrieveInput();
+    var transcriptID = gtID.split(" ")[0];
+
+    visualizeSubmit(transcriptID);
+}
+
+function visualizeSubmit(transcriptID) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        var response = JSON.parse(xhttp.responseText);
+        if (this.readyState == 4 && this.status == 200) {
+            visualizeStatus(transcriptID);
+        }
+        else {
+            throw response.error;
+        }
+    };
+    xhttp.open("GET",
+               "{{ url_for('api.submit_visualization_job_for_transcript', transcript_id='XXXXXX') }}"
+               .replace('XXXXXX', transcriptID), true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send();
+}
+
+function visualizeStatus(transcriptID) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        var response = JSON.parse(xhttp.responseText);
+        showStatusOnPage(response.status);
+        if (response.status == 'SUCCESS')
+            visualizeResult(transcriptID);
+        else if (response.status == 'FAILURE')
+            visualizeError(transcriptID);
+        else
+            visualizeStatus(transcriptID);
+    };
+    xhttp.open("GET",
+               "{{ url_for('api.get_visualization_status_for_transcript', transcript_id='XXXXXX') }}"
+               .replace('XXXXXX', transcriptID), true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send();
+}
+
+function visualizeError(transcriptID) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        var response = JSON.parse(xhttp.responseText);
+        showErrorOnPage(response.error);
+    }
+    xhttp.open("GET",
+               "{{ url_for('api.get_visualization_error_for_transcript', transcript_id='XXXXXX') }}"
+               .replace('XXXXXX', transcriptID), true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send();
+}
+
+function visualizeResult(transcriptID) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        var response = JSON.parse(xhttp.responseText);
+        if (this.readyState == 4 && this.status == 200) {
+            showResultOnPage(response);
+        }
+        else {
+            throw response.error;
+        }
+    }
+    xhttp.open("GET",
+               "{{ url_for('api.get_visualization_result_for_transcript', transcript_id='XXXXXX') }}"
+               .replace('XXXXXX', transcriptID), true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send();
+}
+
+function showResultOnPage(obj) {
+    $("#loading_overlay").removeClass('is-active');
+
+    $("#toleranceGraphContainer").removeClass('is-hidden');
+    $("#graph_control_field").removeClass('is-hidden');
+    var geneName = document.getElementById("geneName").value;
+    var geneDetails = document.getElementById("geneDetails");
+    geneDetails.innerHTML = 'Gene: '+obj.gene_name+' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='+obj.transcript_id+'" target="_blank">'+obj.transcript_id+'</a>, protein: <a href="https://www.uniprot.org/uniprot/'+obj.protein_ac+'" target="_blank">'+obj.protein_ac+'</a>)';
+
+    // Draw the graph
+    createGraph(obj);
+
+    // Download for the whole svg as svg
+    d3.select('#dlSVG').on('click', function() {
+        var fileName = 'Gene_'+obj.gene_name+'_transcript_'+obj.transcript_id+'_protein_'+obj.protein_ac+'_metadome';
+        saveSvg(document.getElementById('landscape_svg'), fileName);
+    });
+}
