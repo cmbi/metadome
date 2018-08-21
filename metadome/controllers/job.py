@@ -23,12 +23,12 @@ def _get_visualization_dir_path(transcript_id):
 
 def _get_visualization_task_path(transcript_id):
     return os.path.join(_get_visualization_dir_path(transcript_id),
-                        falsk_app.config['PRE_BUILD_VISUALIZATION_TASK_FILE_NAME'])
+                        flask_app.config['PRE_BUILD_VISUALIZATION_TASK_FILE_NAME'])
 
 
 def get_visualization_error_path(transcript_id):
     return os.path.join(_get_visualization_dir_path(transcript_id),
-                        falsk_app.config['PRE_BUILD_VISUALIZATION_ERROR_FILE_NAME'])
+                        flask_app.config['PRE_BUILD_VISUALIZATION_ERROR_FILE_NAME'])
 
 
 def _get_lock_for(transcript_id):
