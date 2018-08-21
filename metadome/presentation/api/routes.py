@@ -70,6 +70,8 @@ def submit_gene_analysis_job_for_transcript(transcript_id):
 
 @bp.route('/submit_visualization/<transcript_id>/', methods=['GET'])
 def submit_visualization_job_for_transcript(transcript_id):
+    _log.debug("submitted {}".format(transcript_id))
+
     if is_transcript_id(transcript_id):
         create_visualization_job_if_needed(transcript_id)
         return jsonify({'transcript_id': transcript_id})
@@ -87,7 +89,7 @@ def get_job_status_stub():
 def get_visualization_status_for_transcript(transcript_id):
     status = get_visualization_status(transcript_id)
 
-    return jsonify({'status': result.status})
+    return jsonify({'status': status})
 
 
 @bp.route('/status/<job_name>/<job_id>/', methods=['GET'])
