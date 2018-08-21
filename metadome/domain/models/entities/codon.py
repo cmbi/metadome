@@ -15,8 +15,8 @@ class Codon(object):
     name                       description
     mappings                   list of the mapping objects for these locations
     mapping_ids                list the list of ids for the mappings associated to this codon
-    gene_id                    int the gene id associated to this codon
-    protein_id                 int the protein id associated to this codon
+    gencode_transcription_id   str the transcription id associated to this codon
+    uniprot_ac                 str the uniprot protein ac associated to this codon
     strand                     Enum the strand represented as models.gene.Strand
     base_pair_representation   str the base pair representation of this codon (e.g. ATG)
     amino_acid_residue         str the amino acid residue of this codon
@@ -69,11 +69,11 @@ class Codon(object):
         _stringified_list = list_of_stringified_of_ranges(self.regions)
         return "".join("g."+_stringified_list[i] if i+1 == len(_stringified_list) else "g."+_stringified_list[i]+", " for i in range(len(_stringified_list)))
 
-    def __init__(self, _mappings):
+    def __init__(self, _mappings, _gencode_transcription_id, _uniprot_ac):
         self.mappings = list()
         self.mapping_ids = list()
-        self.gene_id = int()
-        self.protein_id = int()
+        self.gencode_transcription_id = _gencode_transcription_id
+        self.uniprot_ac = _uniprot_ac
         self.strand = str()
         self.base_pair_representation = str() 
         self.amino_acid_residue = str()
@@ -119,8 +119,6 @@ class Codon(object):
             raise MalformedCodonException("Malformed codon mapping: The cDNA positions do not agree follow in order for mapping ids: '"+str(self.mapping_ids)+"'.")
         
         # set the checked values
-        self.gene_id = self.mappings[0].gene_id
-        self.protein_id = self.mappings[0].protein_id
         self.strand = self.mappings[0].strand
         self.amino_acid_residue = self.mappings[0].amino_acid_residue
         self.amino_acid_position = self.mappings[0].amino_acid_position
