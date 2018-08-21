@@ -560,7 +560,7 @@ function retrieveInput() {
         return input.toUpperCase();
     }
     else {
-        alert("no selection");
+        throw "no selection";
     }
 }
 
@@ -574,12 +574,13 @@ function visualize() {
 function visualizeSubmit(transcriptID) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
-        var response = JSON.parse(xhttp.responseText);
-        if (this.readyState == 4 && this.status == 200) {
-            visualizeStatus(transcriptID);
-        }
-        else {
-            throw response.error;
+
+        if (this.readyState == 4 && this.status > 0) {
+            var response = JSON.parse(xhttp.responseText);
+            if (response.error !== undefined)
+                showErrorOnPage(transcriptID, response.error);
+            else
+                visualizeStatus(transcriptID);
         }
     };
     xhttp.open("GET",
@@ -592,14 +593,22 @@ function visualizeSubmit(transcriptID) {
 function visualizeStatus(transcriptID) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
-        var response = JSON.parse(xhttp.responseText);
-        showStatusOnPage(response.status);
-        if (response.status == 'SUCCESS')
-            visualizeResult(transcriptID);
-        else if (response.status == 'FAILURE')
-            visualizeError(transcriptID);
-        else
-            visualizeStatus(transcriptID);
+
+        if (this.readyState == 4 && this.status > 0) {
+            var response = JSON.parse(xhttp.responseText);
+            if (response.error !== undefined)
+                showErrorOnPage(transcriptID, response.error);
+            else {
+                showStatusOnPage(transcriptID, response.status);
+                if (response.status == 'SUCCESS')
+                    visualizeResult(transcriptID);
+                else if (response.status == 'FAILURE')
+                    visualizeError(transcriptID);
+                else
+                    // try again after 5 seconds:
+                    setInterval(function() { visualizeStatus(transcriptID); }, 5000);
+            }
+        }
     };
     xhttp.open("GET",
                "{{ url_for('api.get_visualization_status_for_transcript', transcript_id='XXXXXX') }}"
@@ -611,8 +620,10 @@ function visualizeStatus(transcriptID) {
 function visualizeError(transcriptID) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
-        var response = JSON.parse(xhttp.responseText);
-        showErrorOnPage(response.error);
+        if (this.readyState == 4 && this.status > 0) {
+            var response = JSON.parse(xhttp.responseText);
+            showErrorOnPage(transcriptID, response.error);
+        }
     }
     xhttp.open("GET",
                "{{ url_for('api.get_visualization_error_for_transcript', transcript_id='XXXXXX') }}"
@@ -624,12 +635,12 @@ function visualizeError(transcriptID) {
 function visualizeResult(transcriptID) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
-        var response = JSON.parse(xhttp.responseText);
-        if (this.readyState == 4 && this.status == 200) {
-            showResultOnPage(response);
-        }
-        else {
-            throw response.error;
+        if (this.readyState == 4 && this.status > 0) {
+            var response = JSON.parse(xhttp.responseText);
+            if (response.error !== undefined)
+                showErrorOnPage(transcriptID, response.error);
+            else
+                showResultOnPage(response);
         }
     }
     xhttp.open("GET",
@@ -637,6 +648,16 @@ function visualizeResult(transcriptID) {
                .replace('XXXXXX', transcriptID), true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send();
+}
+
+function showStatusOnPage(transcriptID, status) {
+    $("#statusDisplay").removeClass('is-hidden');
+    $("#statusLabel").text("status for transcript " + transcriptID + ": " + status);
+}
+
+function showErrorOnPage(transcriptID, traceback) {
+    $("#errorDisplay").removeClass('is-hidden');
+    $("#errorTraceback").text("error for transcript " + transcriptID + ":\n" + traceback);
 }
 
 function showResultOnPage(obj) {
