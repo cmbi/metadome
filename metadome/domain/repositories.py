@@ -1,16 +1,20 @@
 import logging
 import traceback
 
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.sql.functions import func
+from metadome.default_settings import GENE_NAMES_FILE
+from sqlalchemy.sql.expression import and_, distinct
+from sqlalchemy.exc import ResourceClosedError as AlchemyResourceClosedError
+from sqlalchemy.exc import OperationalError as AlchemyOperationalError
+from psycopg2 import OperationalError as PsycopOperationalError
+
 from metadome.database import db
 from metadome.domain.models.mapping import Mapping
 from metadome.domain.models.gene import Gene
 from metadome.domain.models.protein import Protein
 from metadome.domain.models.interpro import Interpro
-
-from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
-from sqlalchemy.sql.functions import func
-from metadome.default_settings import GENE_NAMES_FILE
-from sqlalchemy.sql.expression import and_, distinct
+from metadome.domain.error import RecoverableError
 
 _log = logging.getLogger(__name__)
 
@@ -31,6 +35,8 @@ class GeneRepository:
 
         try :
             return [transcript for transcript in _session.query(Gene.gencode_transcription_id).filter(Gene.protein_id != None).all()]
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
         except:
             _log.error(traceback.format_exc())
             raise
@@ -55,6 +61,8 @@ class GeneRepository:
 
         try:
             return [gene_name for gene_name in _session.query(Gene.gene_name).distinct(Gene.gene_name).all()]
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
         except:
             _log.error(traceback.format_exc())
             raise
@@ -70,6 +78,8 @@ class GeneRepository:
 
         try:
             return [transcript for transcript in _session.query(Gene).filter(func.lower(Gene.gene_name) == gene_name.lower()).all()]
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
         except:
             _log.error(traceback.format_exc())
             raise
@@ -84,6 +94,8 @@ class GeneRepository:
         _session = db.create_scoped_session()
         try:
             return _session.query(Gene).filter(Gene.gencode_transcription_id == transcription_id).one()
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
         except MultipleResultsFound as e:
             error_message = "GeneRepository.retrieve_gene(transcription_id): Multiple results found while expecting uniqueness for transcription_id '"+str(transcription_id)+"'. "+str(e)
             _log.error(error_message)
@@ -123,6 +135,8 @@ class InterproRepository:
 
         try:
             return [interpro_domain for interpro_domain in _session.query(Interpro).filter(Interpro.ext_db_id == ext_domain_id).all()]
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
         except:
             _log.error(traceback.format_exc())
             raise
@@ -138,6 +152,8 @@ class InterproRepository:
 
         try:
             return [interpro_domain for interpro_domain in _session.query(Interpro).filter(Interpro.protein_id == protein_id).all()]
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
         except:
             _log.error(traceback.format_exc())
             raise
@@ -152,12 +168,20 @@ class ProteinRepository:
         """Retrieves all uniprot accession codes for multiple Protein objects as {protein_id: uniprot_ac}"""
         # Open as session
         _session = db.create_scoped_session()
-        _protein_ac_per_protein_id = {}
-        for protein in _session.query(Protein).filter(Protein.id.in_(_protein_ids)).all():
-            _protein_ac_per_protein_id[protein.id] = protein.uniprot_ac
-        # Close this session, thus all items are cleared and memory usage is kept at a minimum
-        _session.remove()
-        return _protein_ac_per_protein_id
+
+        try:
+            _protein_ac_per_protein_id = {}
+            for protein in _session.query(Protein).filter(Protein.id.in_(_protein_ids)).all():
+                _protein_ac_per_protein_id[protein.id] = protein.uniprot_ac
+            return _protein_ac_per_protein_id
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
+        except:
+            _log.error(traceback.format_exc())
+            raise
+        finally:
+            # Close this session, thus all items are cleared and memory usage is kept at a minimum
+            _session.remove()
 
     @staticmethod
     def retrieve_protein_id_for_multiple_protein_acs(_protein_acs):
@@ -170,6 +194,8 @@ class ProteinRepository:
             for protein in _session.query(Protein).filter(Protein.uniprot_ac.in_(_protein_acs)).all():
                 _protein_id_per_protein_ac[protein.uniprot_ac] = protein.id
             return _protein_id_per_protein_ac
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
         except:
             _log.error(traceback.format_exc())
             raise
@@ -185,6 +211,8 @@ class ProteinRepository:
 
         try:
             return _session.query(Protein).filter(Protein.id == protein_id).one()
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
         except MultipleResultsFound as e:
             _log.error("ProteinRepository.retrieve_protein(protein_id): Multiple results found while expecting uniqueness for protein_id '"+str(protein_id)+"'. "+str(e))
             return None
@@ -214,6 +242,8 @@ class MappingRepository:
 
                 _mappings_per_protein[mapping.protein_id].append(mapping)
             return _mappings_per_protein
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
         except:
             _log.error(traceback.format_exc())
             raise
@@ -229,6 +259,8 @@ class MappingRepository:
 
         try:
             return [x for x in _session.query(Mapping).filter(Mapping.protein_id == _protein.id).all()]
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
         except:
             _log.error(traceback.format_exc())
             raise
@@ -245,6 +277,8 @@ class MappingRepository:
 
         try:
             return [x for x in _session.query(Mapping).filter(Mapping.gene_id == _gene.id).all()]
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
         except:
             _log.error(traceback.format_exc())
             raise
