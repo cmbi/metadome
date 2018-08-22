@@ -172,7 +172,7 @@ def analyse_transcript(transcript_id):
          
         for chrom_pos in ClinVar_annotation.keys():
             for variant in ClinVar_annotation[chrom_pos]:
-                protein_pos = _mappings_per_chromosome[chrom_pos].uniprot_position
+                protein_pos = _mappings_per_chromosome[chrom_pos]['amino_acid_position']
                  
                 if not 'ClinVar' in region_positional_annotation[protein_pos].keys():
                     region_positional_annotation[protein_pos]['ClinVar'] = []
@@ -247,8 +247,8 @@ def create_meta_domain_entry(gene_region, metadomain, consensus_position, protei
     # iterate over meta_codons and add to metadom_entry
     for meta_codon in meta_codons:
         # Check if we are dealing with the gene and protein_pos of interest
-        if not (gene_region.gene_id in meta_codon.codon_aggregate.keys() \
-            and protein_pos == meta_codon.codon_aggregate[gene_region.gene_id].amino_acid_position):
+        if not (gene_region.gencode_transcription_id in meta_codon.codon_aggregate.keys() \
+            and protein_pos == meta_codon.codon_aggregate[gene_region.gencode_transcription_id].amino_acid_position):
             # first append the general information for this codon
             position_entry = {}
             position_entry['chr'] = meta_codon.chr
