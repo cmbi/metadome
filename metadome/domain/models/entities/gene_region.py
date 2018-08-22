@@ -54,7 +54,7 @@ class GeneRegion(object):
         """Returns the mappings for this gene region per chromosome position"""
         mappings_per_chromosome = dict()
         for chromosome_position in self.chromosome_pos_to_cDNA.keys():
-            mappings_per_chromosome[chromosome_position] = self.mappings_per_cDNA[self.chromosome_pos_to_cDNA[chromosome_position]]
+            mappings_per_chromosome[chromosome_position] = self.mappings_per_cDNA[self.chromosome_pos_to_cDNA[chromosome_position]].base_pair
         return mappings_per_chromosome
     
     def get_domains_for_position(self, position):
