@@ -19,11 +19,10 @@ class mock_Mapping(object):
         self.amino_acid_residue = amino_acid_residue
         self.chromosome_position = chromosome_position
 
-
-# @mock.patch("flask_sqlalchemy.SignallingSession", autospec=True)
 class Test_codon(unittest.TestCase):
     
     def test_init_with_mapping(self):
+        # init test variables
         _transcript =  'test_transcript'
         _protein_ac =  'test_test_protein_ac'
         _codon_repr = 'CTT'
@@ -31,12 +30,15 @@ class Test_codon(unittest.TestCase):
         _chromosome_position_base_pair_one = 231
         _chromosome_position_base_pair_two = 232
         _chromosome_position_base_pair_three = 233
+        _cDNA_position_one = 333
+        _cDNA_position_two = 334
+        _cDNA_position_three = 335
         
-        
+        # init mappings
         _mappings = []
-        _mappings.append(mock_Mapping(id=1, base_pair='C', codon=_codon_repr, codon_base_pair_position=0, amino_acid_residue=_residue, cDNA_position=1, chromosome_position=_chromosome_position_base_pair_one))
-        _mappings.append(mock_Mapping(id=2, base_pair='T', codon=_codon_repr, codon_base_pair_position=1, amino_acid_residue=_residue, cDNA_position=2, chromosome_position=_chromosome_position_base_pair_two))
-        _mappings.append(mock_Mapping(id=3, base_pair='T', codon=_codon_repr, codon_base_pair_position=2, amino_acid_residue=_residue, cDNA_position=3, chromosome_position=_chromosome_position_base_pair_three))
+        _mappings.append(mock_Mapping(id=1, base_pair='C', codon=_codon_repr, codon_base_pair_position=0, amino_acid_residue=_residue, cDNA_position=_cDNA_position_one, chromosome_position=_chromosome_position_base_pair_one))
+        _mappings.append(mock_Mapping(id=2, base_pair='T', codon=_codon_repr, codon_base_pair_position=1, amino_acid_residue=_residue, cDNA_position=_cDNA_position_two, chromosome_position=_chromosome_position_base_pair_two))
+        _mappings.append(mock_Mapping(id=3, base_pair='T', codon=_codon_repr, codon_base_pair_position=2, amino_acid_residue=_residue, cDNA_position=_cDNA_position_three, chromosome_position=_chromosome_position_base_pair_three))
          
         # Create the Codon from the mapping
         _codon_from_mapping = Codon.initializeFromMapping(_mappings=_mappings, _gencode_transcription_id=_transcript, _uniprot_ac=_protein_ac)
@@ -45,7 +47,9 @@ class Test_codon(unittest.TestCase):
                                  _amino_acid_residue=_residue, _amino_acid_position=mock_Mapping.amino_acid_position,
                                  _chr=mock_Mapping.chromosome, _chromosome_position_base_pair_one=_chromosome_position_base_pair_one,
                                  _chromosome_position_base_pair_two=_chromosome_position_base_pair_two,
-                                 _chromosome_position_base_pair_three=_chromosome_position_base_pair_three)
+                                 _chromosome_position_base_pair_three=_chromosome_position_base_pair_three,
+                                 _cDNA_position_one=_cDNA_position_one, _cDNA_position_two=_cDNA_position_two,
+                                 _cDNA_position_three=_cDNA_position_three)
         
         # Check if the conversion went okay and it is the same as init
         self.assertTrue(_codon_from_init.three_letter_amino_acid_residue() == _codon_from_mapping.three_letter_amino_acid_residue() == 'Leu')
@@ -59,6 +63,9 @@ class Test_codon(unittest.TestCase):
         self.assertTrue(_codon_from_init.chromosome_position_base_pair_one == _codon_from_mapping.chromosome_position_base_pair_one == _chromosome_position_base_pair_one)
         self.assertTrue(_codon_from_init.chromosome_position_base_pair_two == _codon_from_mapping.chromosome_position_base_pair_two == _chromosome_position_base_pair_two)
         self.assertTrue(_codon_from_init.chromosome_position_base_pair_three == _codon_from_mapping.chromosome_position_base_pair_three == _chromosome_position_base_pair_three)
+        self.assertTrue(_codon_from_init.cDNA_position_one == _codon_from_mapping.cDNA_position_one == _cDNA_position_one)
+        self.assertTrue(_codon_from_init.cDNA_position_two == _codon_from_mapping.cDNA_position_two == _cDNA_position_two)
+        self.assertTrue(_codon_from_init.cDNA_position_three == _codon_from_mapping.cDNA_position_three == _cDNA_position_three)
         
     def test_three_letter_amino_acid_residue_selenocysteine(self):
         _mappings = []
