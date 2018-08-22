@@ -37,15 +37,35 @@ class Codon(object):
         """Returns the mappings for this codon per chromosome position"""
         mappings_per_chromosome = dict()
         
-        mappings_per_chromosome[self.chromosome_position_base_pair_one] = self.base_pair_representation[0]
-        mappings_per_chromosome[self.chromosome_position_base_pair_two] = self.base_pair_representation[1]
-        mappings_per_chromosome[self.chromosome_position_base_pair_three] = self.base_pair_representation[2]
+        # first base pair
+        mappings_per_chromosome[self.chromosome_position_base_pair_one] = {}
+        mappings_per_chromosome[self.chromosome_position_base_pair_one]['base_pair_representation'] = self.base_pair_representation
+        mappings_per_chromosome[self.chromosome_position_base_pair_one]['codon_base_pair_position'] = 0
+        mappings_per_chromosome[self.chromosome_position_base_pair_one]['amino_acid_position'] = self.amino_acid_position
+        mappings_per_chromosome[self.chromosome_position_base_pair_one]['base_pair'] = self.base_pair_representation[0]
+        mappings_per_chromosome[self.chromosome_position_base_pair_one]['gencode_transcription_id'] = self.gencode_transcription_id
+
+        # second base pair
+        mappings_per_chromosome[self.chromosome_position_base_pair_two] = {}
+        mappings_per_chromosome[self.chromosome_position_base_pair_two]['base_pair_representation'] = self.base_pair_representation
+        mappings_per_chromosome[self.chromosome_position_base_pair_two]['codon_base_pair_position'] = 1
+        mappings_per_chromosome[self.chromosome_position_base_pair_two]['amino_acid_position'] = self.amino_acid_position
+        mappings_per_chromosome[self.chromosome_position_base_pair_two]['base_pair'] = self.base_pair_representation[1]
+        mappings_per_chromosome[self.chromosome_position_base_pair_two]['gencode_transcription_id'] = self.gencode_transcription_id
+
+        # thirs base pair
+        mappings_per_chromosome[self.chromosome_position_base_pair_three] = {}
+        mappings_per_chromosome[self.chromosome_position_base_pair_three]['base_pair_representation'] = self.base_pair_representation
+        mappings_per_chromosome[self.chromosome_position_base_pair_three]['codon_base_pair_position'] = 2
+        mappings_per_chromosome[self.chromosome_position_base_pair_three]['amino_acid_position'] = self.amino_acid_position
+        mappings_per_chromosome[self.chromosome_position_base_pair_three]['base_pair'] = self.base_pair_representation[2]
+        mappings_per_chromosome[self.chromosome_position_base_pair_three]['gencode_transcription_id'] = self.gencode_transcription_id
 
         return mappings_per_chromosome
     
     def interpret_SNV_type(self, position, var_nucleotide):
         """Interprets the new codon, residue and type of a SNV"""
-        codon_pos = self.retrieve_mappings_per_chromosome()[position].codon_base_pair_position
+        codon_pos = self.retrieve_mappings_per_chromosome()[position]['codon_base_pair_position']
         
         alt_codon = interpret_alt_codon(self.base_pair_representation, codon_pos, var_nucleotide)
         alt_residue = translate(alt_codon)
@@ -70,7 +90,7 @@ class Codon(object):
         return protein_letters_1to3[self.amino_acid_residue];
     
     def pretty_print_cDNA_region(self):
-        return "c."+str(self._cDNA_position_one)+"-"+str(self._cDNA_position_three)
+        return "c."+str(self.cDNA_position_one)+"-"+str(self.cDNA_position_three)
     
     def pretty_print_chr_region(self):
         _stringified_list = list_of_stringified_of_ranges(self.regions)
