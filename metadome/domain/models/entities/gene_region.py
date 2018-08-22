@@ -47,7 +47,7 @@ class GeneRegion(object):
         for cDNA_pos in self.protein_pos_to_cDNA[protein_pos]:
             _mappings.append(self.mappings_per_cDNA[cDNA_pos])
         # create the codon
-        _codon = Codon(_mappings)
+        _codon = Codon.initializeFromMapping(_mappings, self.gencode_transcription_id, self.uniprot_ac)
         return _codon
     
     def retrieve_mappings_per_chromosome(self):
