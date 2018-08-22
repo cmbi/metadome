@@ -17,7 +17,7 @@ class MetaCodon(Codon):
     base_pair_representation   str the base pair representation of this codon (e.g. ATG)
     unique_str_representation  str unique string representation of the chromosomal region of this codon
     codon_aggregate            dict containing the duplicate chromosomal regions as:
-                                {codon.gene_id: models.entities.codon.Codon}
+                                {codon.gencode_transcription_id: models.entities.codon.Codon}
     """
 
     def retrieve_mappings_per_chromosome(self):
@@ -55,10 +55,10 @@ class MetaCodon(Codon):
                 raise MalformedAggregatedCodon("The unique string representation of the codon's chromosomal region did not match all presented codons."+
                                                +" Expected '"+str(self.unique_str_representation)+"', but was '"+str(codon.unique_str_representation())+"'")
             
-            if codon.gene_id in self.codon_aggregate.keys():
-                raise MalformedAggregatedCodon("Duplicate codons of the same gene transcript '"+str(codon.gene_id)+"' received")
+            if codon.gencode_transcription_id in self.codon_aggregate.keys():
+                raise MalformedAggregatedCodon("Duplicate codons of the same gene transcript '"+str(codon.gencode_transcription_id)+"' received")
             
-            self.codon_aggregate[codon.gene_id] = codon
+            self.codon_aggregate[codon.gencode_transcription_id] = codon
     
     def __repr__(self):
         return "<MetaCodon(representation='%s', amino_acid_residue='%s', chr='%s', chr_positions='%s', strand='%s', aggregated_codons='%s')>" % (
