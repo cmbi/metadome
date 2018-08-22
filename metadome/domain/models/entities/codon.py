@@ -22,9 +22,12 @@ class Codon(object):
     chr                                    str the chromosome
     regions                                tuple the range of chromosomal positions of this codon
     cDNA_position_range                    tuple the range of cDNA positions of this codon
-    chromosome_position_base_pair_one      int the position corresponding to the first base pair
-    chromosome_position_base_pair_two      int the position corresponding to the second base pair
-    chromosome_position_base_pair_three    int the position corresponding to the third base pair
+    chromosome_position_base_pair_one      int the position corresponding to the first base pair in the chromosome
+    chromosome_position_base_pair_two      int the position corresponding to the second base pair in the chromosome
+    chromosome_position_base_pair_three    int the position corresponding to the third base pair in the chromosome
+    cDNA_position_one                      int the position corresponding to the first base pair in the cDNA
+    cDNA_position_two                      int the position corresponding to the second base pair in the cDNA
+    cDNA_position_three                    int the position corresponding to the third base pair in the cDNA
     """
 
     def unique_str_representation(self):
@@ -67,26 +70,40 @@ class Codon(object):
         return protein_letters_1to3[self.amino_acid_residue];
     
     def pretty_print_cDNA_region(self):
-        return "c."+str(self.cDNA_position_range[0])+"-"+str(self.cDNA_position_range[2])
+        return "c."+str(self._cDNA_position_one)+"-"+str(self._cDNA_position_three)
     
     def pretty_print_chr_region(self):
         _stringified_list = list_of_stringified_of_ranges(self.regions)
         return "".join("g."+_stringified_list[i] if i+1 == len(_stringified_list) else "g."+_stringified_list[i]+", " for i in range(len(_stringified_list)))
 
-    def __init__(self, _mappings, _gencode_transcription_id, _uniprot_ac):
+    def __init__(self, _gencode_transcription_id, _uniprot_ac, 
+                             _strand, _base_pair_representation, 
+                             _amino_acid_residue, _amino_acid_position, 
+                             _chr, _chromosome_position_base_pair_one, 
+                             _chromosome_position_base_pair_two, 
+                             _chromosome_position_base_pair_three,
+                             _cDNA_position_one, _cDNA_position_two,
+                             _cDNA_position_three):
+        
         self.gencode_transcription_id = _gencode_transcription_id
         self.uniprot_ac = _uniprot_ac
-        self.strand = str()
-        self.base_pair_representation = str() 
-        self.amino_acid_residue = str()
-        self.amino_acid_position = int()
-        self.chr = str()
-        self.regions = tuple()  
-        self.cDNA_position_range = tuple()
-        self.chromosome_position_base_pair_one = int()
-        self.chromosome_position_base_pair_two = int()
-        self.chromosome_position_base_pair_three = int()
+        self.strand = _strand
+        self.base_pair_representation = _base_pair_representation
+        self.amino_acid_residue = _amino_acid_residue
+        self.amino_acid_position = _amino_acid_position
+        self.chr = _chr
+        self.chromosome_position_base_pair_one = _chromosome_position_base_pair_one
+        self.chromosome_position_base_pair_two = _chromosome_position_base_pair_two
+        self.chromosome_position_base_pair_three = _chromosome_position_base_pair_three
+        self.cDNA_position_one = _cDNA_position_one
+        self.cDNA_position_two = _cDNA_position_two
+        self.cDNA_position_three = _cDNA_position_three
         
+        # Set the regions the same way as we set the regions in a gene_region
+        self.regions = list(convertListOfIntegerToRanges([self.chromosome_position_base_pair_one, self.chromosome_position_base_pair_two, self.chromosome_position_base_pair_three]))
+
+    @classmethod    
+    def initializeFromMapping(cls, _mappings, _gencode_transcription_id, _uniprot_ac):
         # check the mappings cover exactly 3 mappings (thus represent a codon)
         if len(_mappings) != 3:
             raise MalformedCodonException("Malformed codon mapping: Expected exactly 3 mappings but got '"+str(len(_mappings))+"'.")
@@ -124,24 +141,37 @@ class Codon(object):
             raise MalformedCodonException("Malformed codon mapping: The cDNA positions do not agree follow in order for mapping ids: '"+str(_mapping_ids)+"'.")
         
         # set the checked values
-        self.strand = _mappings[0].strand
-        self.amino_acid_residue = _mappings[0].amino_acid_residue
-        self.amino_acid_position = _mappings[0].amino_acid_position
-        self.chr = _mappings[0].chromosome
-        self.cDNA_position_range = [_mappings[0].cDNA_position, _mappings[1].cDNA_position, _mappings[2].cDNA_position,]
-        
-        # check if the codon corresponds to the base pairs
-        self.base_pair_representation = _mappings[0].base_pair+_mappings[1].base_pair+_mappings[2].base_pair
-        if not(_mappings[0].codon == _mappings[1].codon == _mappings[2].codon == self.base_pair_representation):
-            raise MalformedCodonException("Malformed codon mapping: The codons and base pairs of the mapping pair is malformed for mapping ids: '"+str(_mapping_ids)+"'.")
+        _strand = _mappings[0].strand
+        _amino_acid_residue = _mappings[0].amino_acid_residue
+        _amino_acid_position = _mappings[0].amino_acid_position
+        _chr = _mappings[0].chromosome
+        _cDNA_position_one = _mappings[0].cDNA_position
+        _cDNA_position_two = _mappings[1].cDNA_position
+        _cDNA_position_three = _mappings[2].cDNA_position
         
         # Add the chromosome positions for each basepair
-        self.chromosome_position_base_pair_one = _mappings[0].chromosome_position
-        self.chromosome_position_base_pair_two = _mappings[1].chromosome_position
-        self.chromosome_position_base_pair_three = _mappings[2].chromosome_position
+        _chromosome_position_base_pair_one = _mappings[0].chromosome_position
+        _chromosome_position_base_pair_two = _mappings[1].chromosome_position
+        _chromosome_position_base_pair_three = _mappings[2].chromosome_position
         
-        # Set the regions the same way as we set the regions in a gene_region
-        self.regions = list(convertListOfIntegerToRanges([self.chromosome_position_base_pair_one, self.chromosome_position_base_pair_two, self.chromosome_position_base_pair_three]))
+        # check if the codon corresponds to the base pairs
+        _base_pair_representation = _mappings[0].base_pair+_mappings[1].base_pair+_mappings[2].base_pair
+        if not(_mappings[0].codon == _mappings[1].codon == _mappings[2].codon == _base_pair_representation):
+            raise MalformedCodonException("Malformed codon mapping: The codons and base pairs of the mapping pair is malformed for mapping ids: '"+str(_mapping_ids)+"'.")
+        
+        _codon = cls(_gencode_transcription_id=_gencode_transcription_id,
+                      _uniprot_ac=_uniprot_ac, _strand=_strand, 
+                      _base_pair_representation=_base_pair_representation,
+                      _amino_acid_residue=_amino_acid_residue, 
+                      _amino_acid_position=_amino_acid_position, 
+                      _chr=_chr, _chromosome_position_base_pair_one=_chromosome_position_base_pair_one, 
+                      _chromosome_position_base_pair_two=_chromosome_position_base_pair_two, 
+                      _chromosome_position_base_pair_three=_chromosome_position_base_pair_three,
+                      _cDNA_position_one=_cDNA_position_one,
+                      _cDNA_position_two=_cDNA_position_two,
+                      _cDNA_position_three=_cDNA_position_three)
+        
+        return _codon
     
     def __repr__(self):
         return "<Codon(representation='%s', amino_acid_residue='%s', chr='%s', chr_positions='%s', strand='%s')>" % (
