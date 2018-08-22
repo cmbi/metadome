@@ -38,21 +38,27 @@ class Test_codon(unittest.TestCase):
         _mappings.append(mock_Mapping(id=2, base_pair='T', codon=_codon_repr, codon_base_pair_position=1, amino_acid_residue=_residue, cDNA_position=2, chromosome_position=_chromosome_position_base_pair_two))
         _mappings.append(mock_Mapping(id=3, base_pair='T', codon=_codon_repr, codon_base_pair_position=2, amino_acid_residue=_residue, cDNA_position=3, chromosome_position=_chromosome_position_base_pair_three))
          
-        # Create the Codon
-        codon = Codon(_mappings=_mappings, _gencode_transcription_id=_transcript, _uniprot_ac=_protein_ac)
+        # Create the Codon from the mapping
+        _codon_from_mapping = Codon.initializeFromMapping(_mappings=_mappings, _gencode_transcription_id=_transcript, _uniprot_ac=_protein_ac)
+        _codon_from_init = Codon(_gencode_transcription_id=_transcript, _uniprot_ac=_protein_ac,
+                                 _strand=mock_Mapping.strand, _base_pair_representation=_codon_repr,
+                                 _amino_acid_residue=_residue, _amino_acid_position=mock_Mapping.amino_acid_position,
+                                 _chr=mock_Mapping.chromosome, _chromosome_position_base_pair_one=_chromosome_position_base_pair_one,
+                                 _chromosome_position_base_pair_two=_chromosome_position_base_pair_two,
+                                 _chromosome_position_base_pair_three=_chromosome_position_base_pair_three)
         
-        self.assertTrue(codon.three_letter_amino_acid_residue() == 'Leu')
-        self.assertTrue(codon.gencode_transcription_id == _transcript)
-        self.assertTrue(codon.uniprot_ac == _protein_ac)
-        self.assertTrue(codon.strand == mock_Mapping.strand)
-        self.assertTrue(codon.base_pair_representation == _codon_repr) 
-        self.assertTrue(codon.amino_acid_residue == _residue)
-        self.assertTrue(codon.amino_acid_position == mock_Mapping.amino_acid_position)
-        self.assertTrue(codon.chr == mock_Mapping.chromosome)
-        self.assertTrue(codon.chromosome_position_base_pair_one == _chromosome_position_base_pair_one)
-        self.assertTrue(codon.chromosome_position_base_pair_two == _chromosome_position_base_pair_two)
-        self.assertTrue(codon.chromosome_position_base_pair_three == _chromosome_position_base_pair_three)
-
+        # Check if the conversion went okay and it is the same as init
+        self.assertTrue(_codon_from_init.three_letter_amino_acid_residue() == _codon_from_mapping.three_letter_amino_acid_residue() == 'Leu')
+        self.assertTrue(_codon_from_init.gencode_transcription_id == _codon_from_mapping.gencode_transcription_id == _transcript)
+        self.assertTrue(_codon_from_init.uniprot_ac == _codon_from_mapping.uniprot_ac == _protein_ac)
+        self.assertTrue(_codon_from_init.strand == _codon_from_mapping.strand == mock_Mapping.strand)
+        self.assertTrue(_codon_from_init.base_pair_representation == _codon_from_mapping.base_pair_representation == _codon_repr) 
+        self.assertTrue(_codon_from_init.amino_acid_residue == _codon_from_mapping.amino_acid_residue == _residue)
+        self.assertTrue(_codon_from_init.amino_acid_position == _codon_from_mapping.amino_acid_position == mock_Mapping.amino_acid_position)
+        self.assertTrue(_codon_from_init.chr == _codon_from_mapping.chr == mock_Mapping.chromosome)
+        self.assertTrue(_codon_from_init.chromosome_position_base_pair_one == _codon_from_mapping.chromosome_position_base_pair_one == _chromosome_position_base_pair_one)
+        self.assertTrue(_codon_from_init.chromosome_position_base_pair_two == _codon_from_mapping.chromosome_position_base_pair_two == _chromosome_position_base_pair_two)
+        self.assertTrue(_codon_from_init.chromosome_position_base_pair_three == _codon_from_mapping.chromosome_position_base_pair_three == _chromosome_position_base_pair_three)
         
     def test_three_letter_amino_acid_residue_selenocysteine(self):
         _mappings = []
@@ -61,7 +67,7 @@ class Test_codon(unittest.TestCase):
         _mappings.append(mock_Mapping(id=3, base_pair='A', codon='TGA', codon_base_pair_position=2, amino_acid_residue='U', cDNA_position=3, chromosome_position=3))
          
         # Create the Codon
-        codon = Codon(_mappings, 'test_transcript', 'test_protein_ac')
+        codon = Codon.initializeFromMapping(_mappings, 'test_transcript', 'test_protein_ac')
          
         self.assertTrue(codon.three_letter_amino_acid_residue() == 'Sec')
         
@@ -73,7 +79,7 @@ class Test_codon(unittest.TestCase):
         _mappings.append(mock_Mapping(id=3, base_pair='G', codon='TAG', codon_base_pair_position=2, amino_acid_residue='U', cDNA_position=3, chromosome_position=3))
          
         # Create the Codon
-        codon = Codon(_mappings, 'test_transcript', 'test_protein_ac')
+        codon = Codon.initializeFromMapping(_mappings, 'test_transcript', 'test_protein_ac')
          
         self.assertTrue(codon.three_letter_amino_acid_residue() == 'Sec')
 
