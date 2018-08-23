@@ -21,7 +21,6 @@ class Codon(object):
     amino_acid_position                    int the amino acid position of this codon in the protein or gene translation
     chr                                    str the chromosome
     regions                                tuple the range of chromosomal positions of this codon
-    cDNA_position_range                    tuple the range of cDNA positions of this codon
     chromosome_position_base_pair_one      int the position corresponding to the first base pair in the chromosome
     chromosome_position_base_pair_two      int the position corresponding to the second base pair in the chromosome
     chromosome_position_base_pair_three    int the position corresponding to the third base pair in the chromosome
