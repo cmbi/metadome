@@ -1,9 +1,10 @@
 import unittest
 
 from metadome.domain.models.entities.codon import Codon
+from metadome.domain.models.gene import Strand
 
 class mock_Mapping(object):
-    strand = '+'
+    strand = Strand.plus
     amino_acid_position = 125
     chromosome = 'chr1'
     gene_id = 1
@@ -27,6 +28,7 @@ class Test_codon(unittest.TestCase):
         _protein_ac =  'test_test_protein_ac'
         _codon_repr = 'CTT'
         _residue = 'L'
+        _strand = '+'
         _chromosome_position_base_pair_one = 231
         _chromosome_position_base_pair_two = 232
         _chromosome_position_base_pair_three = 233
@@ -43,7 +45,7 @@ class Test_codon(unittest.TestCase):
         # Create the Codon from the mapping
         _codon_from_mapping = Codon.initializeFromMapping(_mappings=_mappings, _gencode_transcription_id=_transcript, _uniprot_ac=_protein_ac)
         _codon_from_init = Codon(_gencode_transcription_id=_transcript, _uniprot_ac=_protein_ac,
-                                 _strand=mock_Mapping.strand, _base_pair_representation=_codon_repr,
+                                 _strand=_strand, _base_pair_representation=_codon_repr,
                                  _amino_acid_residue=_residue, _amino_acid_position=mock_Mapping.amino_acid_position,
                                  _chr=mock_Mapping.chromosome, _chromosome_position_base_pair_one=_chromosome_position_base_pair_one,
                                  _chromosome_position_base_pair_two=_chromosome_position_base_pair_two,
