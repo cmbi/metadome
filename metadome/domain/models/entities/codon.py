@@ -1,6 +1,7 @@
 from metadome.domain.services.helper_functions import convertListOfIntegerToRanges, list_of_stringified_of_ranges
-from Bio.Data.IUPACData import protein_letters_1to3
 from metadome.domain.services.computation.codon_computations import interpret_alt_codon, residue_variant_type
+from metadome.domain.models.gene import Strand
+from Bio.Data.IUPACData import protein_letters_1to3
 from Bio.Seq import translate
 
 class MalformedCodonException(Exception):
@@ -106,7 +107,13 @@ class Codon(object):
         
         self.gencode_transcription_id = _gencode_transcription_id
         self.uniprot_ac = _uniprot_ac
-        self.strand = _strand
+        self.strand = str()
+        if _strand == '-':
+            self.strand = Strand.minus
+        elif _strand == '+':
+            self.strand = Strand.plus
+        else:
+            raise MalformedCodonException('Strand cold not be converted to domain.models.Gene.Strand(Enum) for provided: '+str(_strand))
         self.base_pair_representation = _base_pair_representation
         self.amino_acid_residue = _amino_acid_residue
         self.amino_acid_position = _amino_acid_position
@@ -123,6 +130,8 @@ class Codon(object):
 
     @classmethod    
     def initializeFromMapping(cls, _mappings, _gencode_transcription_id, _uniprot_ac):
+        """Initializes a Codon object via a list of three mapping 
+        objects that represent the same codon"""
         # check the mappings cover exactly 3 mappings (thus represent a codon)
         if len(_mappings) != 3:
             raise MalformedCodonException("Malformed codon mapping: Expected exactly 3 mappings but got '"+str(len(_mappings))+"'.")
@@ -160,7 +169,7 @@ class Codon(object):
             raise MalformedCodonException("Malformed codon mapping: The cDNA positions do not agree follow in order for mapping ids: '"+str(_mapping_ids)+"'.")
         
         # set the checked values
-        _strand = _mappings[0].strand
+        _strand = _mappings[0].strand.value
         _amino_acid_residue = _mappings[0].amino_acid_residue
         _amino_acid_position = _mappings[0].amino_acid_position
         _chr = _mappings[0].chromosome
@@ -191,6 +200,25 @@ class Codon(object):
                       _cDNA_position_three=_cDNA_position_three)
         
         return _codon
+    
+    def toDict(self):
+        """Casts the basic values of a codon to a dictionary"""
+        _d = {}
+        _d['gencode_transcription_id'] = self.gencode_transcription_id
+        _d['uniprot_ac'] = self.uniprot_ac
+        _d['strand'] = self.strand.value
+        _d['base_pair_representation'] = self.base_pair_representation
+        _d['amino_acid_residue'] = self.amino_acid_residue
+        _d['amino_acid_position'] = self.amino_acid_position
+        _d['chr'] = self.chr
+        _d['chromosome_position_base_pair_one'] = self.chromosome_position_base_pair_one
+        _d['chromosome_position_base_pair_two'] = self.chromosome_position_base_pair_two
+        _d['chromosome_position_base_pair_three'] = self.chromosome_position_base_pair_three
+        _d['cDNA_position_one'] = self.cDNA_position_one
+        _d['cDNA_position_two'] = self.cDNA_position_two
+        _d['cDNA_position_three'] = self.cDNA_position_three
+        
+        return _d
     
     def __repr__(self):
         return "<Codon(representation='%s', amino_acid_residue='%s', chr='%s', chr_positions='%s', strand='%s')>" % (
