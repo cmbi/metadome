@@ -606,7 +606,7 @@ function visualizeStatus(transcriptID) {
                     visualizeError(transcriptID);
                 else
                     // try again after 5 seconds:
-                    setInterval(function() { visualizeStatus(transcriptID); }, 5000);
+                    setTimeout(function() { visualizeStatus(transcriptID); }, 5000);
             }
         }
     };
