@@ -53,7 +53,7 @@ class Codon(object):
         mappings_per_chromosome[self.chromosome_position_base_pair_two]['base_pair'] = self.base_pair_representation[1]
         mappings_per_chromosome[self.chromosome_position_base_pair_two]['gencode_transcription_id'] = self.gencode_transcription_id
 
-        # thirs base pair
+        # third base pair
         mappings_per_chromosome[self.chromosome_position_base_pair_three] = {}
         mappings_per_chromosome[self.chromosome_position_base_pair_three]['base_pair_representation'] = self.base_pair_representation
         mappings_per_chromosome[self.chromosome_position_base_pair_three]['codon_base_pair_position'] = 2
