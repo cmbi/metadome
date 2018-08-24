@@ -16,6 +16,9 @@ class UnsupportedMetaDomainIdentifier(Exception):
 class NotEnoughOccurrencesForMetaDomain(Exception):
     pass
 
+class ConsensusPositionOutOfBounds(Exception):
+    pass
+
 class MetaDomain(object):
     """
     MetaDomain Model Entity
@@ -35,6 +38,11 @@ class MetaDomain(object):
         """Retrieves codons for this consensus position as:
         {Codon.unique_str_representation(): Codon}"""
         codons = {}
+        
+        if consensus_position < 0:
+            raise ConsensusPositionOutOfBounds("The provided consensus position ('"+str(consensus_position)+"') is below zero, this position foes not exist")
+        if consensus_position >= self.consensus_length:
+            raise ConsensusPositionOutOfBounds("The provided consensus position ('"+str(consensus_position)+"') is above the maximum consensus length ('"+str(self.consensus_length)+"'), this position foes not exist")
         
         # Retrieve all codons aligned to the consensus pusition
         aligned_to_position = self.meta_domain_mapping[self.meta_domain_mapping.consensus_pos == consensus_position].to_dict('records')
