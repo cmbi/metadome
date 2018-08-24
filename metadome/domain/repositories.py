@@ -26,6 +26,48 @@ class MalformedAARegionException(Exception):
 
 
 class GeneRepository:
+    
+    @staticmethod
+    def retrieve_transcript_id_for_multiple_gene_ids(_gene_ids):
+        """Retrieves all gencode transcripts for multiple Gene objects as {gene_id: gencode_transcription_id}"""
+        # Open as session
+        _session = db.create_scoped_session()
+
+        try:
+            _gencode_transcription_id_per_gene_id = {}
+            for gene in _session.query(Gene).filter(Gene.id.in_(_gene_ids)).all():
+                _gencode_transcription_id_per_gene_id[gene.id] = gene.gencode_transcription_id
+            return _gencode_transcription_id_per_gene_id
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
+        except:
+            _log.error(traceback.format_exc())
+            raise
+        finally:
+            # Close this session, thus all items are cleared and memory usage is kept at a minimum
+            _session.remove()
+
+    @staticmethod
+    def retrieve_transcript_id_for_multiple_protein_ids(_protein_ids):
+        """Retrieves all gencode transcripts for multiple protein ids as {gene_id: gencode_transcription_id}"""
+        # Open as session
+        _session = db.create_scoped_session()
+
+        try:
+            _gencode_transcription_id_per_gene_id = {}
+            for gene in _session.query(Gene).filter(Gene.protein_id.in_(_protein_ids)).all():
+                _gencode_transcription_id_per_gene_id[gene.id] = gene.gencode_transcription_id
+            return _gencode_transcription_id_per_gene_id
+        except (AlchemyResourceClosedError, AlchemyOperationalError, PsycopOperationalError) as e:
+            raise RecoverableError(str(e))
+        except:
+            _log.error(traceback.format_exc())
+            raise
+        finally:
+            # Close this session, thus all items are cleared and memory usage is kept at a minimum
+            _session.remove()
+
+
 
     @staticmethod
     def retrieve_all_transcript_ids_with_mappings():

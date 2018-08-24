@@ -34,7 +34,7 @@ def annotateSNVs(annotateTranscriptFunction, mappings_per_chr_pos, strand, chrom
         if strand == Strand.minus: ref = convertNucleotide(annotation['REF'])
         
         # Check if the reference in the annotation_date is correct, compared to our transcript
-        if mappings_per_chr_pos[annotation['POS']].base_pair == ref:
+        if mappings_per_chr_pos[annotation['POS']]['base_pair'] == ref:
             SNV_correct = SNV_correct + 1
         else:
             SNV_incorrect = SNV_incorrect + 1

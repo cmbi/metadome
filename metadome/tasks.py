@@ -141,7 +141,7 @@ def analyse_transcript(transcript_id):
                 try:
                     if not pfam_domain['ID'] in meta_domains.keys():
                         # construct a meta-domain if possible
-                        temp_meta_domain = MetaDomain(domain.ext_db_id)
+                        temp_meta_domain = MetaDomain.initializeFromDomainID(domain.ext_db_id)
                         
                         # Ensure there are enough instances to actually perform the metadomain trick
                         if temp_meta_domain.n_instances < 2:
@@ -172,7 +172,7 @@ def analyse_transcript(transcript_id):
          
         for chrom_pos in ClinVar_annotation.keys():
             for variant in ClinVar_annotation[chrom_pos]:
-                protein_pos = _mappings_per_chromosome[chrom_pos].uniprot_position
+                protein_pos = _mappings_per_chromosome[chrom_pos]['amino_acid_position']
                  
                 if not 'ClinVar' in region_positional_annotation[protein_pos].keys():
                     region_positional_annotation[protein_pos]['ClinVar'] = []
@@ -208,11 +208,10 @@ def analyse_transcript(transcript_id):
                     d['domains'][domain['ID']] = None 
                     if not meta_domains[domain['ID']] is None:
                         # retrieve the context for this protein
-                        protein_to_consensus_positions = meta_domains[domain['ID']].consensus_pos_per_protein[gene_region.uniprot_ac]
-                        if domain["metadomain"] and db_position in protein_to_consensus_positions.keys():
-                            # update the consensus positions to abide the users' expectation (start at 1, not zero)
-                            consensus_position = protein_to_consensus_positions[db_position]+1
-                            d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[domain['ID']], consensus_position, db_position)
+                        consensus_pos = meta_domains[domain['ID']].get_consensus_position_for_uniprot_position(uniprot_ac=gene_region.uniprot_ac, uniprot_position=db_position)
+                        
+                        if domain["metadomain"] and not consensus_pos is None:
+                            d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[domain['ID']], consensus_pos, db_position)
                             
                             # compute alignment depth, added one for the current codon
                             current_alignment_depth = len(d['domains'][domain['ID']]['other_codons'])+1
@@ -230,7 +229,8 @@ def analyse_transcript(transcript_id):
 
 def create_meta_domain_entry(gene_region, metadomain, consensus_position, protein_pos):
     metadom_entry = {}
-    metadom_entry['consensus_pos'] = consensus_position
+    # update the consensus positions to abide the users' expectation (start at 1, not zero)
+    metadom_entry['consensus_pos'] = consensus_position+1
     metadom_entry['normal_missense_variant_count'] = 0
     metadom_entry['normal_synonymous_variant_count'] = 0
     metadom_entry['normal_nonsense_variant_count'] = 0
@@ -242,13 +242,15 @@ def create_meta_domain_entry(gene_region, metadomain, consensus_position, protei
     metadom_entry['other_codons'] = []
      
     # Retrieve the meta codons for this position
-    meta_codons = metadomain.get_codons_aligned_to_consensus_position(metadom_entry['consensus_pos'])
-    
+    meta_codons = metadomain.get_codons_aligned_to_consensus_position(consensus_position)
+    current_codon = gene_region.retrieve_codon_for_protein_position(protein_pos)
     # iterate over meta_codons and add to metadom_entry
-    for meta_codon in meta_codons:
+    for meta_codon_repr in meta_codons.keys():
         # Check if we are dealing with the gene and protein_pos of interest
-        if not (gene_region.gene_id in meta_codon.codon_aggregate.keys() \
-            and protein_pos == meta_codon.codon_aggregate[gene_region.gene_id].amino_acid_position):
+        if current_codon.unique_str_representation() != meta_codon_repr:
+            # just take the first
+            meta_codon = meta_codons[meta_codon_repr][0]
+            
             # first append the general information for this codon
             position_entry = {}
             position_entry['chr'] = meta_codon.chr
