@@ -127,8 +127,8 @@ class Codon(object):
         
         # Set the regions the same way as we set the regions in a gene_region
         self.regions = list(convertListOfIntegerToRanges([self.chromosome_position_base_pair_one, self.chromosome_position_base_pair_two, self.chromosome_position_base_pair_three]))
-
-    @classmethod    
+    
+    @classmethod
     def initializeFromMapping(cls, _mappings, _gencode_transcription_id, _uniprot_ac):
         """Initializes a Codon object via a list of three mapping 
         objects that represent the same codon"""
@@ -200,6 +200,43 @@ class Codon(object):
                       _cDNA_position_three=_cDNA_position_three)
         
         return _codon
+    
+    @classmethod
+    def initializeFromDict(cls, _d):
+        """ Initializes a Codon object via a Dict
+        Expected to contain at least the fields
+        as given in the Codon.toDict() method
+        """
+        try:
+            _gencode_transcription_id = _d['gencode_transcription_id']
+            _uniprot_ac = _d['uniprot_ac']
+            _strand = _d['strand']
+            _base_pair_representation = _d['base_pair_representation']
+            _amino_acid_residue = _d['amino_acid_residue']
+            _amino_acid_position = _d['amino_acid_position']
+            _chr = _d['chr']
+            _chromosome_position_base_pair_one = _d['chromosome_position_base_pair_one']
+            _chromosome_position_base_pair_two = _d['chromosome_position_base_pair_two']
+            _chromosome_position_base_pair_three = _d['chromosome_position_base_pair_three']
+            _cDNA_position_one = _d['cDNA_position_one']
+            _cDNA_position_two = _d['cDNA_position_two']
+            _cDNA_position_three = _d['cDNA_position_three']
+            
+            _codon = cls(_gencode_transcription_id=_gencode_transcription_id,
+                      _uniprot_ac=_uniprot_ac, _strand=_strand, 
+                      _base_pair_representation=_base_pair_representation,
+                      _amino_acid_residue=_amino_acid_residue, 
+                      _amino_acid_position=_amino_acid_position, 
+                      _chr=_chr, _chromosome_position_base_pair_one=_chromosome_position_base_pair_one, 
+                      _chromosome_position_base_pair_two=_chromosome_position_base_pair_two, 
+                      _chromosome_position_base_pair_three=_chromosome_position_base_pair_three,
+                      _cDNA_position_one=_cDNA_position_one,
+                      _cDNA_position_two=_cDNA_position_two,
+                      _cDNA_position_three=_cDNA_position_three)
+        
+            return _codon
+        except KeyError as e:
+            raise MalformedCodonException("Malformed codon from dict: KeyError with message: "+str(e))
     
     def toDict(self):
         """Casts the basic values of a codon to a dictionary"""
