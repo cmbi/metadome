@@ -19,9 +19,6 @@ class NotEnoughOccurrencesForMetaDomain(Exception):
 class ConsensusPositionOutOfBounds(Exception):
     pass
 
-class MalformedMetaDomain(Exception):
-    pass
-
 class MetaDomain(object):
     """
     MetaDomain Model Entity
@@ -51,10 +48,11 @@ class MetaDomain(object):
             unique_consensus_positions = pd.unique(aligned_to_position.consensus_pos)
             
             if len(unique_consensus_positions) > 1:
-                raise MalformedMetaDomain("There are more than one consensus positions assigned ('"+str(unique_consensus_positions)+"') to the protein '"+str(uniprot_ac)+"' for position '"+str(uniprot_position)+"'")
+                _log.warning("There are more than one consensus positions assigned ('"+str(unique_consensus_positions)+"') to the protein '"+str(uniprot_ac)+"' for position '"+str(uniprot_position)+"'")
             
-            # there is only one consensus position
-            consensus_position = int(unique_consensus_positions[0])
+            consensus_position = []
+            for c_pos in unique_consensus_positions:
+                consensus_position.append(int(c_pos))
         else:
             _log.info("No alignment for domain '"+str(self.domain_id)+"' for uniprot_ac '"+str(uniprot_ac)+"' on position '"+str(uniprot_position)+"'" )
         
