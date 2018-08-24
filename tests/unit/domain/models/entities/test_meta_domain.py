@@ -1,6 +1,7 @@
 import unittest
 from metadome.domain.models.entities.meta_domain import MetaDomain,\
-    UnsupportedMetaDomainIdentifier, ConsensusPositionOutOfBounds
+    UnsupportedMetaDomainIdentifier, ConsensusPositionOutOfBounds,\
+    MalformedMetaDomain
 import pandas as pd
 
 class mock_MetaDomain(MetaDomain):
@@ -33,7 +34,27 @@ class Test_meta_domain(unittest.TestCase):
         with self.assertRaises(ConsensusPositionOutOfBounds):
             len(mock_metadom.get_codons_aligned_to_consensus_position(-4))
         
-
+    def test_get_consensus_position_for_uniprot_position(self):
+        # mock the metadomain
+        mock_metadom = mock_MetaDomain.mock_PF00907_metadomain_first_three_consensus_positions()
+        
+        # check for a single occurrence of a uniprot
+        self.assertTrue(mock_metadom.get_consensus_position_for_uniprot_position(uniprot_ac='O43435', uniprot_position=111) == 0)
+        self.assertTrue(mock_metadom.get_consensus_position_for_uniprot_position(uniprot_ac='O43435', uniprot_position=112) == 1)
+        self.assertTrue(mock_metadom.get_consensus_position_for_uniprot_position(uniprot_ac='O43435', uniprot_position=113) == 2)
+        
+        # check of mutliple occurrences of the same uniprot
+        self.assertTrue(mock_metadom.get_consensus_position_for_uniprot_position(uniprot_ac='Q8IWI9-4', uniprot_position=76) == 0)
+        self.assertTrue(mock_metadom.get_consensus_position_for_uniprot_position(uniprot_ac='Q8IWI9-4', uniprot_position=77) == 1)
+        self.assertTrue(mock_metadom.get_consensus_position_for_uniprot_position(uniprot_ac='Q8IWI9-4', uniprot_position=78) == 2)
+        
+        # add a malformation and test again
+        malformed_row = {'amino_acid_residue': 'T', 'domain_id': 'PF00907', 'amino_acid_position': 77, 'cDNA_position_two': 233, 'cDNA_position_three': 234, 'consensus_pos': 0, 'strand': '+', 'chromosome_position_base_pair_one': 41961324, 'chromosome_position_base_pair_three': 41961326, 'chr': 'chr15', 'chromosome_position_base_pair_two': 41961325, 'base_pair_representation': 'ACC', 'uniprot_ac': 'Q8IWI9-4', 'cDNA_position_one': 232, 'gencode_transcription_id': 'ENST00000219905.7'}
+        mock_metadom.meta_domain_mapping = mock_metadom.meta_domain_mapping.append(malformed_row, ignore_index=True)
+        
+        with self.assertRaises(MalformedMetaDomain):
+            mock_metadom.get_consensus_position_for_uniprot_position(uniprot_ac='Q8IWI9-4', uniprot_position=77)
+        
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
