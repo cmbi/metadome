@@ -19,6 +19,9 @@ class NotEnoughOccurrencesForMetaDomain(Exception):
 class ConsensusPositionOutOfBounds(Exception):
     pass
 
+class MalformedMetaDomain(Exception):
+    pass
+
 class MetaDomain(object):
     """
     MetaDomain Model Entity
@@ -34,6 +37,29 @@ class MetaDomain(object):
     meta_domain_mapping        pandas.DataFrame containing all codons annotated with corresponding consensus position
     """
     
+    def get_consensus_position_for_uniprot_position(self, uniprot_ac, uniprot_position):
+        """Retrieves the consensus position for this MetaDomain
+        based on the uniprot ac and position"""
+        consensus_position = None
+        # Retrieve all codons aligned to the consensus position
+        aligned_to_position = self.meta_domain_mapping[(self.meta_domain_mapping.uniprot_ac == uniprot_ac) &\
+                                                       (self.meta_domain_mapping.amino_acid_position == uniprot_position)]
+        
+        # check if there are any matches
+        if len(aligned_to_position) > 0:
+            # check how many matches and type check if all positions are the same
+            unique_consensus_positions = pd.unique(aligned_to_position.consensus_pos)
+            
+            if len(unique_consensus_positions) > 1:
+                raise MalformedMetaDomain("There are more than one consensus positions assigned ('"+str(unique_consensus_positions)+"') to the protein '"+str(uniprot_ac)+"' for position '"+str(uniprot_position)+"'")
+            
+            # there is only one consensus position
+            consensus_position = unique_consensus_positions[0]
+        else:
+            _log.info("No alignment for domain '"+str(self.domain_id)+"' for uniprot_ac '"+str(uniprot_ac)+"' on position '"+str(uniprot_position)+"'" )
+        
+        return consensus_position
+    
     def get_codons_aligned_to_consensus_position(self, consensus_position):
         """Retrieves codons for this consensus position as:
         {Codon.unique_str_representation(): Codon}"""
@@ -44,7 +70,7 @@ class MetaDomain(object):
         if consensus_position >= self.consensus_length:
             raise ConsensusPositionOutOfBounds("The provided consensus position ('"+str(consensus_position)+"') is above the maximum consensus length ('"+str(self.consensus_length)+"'), this position foes not exist")
         
-        # Retrieve all codons aligned to the consensus pusition
+        # Retrieve all codons aligned to the consensus position
         aligned_to_position = self.meta_domain_mapping[self.meta_domain_mapping.consensus_pos == consensus_position].to_dict('records')
         
         # first check if the consensus position is present in the mappings_per_consensus_pos
