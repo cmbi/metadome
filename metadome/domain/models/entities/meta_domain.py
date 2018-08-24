@@ -54,7 +54,7 @@ class MetaDomain(object):
                 raise MalformedMetaDomain("There are more than one consensus positions assigned ('"+str(unique_consensus_positions)+"') to the protein '"+str(uniprot_ac)+"' for position '"+str(uniprot_position)+"'")
             
             # there is only one consensus position
-            consensus_position = unique_consensus_positions[0]
+            consensus_position = int(unique_consensus_positions[0])
         else:
             _log.info("No alignment for domain '"+str(self.domain_id)+"' for uniprot_ac '"+str(uniprot_ac)+"' on position '"+str(uniprot_position)+"'" )
         
