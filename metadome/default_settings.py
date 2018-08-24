@@ -12,9 +12,8 @@ SQLALCHEMY_ECHO = True
 SQLALCHEMY_POOL_TIMEOUT = 10
 
 # Flask-Celery settings
-CELERY_BROKER_URL='redis://metadome_redis_1/0'
+CELERY_BROKER_URL='amqp://guest@metadome_rabbitmq_1'
 CELERY_RESULT_BACKEND='redis://metadome_redis_1/0'
-CELERY_BROKER_TRANSPORT = 'redis'
 CELERY_TRACK_STARTED = True
 
 # Visualiation specific settings
