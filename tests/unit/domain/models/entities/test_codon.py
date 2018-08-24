@@ -1,6 +1,6 @@
 import unittest
 
-from metadome.domain.models.entities.codon import Codon
+from metadome.domain.models.entities.codon import Codon, MalformedCodonException
 from metadome.domain.models.gene import Strand
 
 class mock_Mapping(object):
@@ -22,7 +22,13 @@ class mock_Mapping(object):
 
 class Test_codon(unittest.TestCase):
     
-    def test_init_with_mapping(self):
+    def test_init_from_dict_fail(self):
+        _d = {}
+        
+        with self.assertRaises(MalformedCodonException):
+            Codon.initializeFromDict(_d)
+        
+    def test_initializations(self):
         # init test variables
         _transcript =  'test_transcript'
         _protein_ac =  'test_test_protein_ac'
@@ -68,6 +74,26 @@ class Test_codon(unittest.TestCase):
         self.assertTrue(_codon_from_init.cDNA_position_one == _codon_from_mapping.cDNA_position_one == _cDNA_position_one)
         self.assertTrue(_codon_from_init.cDNA_position_two == _codon_from_mapping.cDNA_position_two == _cDNA_position_two)
         self.assertTrue(_codon_from_init.cDNA_position_three == _codon_from_mapping.cDNA_position_three == _cDNA_position_three)
+        
+        # Create a dictionary from the codon
+        _d = _codon_from_mapping.toDict()
+        _codon_from_dict = Codon.initializeFromDict(_d)
+        
+        # Check if the conversion went okay and it is the same as init
+        self.assertTrue(_codon_from_dict.three_letter_amino_acid_residue() == _codon_from_mapping.three_letter_amino_acid_residue())
+        self.assertTrue(_codon_from_dict.gencode_transcription_id == _codon_from_mapping.gencode_transcription_id)
+        self.assertTrue(_codon_from_dict.uniprot_ac == _codon_from_mapping.uniprot_ac)
+        self.assertTrue(_codon_from_dict.strand == _codon_from_mapping.strand)
+        self.assertTrue(_codon_from_dict.base_pair_representation == _codon_from_mapping.base_pair_representation) 
+        self.assertTrue(_codon_from_dict.amino_acid_residue == _codon_from_mapping.amino_acid_residue)
+        self.assertTrue(_codon_from_dict.amino_acid_position == _codon_from_mapping.amino_acid_position)
+        self.assertTrue(_codon_from_dict.chr == _codon_from_mapping.chr)
+        self.assertTrue(_codon_from_dict.chromosome_position_base_pair_one == _codon_from_mapping.chromosome_position_base_pair_one)
+        self.assertTrue(_codon_from_dict.chromosome_position_base_pair_two == _codon_from_mapping.chromosome_position_base_pair_two)
+        self.assertTrue(_codon_from_dict.chromosome_position_base_pair_three == _codon_from_mapping.chromosome_position_base_pair_three)
+        self.assertTrue(_codon_from_dict.cDNA_position_one == _codon_from_mapping.cDNA_position_one)
+        self.assertTrue(_codon_from_dict.cDNA_position_two == _codon_from_mapping.cDNA_position_two)
+        self.assertTrue(_codon_from_dict.cDNA_position_three == _codon_from_mapping.cDNA_position_three)        
         
     def test_three_letter_amino_acid_residue_selenocysteine(self):
         _mappings = []
