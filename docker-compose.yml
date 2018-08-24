@@ -33,6 +33,7 @@ services:
         depends_on:
             - db
             - redis
+            - rabbitmq
         volumes:
             - .:/usr/src/app
             - data:/usr/data
@@ -58,6 +59,10 @@ services:
         image: redis
         ports:
           - "6379:6379"
+    rabbitmq:
+        image: rabbitmq
+        ports:
+          - "15672:15672"
 volumes:
    data: 
       driver_opts:
