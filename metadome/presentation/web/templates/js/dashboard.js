@@ -599,14 +599,21 @@ function visualizeStatus(transcriptID) {
             if (response.error !== undefined)
                 showErrorOnPage(transcriptID, response.error);
             else {
-                showStatusOnPage(transcriptID, response.status);
-                if (response.status == 'SUCCESS')
+                if (response.status == 'SUCCESS') {
+                    hideStatusOnPage();
+
                     visualizeResult(transcriptID);
-                else if (response.status == 'FAILURE')
+
+                } else if (response.status == 'FAILURE') {
+                    hideStatusOnPage();
+
                     visualizeError(transcriptID);
-                else
+                } else {
+                    showStatusOnPage(transcriptID, response.status);
+
                     // try again after 5 seconds:
                     setTimeout(function() { visualizeStatus(transcriptID); }, 5000);
+                }
             }
         }
     };
@@ -648,6 +655,10 @@ function visualizeResult(transcriptID) {
                .replace('XXXXXX', transcriptID), true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send();
+}
+
+function hideStatusOnPage() {
+    $("#statusDisplay").addClass('is-hidden');
 }
 
 function showStatusOnPage(transcriptID, status) {
