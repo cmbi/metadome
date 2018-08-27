@@ -12,8 +12,9 @@ SQLALCHEMY_ECHO = True
 SQLALCHEMY_POOL_TIMEOUT = 10
 
 # Flask-Celery settings
-CELERY_BROKER_URL='redis://metadome_redis_1'
-CELERY_RESULT_BACKEND='redis://metadome_redis_1'
+CELERY_BROKER_URL='amqp://guest@metadome_rabbitmq_1'
+CELERY_RESULT_BACKEND='redis://metadome_redis_1/0'
+CELERY_TRACK_STARTED = True
 
 # Visualiation specific settings
 ALLELE_FREQUENCY_CUTOFF = 0.0
@@ -66,6 +67,8 @@ UNIPROT_SPROT_SPECIES_FILTER = "HUMAN"
 METADOMAIN_DIR = DATA_DIR+"metadomains/"
 RECONSTRUCT_METADOMAINS = False
 METADOMAIN_ALIGNMENT_FILE_NAME = 'metadomain_alignments' # Alignments are saved as: METADOMAIN_DIR+<Pfam_id>+'/'+METADOMAIN_ALIGNMENT_FILE_NAME
+METADOMAIN_MAPPING_FILE_NAME = 'metadomain_mappings' # Mappings are saved as: METADOMAIN_DIR+<Pfam_id>+'/'+METADOMAIN_MAPPING_FILE_NAME
+METADOMAIN_DETAILS_FILE_NAME = 'metadomain_details.json' # Details are saved as: METADOMAIN_DIR+<Pfam_id>+'/'+METADOMAIN_DETAILS_FILE_NAME
 
 # Pre-build visualization files
 PRE_BUILD_VISUALIZATION_DIR = DATA_DIR+"metadome_visualization/"

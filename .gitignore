@@ -1,3 +1,6 @@
+# python auto generated
+*.py[a-z]
+
 .coverage
 *.log
 *.project
