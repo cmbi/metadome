@@ -654,7 +654,7 @@ function drawMetaDomainLandscape(domain_data, data){
 				});
 			}
 		   // show the tooltip
-		   domain_details_position_tip.show("Position not aligned to homologous");
+		   domain_details_position_tip.show("Residue is not aligned to homologues");
 		   // amplify the element
 		   d3.select(this).style("fill", "orange");
 		   // move the element to front
