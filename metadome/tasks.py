@@ -209,10 +209,10 @@ def analyse_transcript(transcript_id):
                     d['domains'][domain['ID']] = None 
                     if not meta_domains[domain['ID']] is None:
                         # retrieve the context for this protein
-                        consensus_pos = meta_domains[domain['ID']].get_consensus_position_for_uniprot_position(uniprot_ac=gene_region.uniprot_ac, uniprot_position=db_position)
+                        consensus_positions = meta_domains[domain['ID']].get_consensus_positions_for_uniprot_position(uniprot_ac=gene_region.uniprot_ac, uniprot_position=db_position)
                         
-                        if domain["metadomain"] and not consensus_pos is None:
-                            d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[domain['ID']], consensus_pos, db_position)
+                        if domain["metadomain"] and len(consensus_positions)>0:
+                            d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[domain['ID']], consensus_positions, db_position)
                             
                             # compute alignment depth, added one for the current codon
                             current_alignment_depth = len(d['domains'][domain['ID']]['other_codons'])+1
