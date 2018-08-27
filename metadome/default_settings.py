@@ -15,6 +15,9 @@ SQLALCHEMY_POOL_TIMEOUT = 10
 CELERY_BROKER_URL='amqp://guest@metadome_rabbitmq_1'
 CELERY_RESULT_BACKEND='redis://metadome_redis_1/0'
 CELERY_TRACK_STARTED = True
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_SERIALIZER='pickle'
+CELERY_ACCEPT_CONTENT = ['pickle']
 
 # Visualiation specific settings
 ALLELE_FREQUENCY_CUTOFF = 0.0
