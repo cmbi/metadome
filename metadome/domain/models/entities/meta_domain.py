@@ -19,9 +19,6 @@ class NotEnoughOccurrencesForMetaDomain(Exception):
 class ConsensusPositionOutOfBounds(Exception):
     pass
 
-class MalformedMetaDomain(Exception):
-    pass
-
 class MetaDomain(object):
     """
     MetaDomain Model Entity
@@ -37,10 +34,10 @@ class MetaDomain(object):
     meta_domain_mapping        pandas.DataFrame containing all codons annotated with corresponding consensus position
     """
     
-    def get_consensus_position_for_uniprot_position(self, uniprot_ac, uniprot_position):
-        """Retrieves the consensus position for this MetaDomain
+    def get_consensus_positions_for_uniprot_position(self, uniprot_ac, uniprot_position):
+        """Retrieves the consensus positions for this MetaDomain
         based on the uniprot ac and position"""
-        consensus_position = None
+        consensus_positions = []
         # Retrieve all codons aligned to the consensus position
         aligned_to_position = self.meta_domain_mapping[(self.meta_domain_mapping.uniprot_ac == uniprot_ac) &\
                                                        (self.meta_domain_mapping.amino_acid_position == uniprot_position)]
@@ -51,14 +48,15 @@ class MetaDomain(object):
             unique_consensus_positions = pd.unique(aligned_to_position.consensus_pos)
             
             if len(unique_consensus_positions) > 1:
-                raise MalformedMetaDomain("There are more than one consensus positions assigned ('"+str(unique_consensus_positions)+"') to the protein '"+str(uniprot_ac)+"' for position '"+str(uniprot_position)+"'")
+                _log.warning("There are more than one consensus positions assigned ('"+str(unique_consensus_positions)+"') to the protein '"+str(uniprot_ac)+"' for position '"+str(uniprot_position)+"'")
             
-            # there is only one consensus position
-            consensus_position = int(unique_consensus_positions[0])
+            consensus_positions = []
+            for c_pos in unique_consensus_positions:
+                consensus_positions.append(int(c_pos))
         else:
             _log.info("No alignment for domain '"+str(self.domain_id)+"' for uniprot_ac '"+str(uniprot_ac)+"' on position '"+str(uniprot_position)+"'" )
         
-        return consensus_position
+        return consensus_positions
     
     def get_codons_aligned_to_consensus_position(self, consensus_position):
         """Retrieves codons for this consensus position as:

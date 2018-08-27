@@ -7,6 +7,7 @@ from metadome.domain.services.annotation.gene_region_annotators import annotateT
 from metadome.domain.services.annotation.annotation import annotateSNVs
 from metadome.controllers.job import get_visualization_error_path
 from metadome.domain.error import RecoverableError
+import numpy as np
 
 from celery import current_app as celery_app
 from flask import current_app as flask_app
@@ -215,10 +216,10 @@ def analyse_transcript(transcript_id):
                     d['domains'][domain['ID']] = None
                     if not meta_domains[domain['ID']] is None:
                         # retrieve the context for this protein
-                        consensus_pos = meta_domains[domain['ID']].get_consensus_position_for_uniprot_position(uniprot_ac=gene_region.uniprot_ac, uniprot_position=db_position)
+                        consensus_positions = meta_domains[domain['ID']].get_consensus_positions_for_uniprot_position(uniprot_ac=gene_region.uniprot_ac, uniprot_position=db_position)
 
-                        if domain["metadomain"] and not consensus_pos is None:
-                            d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[domain['ID']], consensus_pos, db_position)
+                        if domain["metadomain"] and len(consensus_positions)>0:
+                            d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[domain['ID']], consensus_positions, db_position)
 
                             # compute alignment depth, added one for the current codon
                             current_alignment_depth = len(d['domains'][domain['ID']]['other_codons'])+1
@@ -234,10 +235,10 @@ def analyse_transcript(transcript_id):
 
     return result
 
-def create_meta_domain_entry(gene_region, metadomain, consensus_position, protein_pos):
+def create_meta_domain_entry(gene_region, metadomain, consensus_positions, protein_pos):
     metadom_entry = {}
     # update the consensus positions to abide the users' expectation (start at 1, not zero)
-    metadom_entry['consensus_pos'] = consensus_position+1
+    metadom_entry['consensus_pos'] = [int(x) for x in np.array(consensus_positions)+1]
     metadom_entry['normal_missense_variant_count'] = 0
     metadom_entry['normal_synonymous_variant_count'] = 0
     metadom_entry['normal_nonsense_variant_count'] = 0
@@ -248,92 +249,93 @@ def create_meta_domain_entry(gene_region, metadomain, consensus_position, protei
     metadom_entry['pathogenic_variant_count'] = 0
     metadom_entry['other_codons'] = []
 
-    # Retrieve the meta codons for this position
-    meta_codons = metadomain.get_codons_aligned_to_consensus_position(consensus_position)
-    current_codon = gene_region.retrieve_codon_for_protein_position(protein_pos)
-    # iterate over meta_codons and add to metadom_entry
-    for meta_codon_repr in meta_codons.keys():
-        # Check if we are dealing with the gene and protein_pos of interest
-        if current_codon.unique_str_representation() != meta_codon_repr:
-            # just take the first
-            meta_codon = meta_codons[meta_codon_repr][0]
+    for consensus_position in consensus_positions:
+        # Retrieve the meta codons for this position
+        meta_codons = metadomain.get_codons_aligned_to_consensus_position(consensus_position)
+        current_codon = gene_region.retrieve_codon_for_protein_position(protein_pos)
+        # iterate over meta_codons and add to metadom_entry
+        for meta_codon_repr in meta_codons.keys():
+            # Check if we are dealing with the gene and protein_pos of interest
+            if current_codon.unique_str_representation() != meta_codon_repr:
+                # just take the first
+                meta_codon = meta_codons[meta_codon_repr][0]
 
-            # first append the general information for this codon
-            position_entry = {}
-            position_entry['chr'] = meta_codon.chr
-            position_entry['chr_positions'] = meta_codon.pretty_print_chr_region()
-            position_entry['strand'] = meta_codon.strand.value
-            position_entry['ref_aa'] = meta_codon.amino_acid_residue
-            position_entry['ref_aa_triplet'] = meta_codon.three_letter_amino_acid_residue()
-            position_entry['ref_codon'] = meta_codon.base_pair_representation
+                # first append the general information for this codon
+                position_entry = {}
+                position_entry['chr'] = meta_codon.chr
+                position_entry['chr_positions'] = meta_codon.pretty_print_chr_region()
+                position_entry['strand'] = meta_codon.strand.value
+                position_entry['ref_aa'] = meta_codon.amino_acid_residue
+                position_entry['ref_aa_triplet'] = meta_codon.three_letter_amino_acid_residue()
+                position_entry['ref_codon'] = meta_codon.base_pair_representation
 
-            # annotate missense from gnomad
-            position_entry['normal_variants'] = []
-            normal_variant_annotation = annotateSNVs(annotateTranscriptWithGnomADData,
-                                     mappings_per_chr_pos=meta_codon.retrieve_mappings_per_chromosome(),
-                                     strand=meta_codon.strand,
-                                     chromosome=meta_codon.chr,
-                                     regions=meta_codon.regions)
+                # annotate missense from gnomad
+                position_entry['normal_variants'] = []
+                normal_variant_annotation = annotateSNVs(annotateTranscriptWithGnomADData,
+                                         mappings_per_chr_pos=meta_codon.retrieve_mappings_per_chromosome(),
+                                         strand=meta_codon.strand,
+                                         chromosome=meta_codon.chr,
+                                         regions=meta_codon.regions)
 
-            # process the annotation
-            for chrom_pos in normal_variant_annotation.keys():
-                for variant in normal_variant_annotation[chrom_pos]:
-                    # create new entry for this variant
-                    variant_entry = {}
-                    # append variant information
-                    variant_entry['alt_codon'], variant_entry['alt_aa'], variant_entry['alt_aa_triplet'], variant_entry['type']  = meta_codon.interpret_SNV_type(position=chrom_pos, var_nucleotide= variant['ALT'])
-                    variant_entry['pos'] = variant['POS']
-                    variant_entry['ref'] = variant['REF']
-                    variant_entry['alt'] = variant['ALT']
+                # process the annotation
+                for chrom_pos in normal_variant_annotation.keys():
+                    for variant in normal_variant_annotation[chrom_pos]:
+                        # create new entry for this variant
+                        variant_entry = {}
+                        # append variant information
+                        variant_entry['alt_codon'], variant_entry['alt_aa'], variant_entry['alt_aa_triplet'], variant_entry['type']  = meta_codon.interpret_SNV_type(position=chrom_pos, var_nucleotide= variant['ALT'])
+                        variant_entry['pos'] = variant['POS']
+                        variant_entry['ref'] = variant['REF']
+                        variant_entry['alt'] = variant['ALT']
 
-                    # append gnomAD specific information
-                    variant_entry['allele_number'] = variant['AN']
-                    variant_entry['allele_count'] = variant['AC']
+                        # append gnomAD specific information
+                        variant_entry['allele_number'] = variant['AN']
+                        variant_entry['allele_count'] = variant['AC']
 
-                    # add to the position entry
-                    position_entry['normal_variants'].append(variant_entry)
+                        # add to the position entry
+                        position_entry['normal_variants'].append(variant_entry)
 
-                    # count the variants
-                    if variant_entry['type'] == 'missense': metadom_entry['normal_missense_variant_count'] += 1
-                    if variant_entry['type'] == 'synonymous': metadom_entry['normal_synonymous_variant_count'] += 1
-                    if variant_entry['type'] == 'nonsense': metadom_entry['normal_nonsense_variant_count'] += 1
+                        # count the variants
+                        if variant_entry['type'] == 'missense': metadom_entry['normal_missense_variant_count'] += 1
+                        if variant_entry['type'] == 'synonymous': metadom_entry['normal_synonymous_variant_count'] += 1
+                        if variant_entry['type'] == 'nonsense': metadom_entry['normal_nonsense_variant_count'] += 1
 
-            # annotate pathogenic missense from clinvar
-            position_entry['pathogenic_variants'] = []
-            pathogenic_variant_annotation = annotateSNVs(annotateTranscriptWithClinvarData,
-                                     mappings_per_chr_pos=meta_codon.retrieve_mappings_per_chromosome(),
-                                     strand=meta_codon.strand,
-                                     chromosome=meta_codon.chr,
-                                     regions=meta_codon.regions)
+                # annotate pathogenic missense from clinvar
+                position_entry['pathogenic_variants'] = []
+                pathogenic_variant_annotation = annotateSNVs(annotateTranscriptWithClinvarData,
+                                         mappings_per_chr_pos=meta_codon.retrieve_mappings_per_chromosome(),
+                                         strand=meta_codon.strand,
+                                         chromosome=meta_codon.chr,
+                                         regions=meta_codon.regions)
 
-            # process the annotation
-            for chrom_pos in pathogenic_variant_annotation.keys():
-                for variant in pathogenic_variant_annotation[chrom_pos]:
+                # process the annotation
+                for chrom_pos in pathogenic_variant_annotation.keys():
+                    for variant in pathogenic_variant_annotation[chrom_pos]:
 
-                    # create new entry for this variant
-                    variant_entry = {}
-                    # append variant information
-                    variant_entry['alt_codon'], variant_entry['alt_aa'], variant_entry['alt_aa_triplet'], variant_entry['type']  = meta_codon.interpret_SNV_type(position=chrom_pos, var_nucleotide= variant['ALT'])
-                    variant_entry['pos'] = variant['POS']
-                    variant_entry['ref'] = variant['REF']
-                    variant_entry['alt'] = variant['ALT']
+                        # create new entry for this variant
+                        variant_entry = {}
+                        # append variant information
+                        variant_entry['alt_codon'], variant_entry['alt_aa'], variant_entry['alt_aa_triplet'], variant_entry['type']  = meta_codon.interpret_SNV_type(position=chrom_pos, var_nucleotide= variant['ALT'])
+                        variant_entry['pos'] = variant['POS']
+                        variant_entry['ref'] = variant['REF']
+                        variant_entry['alt'] = variant['ALT']
 
-                    # append ClinVar specific information
-                    variant_entry['clinvar_ID'] = variant['ID']
+                        # append ClinVar specific information
+                        variant_entry['clinvar_ID'] = variant['ID']
 
-                    # add to the position entry
-                    position_entry['pathogenic_variants'].append(variant_entry)
+                        # add to the position entry
+                        position_entry['pathogenic_variants'].append(variant_entry)
 
-                    # count the variants
-                    if variant_entry['type'] == 'missense': metadom_entry['pathogenic_missense_variant_count'] += 1
-                    if variant_entry['type'] == 'synonymous': metadom_entry['pathogenic_synonymous_variant_count'] += 1
-                    if variant_entry['type'] == 'nonsense': metadom_entry['pathogenic_nonsense_variant_count'] += 1
+                        # count the variants
+                        if variant_entry['type'] == 'missense': metadom_entry['pathogenic_missense_variant_count'] += 1
+                        if variant_entry['type'] == 'synonymous': metadom_entry['pathogenic_synonymous_variant_count'] += 1
+                        if variant_entry['type'] == 'nonsense': metadom_entry['pathogenic_nonsense_variant_count'] += 1
 
-            # add this codon to the metadome entry
-            metadom_entry['other_codons'].append(position_entry)
+                # add this codon to the metadome entry
+                metadom_entry['other_codons'].append(position_entry)
 
-            # Update the variant counts
-            metadom_entry['normal_variant_count'] += len(position_entry['normal_variants'])
-            metadom_entry['pathogenic_variant_count'] += len(position_entry['pathogenic_variants'])
+                # Update the variant counts
+                metadom_entry['normal_variant_count'] += len(position_entry['normal_variants'])
+                metadom_entry['pathogenic_variant_count'] += len(position_entry['pathogenic_variants'])
 
     return metadom_entry
