@@ -564,95 +564,104 @@ function retrieveInput() {
     }
 }
 
+var pageTranscriptID;
+
 function visualize() {
     var gtID = retrieveInput();
-    var transcriptID = gtID.split(" ")[0];
+    pageTranscriptID = gtID.split(" ")[0];
 
-    visualizeSubmit(transcriptID);
+    visualizeSubmit();
 }
 
-function visualizeSubmit(transcriptID) {
+function visualizeSubmit() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
 
         if (this.readyState == 4 && this.status > 0) {
             var response = JSON.parse(xhttp.responseText);
             if (response.error !== undefined)
-                showErrorOnPage(transcriptID, response.error);
+                showErrorOnPage(response.error);
             else
-                visualizeStatus(transcriptID);
+                visualizeStatus();
         }
     };
     xhttp.open("GET",
                "{{ url_for('api.submit_visualization_job_for_transcript', transcript_id='XXXXXX') }}"
-               .replace('XXXXXX', transcriptID), true);
+               .replace('XXXXXX', pageTranscriptID), true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send();
 }
 
-function visualizeStatus(transcriptID) {
+function visualizeStatus() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
 
         if (this.readyState == 4 && this.status > 0) {
             var response = JSON.parse(xhttp.responseText);
             if (response.error !== undefined)
-                showErrorOnPage(transcriptID, response.error);
+                hideStatusOnPage();
+                hideResultOnPage();
+
+                showErrorOnPage(response.error);
             else {
                 if (response.status == 'SUCCESS') {
                     hideStatusOnPage();
+                    hideErrorOnPage();
 
-                    visualizeResult(transcriptID);
+                    visualizeResult();
 
                 } else if (response.status == 'FAILURE') {
                     hideStatusOnPage();
+                    hideResultOnPage();
 
-                    visualizeError(transcriptID);
+                    visualizeError();
                 } else {
-                    showStatusOnPage(transcriptID, response.status);
+                    hideErrorOnPage();
+                    hideResultOnPage();
+                    showStatusOnPage(response.status);
 
                     // try again after 5 seconds:
-                    setTimeout(function() { visualizeStatus(transcriptID); }, 5000);
+                    setTimeout(function() { visualizeStatus(); }, 5000);
                 }
             }
         }
     };
     xhttp.open("GET",
                "{{ url_for('api.get_visualization_status_for_transcript', transcript_id='XXXXXX') }}"
-               .replace('XXXXXX', transcriptID), true);
+               .replace('XXXXXX', pageTranscriptID), true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send();
 }
 
-function visualizeError(transcriptID) {
+function visualizeError() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status > 0) {
             var response = JSON.parse(xhttp.responseText);
-            showErrorOnPage(transcriptID, response.error);
+            showErrorOnPage(response.error);
         }
     }
     xhttp.open("GET",
                "{{ url_for('api.get_visualization_error_for_transcript', transcript_id='XXXXXX') }}"
-               .replace('XXXXXX', transcriptID), true);
+               .replace('XXXXXX', pageTranscriptID), true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send();
 }
 
-function visualizeResult(transcriptID) {
+function visualizeResult() {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status > 0) {
             var response = JSON.parse(xhttp.responseText);
             if (response.error !== undefined)
-                showErrorOnPage(transcriptID, response.error);
+                showErrorOnPage(response.error);
             else
                 showResultOnPage(response);
         }
     }
     xhttp.open("GET",
                "{{ url_for('api.get_visualization_result_for_transcript', transcript_id='XXXXXX') }}"
-               .replace('XXXXXX', transcriptID), true);
+               .replace('XXXXXX', pageTranscriptID), true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send();
 }
@@ -661,14 +670,22 @@ function hideStatusOnPage() {
     $("#statusDisplay").addClass('is-hidden');
 }
 
-function showStatusOnPage(transcriptID, status) {
+function showStatusOnPage(status) {
     $("#statusDisplay").removeClass('is-hidden');
-    $("#statusLabel").text("status for transcript " + transcriptID + ": " + status);
+    $("#statusLabel").text("status for transcript " + pageTranscriptID + ": " + status);
 }
 
-function showErrorOnPage(transcriptID, traceback) {
+function hideErrorOnPage() {
+    $("#errorDisplay").addClass('is-hidden');
+}
+
+function showErrorOnPage(traceback) {
     $("#errorDisplay").removeClass('is-hidden');
-    $("#errorTraceback").text("error for transcript " + transcriptID + ":\n" + traceback);
+    $("#errorTraceback").text("error for transcript " + pageTranscriptID + ":\n" + traceback);
+}
+
+function hideResultOnPage() {
+    $("#toleranceGraphContainer").addClass('is-hidden');
 }
 
 function showResultOnPage(obj) {
