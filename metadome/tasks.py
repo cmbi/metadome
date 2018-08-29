@@ -65,6 +65,14 @@ def mock_response(self):
     from metadome.presentation.api.routes_mock import mockup_tol_and_metadom, mock_ptpn11
     return mock_ptpn11()
 
+
+@celery_app.task(bind=True,
+                 autoretry_for=(RecoverableError,),
+                 retry_kwargs={'max_retries': 50})
+def initialize_metadomain(self, domain_id):
+    return MetaDomain.initializeFromDomainID(domain_id)
+
+
 @celery_app.task(bind=True,
                  autoretry_for=(RecoverableError,),
                  retry_kwargs={'max_retries': 50})
