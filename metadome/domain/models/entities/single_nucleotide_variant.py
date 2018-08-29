@@ -21,7 +21,8 @@ class SingleNucleotideVariant(Codon):
     ref_nucleotide                         str the reference nucleotide at the var_codon_position
     alt_nucleotide                         str the alternative nucleotide at the var_codon_position
     alt_amino_acid_residue                 str the alternative amino acid residue of this variant
-    variant_type                           Enum the variant type (i.e.: missense, synonymous, nonsense)    
+    variant_type                           Enum the variant type (i.e.: missense, synonymous, nonsense)
+    alt_base_pair_representation           str the alternative representation of this codon
     """
     
     @staticmethod
@@ -59,10 +60,15 @@ class SingleNucleotideVariant(Codon):
         else:
             return VariantType.synonymous
 
-#     def unique_str_representation(self):
-#         Nog te maken
-#         
-#         return str(self.chr)+":"+str(self.regions)+"::("+str(self.strand)+")"
+    def alt_three_letter_amino_acid_residue(self):
+        """Returns a three letter representation of the amino acid residue for this codon"""
+        return Codon.one_to_three_letter_amino_acid_residue(self.alt_amino_acid_residue)
+    
+    def unique_str_representation(self):
+        return str(self.chr)+";"+str(self.regions)+";"+"("+str(self.strand)+")"+\
+            ";"+str(self.base_pair_representation)+">"+str(self.alt_base_pair_representation)+\
+            ";"+str(self.three_letter_amino_acid_residue())+">"+str(self.alt_three_letter_amino_acid_residue())+\
+            ";"+str(self.variant_type.value)
 
     def __init__(self, _gencode_transcription_id, _uniprot_ac, 
                              _strand, _base_pair_representation, 
@@ -96,7 +102,8 @@ class SingleNucleotideVariant(Codon):
         self.var_codon_position = int()
         self.variant_type = str()
         self.alt_amino_acid_residue = _alt_amino_acid_residue
-
+        self.alt_base_pair_representation = str()
+        
         # start the type and rule checks
         if _ref_nucleotide == _alt_nucleotide:
             raise MalformedVariantException("No SNV could be made: found identical ref and alt nucleotides")
@@ -115,6 +122,9 @@ class SingleNucleotideVariant(Codon):
         # check if the var position correspond to the ref nucleotide
         if self.base_pair_representation[self.var_codon_position] != self.ref_nucleotide:
             raise MalformedVariantException("No SNV could be made: the ref nucleoide '"+str(self.ref_nucleotide)+"' does not correspond to the var_codon_position '"+str(self.var_codon_position)+"' in the base_pair_representation '"+str(self.base_pair_representation)+"'")
+        
+        # set the alt base pair representation
+        self.alt_base_pair_representation = SingleNucleotideVariant.interpret_alt_codon(self.base_pair_representation, self.var_codon_position, self.alt_nucleotide)        
          
         # check that the variant type is of missense, nonsense, synonymous
         if _variant_type == 'missense':
