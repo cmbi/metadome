@@ -60,6 +60,7 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
         self.assertTrue(_var_from_init.alt_nucleotide == _var_from_var.alt_nucleotide == _alt_nucleotide)
         self.assertTrue(_var_from_init.variant_type.value == _var_from_var.variant_type.value == _variant_type)
         self.assertTrue(_var_from_init.var_codon_position == _var_from_var.var_codon_position == _var_codon_position)
+        self.assertTrue(_var_from_init.alt_base_pair_representation == _var_from_var.alt_base_pair_representation == 'ATA')
         
         # Create a dictionary from the variant
         _d = _var_from_init.toDict()
@@ -70,7 +71,8 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
         self.assertTrue(_var_from_dict.ref_nucleotide == _ref_nucleotide)
         self.assertTrue(_var_from_dict.alt_nucleotide == _alt_nucleotide)
         self.assertTrue(_var_from_dict.variant_type.value == _variant_type)
-        self.assertTrue(_var_from_dict.var_codon_position == _var_codon_position)        
+        self.assertTrue(_var_from_dict.var_codon_position == _var_codon_position)
+        self.assertTrue(_var_from_dict.alt_base_pair_representation == 'ATA')
         
     def test_initializeFromVariantFailures(self):
         _codon = mock_Codon.mock_Methionine()
