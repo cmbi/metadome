@@ -16,6 +16,15 @@ class mock_Codon(Codon):
         return super(mock_Codon, cls).initializeFromDict(_d)
     
 class Test_SingleNucleotideVariant(unittest.TestCase):
+    
+    def test_interpret_variant_type_from_residues(self):
+        pass
+
+    def test_interpret_variant_type_from_codon_basepair_representations(self):
+        pass
+    
+    def test_interpret_alt_codon(self):
+        pass
 
     def test_initializations(self):
         _codon = mock_Codon.mock_Methionine()
@@ -24,8 +33,10 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
         _ref_nucleotide='G'
         _alt_nucleotide='A'
         _var_codon_position=2
+        _chromosome_position=3
         
         # should succeed
+        _var_from_var = SingleNucleotideVariant.initializeFromVariant(_codon, _chromosome_position, _alt_nucleotide)
         _var_from_init = SingleNucleotideVariant(_gencode_transcription_id=_codon.gencode_transcription_id,
                                 _uniprot_ac=_codon.uniprot_ac, _strand=_codon.strand.value,
                                 _base_pair_representation=_codon.base_pair_representation, 
@@ -44,11 +55,11 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
                                 _var_codon_position=_var_codon_position)
         
         # Check if the init went okay
-        self.assertTrue(_var_from_init.alt_amino_acid_residue == _alt_amino_acid_residue)
-        self.assertTrue(_var_from_init.ref_nucleotide == _ref_nucleotide)
-        self.assertTrue(_var_from_init.alt_nucleotide == _alt_nucleotide)
-        self.assertTrue(_var_from_init.variant_type.value == _variant_type)
-        self.assertTrue(_var_from_init.var_codon_position == _var_codon_position)
+        self.assertTrue(_var_from_init.alt_amino_acid_residue == _var_from_var.alt_amino_acid_residue == _alt_amino_acid_residue)
+        self.assertTrue(_var_from_init.ref_nucleotide == _var_from_var.ref_nucleotide == _ref_nucleotide)
+        self.assertTrue(_var_from_init.alt_nucleotide == _var_from_var.alt_nucleotide == _alt_nucleotide)
+        self.assertTrue(_var_from_init.variant_type.value == _var_from_var.variant_type.value == _variant_type)
+        self.assertTrue(_var_from_init.var_codon_position == _var_from_var.var_codon_position == _var_codon_position)
         
         # Create a dictionary from the variant
         _d = _var_from_init.toDict()
@@ -60,6 +71,15 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
         self.assertTrue(_var_from_dict.alt_nucleotide == _alt_nucleotide)
         self.assertTrue(_var_from_dict.variant_type.value == _variant_type)
         self.assertTrue(_var_from_dict.var_codon_position == _var_codon_position)        
+        
+    def test_initializeFromVariantFailures(self):
+        _codon = mock_Codon.mock_Methionine()
+        _alt_nucleotide='A'
+        _chromosome_position=4
+        
+        with self.assertRaises(MalformedVariantException):
+            SingleNucleotideVariant.initializeFromVariant(_codon, _chromosome_position, _alt_nucleotide)
+        
         
     def test_initializeFromDictFailures(self):
         _codon = mock_Codon.mock_Methionine()
