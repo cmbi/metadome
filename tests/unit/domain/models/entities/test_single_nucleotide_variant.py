@@ -1,8 +1,3 @@
-'''
-Created on Aug 28, 2018
-
-@author: laurens
-'''
 import unittest
 from metadome.domain.models.entities.codon import MalformedCodonException, Codon
 from metadome.domain.models.entities.single_nucleotide_variant import SingleNucleotideVariant,\
