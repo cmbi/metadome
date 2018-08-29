@@ -6,7 +6,7 @@ Created on Aug 28, 2018
 import unittest
 from metadome.domain.models.entities.codon import MalformedCodonException, Codon
 from metadome.domain.models.entities.single_nucleotide_variant import SingleNucleotideVariant,\
-    MalformedVariantException
+    MalformedVariantException, VariantType
 from builtins import NotImplementedError
 
 class mock_Codon(Codon):
@@ -18,13 +18,19 @@ class mock_Codon(Codon):
 class Test_SingleNucleotideVariant(unittest.TestCase):
     
     def test_interpret_variant_type_from_residues(self):
-        pass
+        self.assertTrue(SingleNucleotideVariant.interpret_variant_type_from_residues('M', 'I') == VariantType.missense)
+        self.assertTrue(SingleNucleotideVariant.interpret_variant_type_from_residues('M', 'M') == VariantType.synonymous)
+        self.assertTrue(SingleNucleotideVariant.interpret_variant_type_from_residues('M', '*') == VariantType.nonsense)    
 
     def test_interpret_variant_type_from_codon_basepair_representations(self):
-        pass
+        self.assertTrue(SingleNucleotideVariant.interpret_variant_type_from_codon_basepair_representations('ATG', 'ATA') == VariantType.missense)
+        self.assertTrue(SingleNucleotideVariant.interpret_variant_type_from_codon_basepair_representations('ATA', 'ATC') == VariantType.synonymous)
+        self.assertTrue(SingleNucleotideVariant.interpret_variant_type_from_codon_basepair_representations('TAC', 'TAA') == VariantType.nonsense)
     
     def test_interpret_alt_codon(self):
-        pass
+        self.assertTrue(SingleNucleotideVariant.interpret_alt_codon('ATG', 0, 'C') == 'CTG')
+        self.assertTrue(SingleNucleotideVariant.interpret_alt_codon('ATG', 1, 'C') == 'ACG')
+        self.assertTrue(SingleNucleotideVariant.interpret_alt_codon('ATG', 2, 'C') == 'ATC')
 
     def test_initializations(self):
         _codon = mock_Codon.mock_Methionine()
