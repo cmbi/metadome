@@ -1,4 +1,5 @@
 from metadome.domain.models.entities.codon import Codon, MalformedCodonException
+from Bio.Seq import translate
 import enum
 
 class MalformedVariantException(Exception):
@@ -22,6 +23,46 @@ class SingleNucleotideVariant(Codon):
     alt_amino_acid_residue                 str the alternative amino acid residue of this variant
     variant_type                           Enum the variant type (i.e.: missense, synonymous, nonsense)    
     """
+    
+    @staticmethod
+    def interpret_alt_codon(ref_basepair_representation, var_codon_pos, alt_nucleotide):
+        """Given the reference base pair representation of the codon, the variant 
+        position in the codon and the alternative nucleotide, returns the 
+        alternative base pair representation of the new codon"""
+        alt_basepair_representation =""
+        for i in range(len(ref_basepair_representation)):
+            if i == var_codon_pos:
+                alt_basepair_representation+= alt_nucleotide
+            else:
+                alt_basepair_representation+= ref_basepair_representation[i]
+        
+        return alt_basepair_representation
+    
+    @staticmethod
+    def interpret_variant_type_from_codon_basepair_representations(ref_basepair_representation, alt_basepair_representation):
+        """Interprets the models.entities.SingleNucleotideVariant.VariantType
+        from translating the ref and alt basepair representations of the codon"""
+        # translate the residues
+        ref_residue = translate(ref_basepair_representation)
+        alt_residue = translate(alt_basepair_representation)
+        # interpret the variant type
+        return SingleNucleotideVariant.interpret_variant_type_from_residues(ref_residue, alt_residue)
+    
+    @staticmethod
+    def interpret_variant_type_from_residues(ref_residue, alt_residue):
+        """Interprets the models.entities.SingleNucleotideVariant.VariantType
+        from translating the ref and alt amino acid residues"""
+        if alt_residue == '*':
+            return VariantType.nonsense
+        elif alt_residue != ref_residue:
+            return VariantType.missense
+        else:
+            return VariantType.synonymous
+
+#     def unique_str_representation(self):
+#         Nog te maken
+#         
+#         return str(self.chr)+":"+str(self.regions)+"::("+str(self.strand)+")"
 
     def __init__(self, _gencode_transcription_id, _uniprot_ac, 
                              _strand, _base_pair_representation, 
@@ -109,7 +150,7 @@ class SingleNucleotideVariant(Codon):
             _alt_nucleotide = _d['alt_nucleotide']
             _var_codon_position = _d['var_codon_position']
             _variant_type = _d['variant_type']
-            _alt_amino_acid_residue  = _d['alt_amino_acid_residue']
+            _alt_amino_acid_residue = _d['alt_amino_acid_residue']
             
             SNV = cls(_gencode_transcription_id=_codon.gencode_transcription_id,
                                     _uniprot_ac=_codon.uniprot_ac, _strand=_codon.strand.value,
@@ -124,21 +165,59 @@ class SingleNucleotideVariant(Codon):
                                     _cDNA_position_two=_codon.cDNA_position_two, 
                                     _cDNA_position_three=_codon.cDNA_position_three,
                                     _variant_type=_variant_type, 
-                                    _alt_amino_acid_residue='I', 
+                                    _alt_amino_acid_residue=_alt_amino_acid_residue, 
                                     _ref_nucleotide=_ref_nucleotide, 
                                     _alt_nucleotide=_alt_nucleotide,
                                     _var_codon_position=_var_codon_position)
             
             return SNV
         except MalformedCodonException as e:
-            raise MalformedCodonException("Upon constructing SingleNucleotideVariant: Malformed codon from dict: KeyError with message: "+str(e))
+            raise MalformedCodonException("No SNV could be made: Malformed codon from dict: KeyError with message: "+str(e))
         except KeyError as e:
-            raise MalformedVariantException("Malformed variant from dict: KeyError with message: "+str(e))
+            raise MalformedVariantException("No SNV could be made: Malformed variant from dict: KeyError with message: "+str(e))
     
     @classmethod
     def initializeFromMapping(cls, _mappings, _gencode_transcription_id, _uniprot_ac):
-        raise NotImplementedError("The function "'initializeFromMapping'" is not supported for SingleNucleotideVariant class")     
-    
+        raise NotImplementedError("The function "'initializeFromMapping'" is not supported for SingleNucleotideVariant class")
+
+    @classmethod
+    def initializeFromVariant(cls, _codon, _chr_position, _alt_nucleotide):
+        """Interprets the variant as a models.entities.SingleNucleotideVariant"""
+        # retrieve information needed from the codon
+        _variant_position_information = {}
+        try:
+            _variant_position_information = _codon.retrieve_mappings_per_chromosome()[_chr_position]
+        except KeyError as e:
+            raise MalformedVariantException("No SNV could be made: chromosome position '"+str(_chr_position)+"' does not exist in provided codon '"+str(_codon)+"' with error:"+str(e))
+        
+        # Retrieve the position and base pair of the provided codon
+        _var_codon_position = _variant_position_information['codon_base_pair_position']
+        _ref_nucleotide = _variant_position_information['base_pair']
+        
+        # interpret the variant in the context of the provided codon
+        _alt_codon = SingleNucleotideVariant.interpret_alt_codon(_codon.base_pair_representation, _var_codon_position, _alt_nucleotide)
+        _alt_amino_acid_residue = translate(_alt_codon)
+        _variant_type = SingleNucleotideVariant.interpret_variant_type_from_residues(_codon.amino_acid_residue, _alt_amino_acid_residue)
+        
+        # create the SNV
+        return cls(_gencode_transcription_id=_codon.gencode_transcription_id,
+                                _uniprot_ac=_codon.uniprot_ac, _strand=_codon.strand.value,
+                                _base_pair_representation=_codon.base_pair_representation, 
+                                _amino_acid_residue=_codon.amino_acid_residue, 
+                                _amino_acid_position=_codon.amino_acid_position, 
+                                _chr=_codon.chr, 
+                                _chromosome_position_base_pair_one=_codon.chromosome_position_base_pair_one, 
+                                _chromosome_position_base_pair_two=_codon.chromosome_position_base_pair_two, 
+                                _chromosome_position_base_pair_three=_codon.chromosome_position_base_pair_three,
+                                _cDNA_position_one=_codon.cDNA_position_one, 
+                                _cDNA_position_two=_codon.cDNA_position_two, 
+                                _cDNA_position_three=_codon.cDNA_position_three,
+                                _variant_type=_variant_type.value, 
+                                _alt_amino_acid_residue=_alt_amino_acid_residue, 
+                                _ref_nucleotide=_ref_nucleotide, 
+                                _alt_nucleotide=_alt_nucleotide,
+                                _var_codon_position=_var_codon_position)
+   
     def __repr__(self):
         return "<SingleNucleotideVariant(chr='%s', chr_positions='%s', strand='%s', ref_codon='%s', ref_aa='%s',)>" % (
                             self.chr, str(self.regions), self.strand, self.base_pair_representation, self.amino_acid_residue)
