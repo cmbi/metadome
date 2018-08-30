@@ -23,6 +23,7 @@ class SingleNucleotideVariant(Codon):
     alt_amino_acid_residue                 str the alternative amino acid residue of this variant
     variant_type                           Enum the variant type (i.e.: missense, synonymous, nonsense)
     alt_base_pair_representation           str the alternative representation of this codon
+    variant_source                         str the source of this variant
     """
     
     @staticmethod
@@ -65,10 +66,9 @@ class SingleNucleotideVariant(Codon):
         return Codon.one_to_three_letter_amino_acid_residue(self.alt_amino_acid_residue)
     
     def unique_snv_str_representation(self):
-        return str(self.chr)+";"+str(self.regions)+";"+"("+str(self.strand)+")"+\
+        return str(self.variant_source)+":"+self.unique_str_representation()+\
             ";"+str(self.base_pair_representation)+">"+str(self.alt_base_pair_representation)+\
-            ";"+str(self.three_letter_amino_acid_residue())+">"+str(self.alt_three_letter_amino_acid_residue())+\
-            ";"+str(self.variant_type.value)
+            ";"+str(self.amino_acid_residue)+">"+str(self.alt_amino_acid_residue)
 
     def __init__(self, _gencode_transcription_id, _uniprot_ac, 
                              _strand, _base_pair_representation, 
@@ -82,7 +82,8 @@ class SingleNucleotideVariant(Codon):
                              _alt_amino_acid_residue,
                              _ref_nucleotide,
                              _alt_nucleotide,
-                             _var_codon_position):
+                             _var_codon_position,
+                             _variant_source):
         # Init the parent object
         super().__init__(_gencode_transcription_id=_gencode_transcription_id,
                          _uniprot_ac=_uniprot_ac, _strand=_strand, 
@@ -103,7 +104,7 @@ class SingleNucleotideVariant(Codon):
         self.variant_type = str()
         self.alt_amino_acid_residue = _alt_amino_acid_residue
         self.alt_base_pair_representation = str()
-        
+        self.variant_source = _variant_source
         # start the type and rule checks
         if _ref_nucleotide == _alt_nucleotide:
             raise MalformedVariantException("No SNV could be made: found identical ref and alt nucleotides")
@@ -146,7 +147,8 @@ class SingleNucleotideVariant(Codon):
         _d['var_codon_position'] = self.var_codon_position
         _d['variant_type'] = self.variant_type.value
         _d['alt_amino_acid_residue'] = self.alt_amino_acid_residue
-        
+        _d['variant_source'] = self.variant_source
+
         return _d
     
     @classmethod
@@ -161,6 +163,7 @@ class SingleNucleotideVariant(Codon):
             _var_codon_position = _d['var_codon_position']
             _variant_type = _d['variant_type']
             _alt_amino_acid_residue = _d['alt_amino_acid_residue']
+            _variant_source = _d['variant_source']
             
             SNV = cls(_gencode_transcription_id=_codon.gencode_transcription_id,
                                     _uniprot_ac=_codon.uniprot_ac, _strand=_codon.strand.value,
@@ -178,7 +181,8 @@ class SingleNucleotideVariant(Codon):
                                     _alt_amino_acid_residue=_alt_amino_acid_residue, 
                                     _ref_nucleotide=_ref_nucleotide, 
                                     _alt_nucleotide=_alt_nucleotide,
-                                    _var_codon_position=_var_codon_position)
+                                    _var_codon_position=_var_codon_position,
+                                    _variant_source=_variant_source)
             
             return SNV
         except MalformedCodonException as e:
@@ -191,7 +195,7 @@ class SingleNucleotideVariant(Codon):
         raise NotImplementedError("The function "'initializeFromMapping'" is not supported for SingleNucleotideVariant class")
 
     @classmethod
-    def initializeFromVariant(cls, _codon, _chr_position, _alt_nucleotide):
+    def initializeFromVariant(cls, _codon, _chr_position, _alt_nucleotide, _variant_source):
         """Interprets the variant as a models.entities.SingleNucleotideVariant"""
         # retrieve information needed from the codon
         _variant_position_information = {}
@@ -226,7 +230,8 @@ class SingleNucleotideVariant(Codon):
                                 _alt_amino_acid_residue=_alt_amino_acid_residue, 
                                 _ref_nucleotide=_ref_nucleotide, 
                                 _alt_nucleotide=_alt_nucleotide,
-                                _var_codon_position=_var_codon_position)
+                                _var_codon_position=_var_codon_position,
+                                _variant_source=_variant_source)
    
     def __repr__(self):
         return "<SingleNucleotideVariant(chr='%s', chr_positions='%s', strand='%s', ref_codon='%s', ref_aa='%s',)>" % (
