@@ -1,7 +1,12 @@
+from metadome.domain.services.annotation.annotation import annotateSNVs
+from metadome.domain.services.annotation.gene_region_annotators import annotateTranscriptWithClinvarData,\
+    annotateTranscriptWithGnomADData
 from metadome.domain.data_generation.mapping.meta_domain_mapping import generate_pfam_aligned_codons
-from metadome.domain.models.entities.codon import Codon, MalformedCodonException
+from metadome.domain.models.entities.codon import Codon
+from metadome.domain.models.entities.single_nucleotide_variant import SingleNucleotideVariant
 from metadome.default_settings import METADOMAIN_DIR,\
-    METADOMAIN_MAPPING_FILE_NAME, METADOMAIN_DETAILS_FILE_NAME
+    METADOMAIN_MAPPING_FILE_NAME, METADOMAIN_DETAILS_FILE_NAME,\
+    METADOMAIN_SNV_ANNOTATION_FILE_NAME
 import pandas as pd
 import json
 import os
@@ -11,9 +16,6 @@ import logging
 _log = logging.getLogger(__name__)
 
 class UnsupportedMetaDomainIdentifier(Exception):
-    pass
-
-class NotEnoughOccurrencesForMetaDomain(Exception):
     pass
 
 class ConsensusPositionOutOfBounds(Exception):
@@ -32,7 +34,12 @@ class MetaDomain(object):
     n_instances                int number of unique instances containing this domain
     n_transcripts              int number of unique transcripts containing this domain
     meta_domain_mapping        pandas.DataFrame containing all codons annotated with corresponding consensus position
+    meta_domain_annotation     pandas.DataFrame containing all SNVs with corresponding consensus position
     """
+    
+    def get_annotated_SNVs_for_consensus_position(self, consensus_position):
+        #TODO: make a filtering here based on unque_snv_representation
+        pass
     
     def get_consensus_positions_for_uniprot_position(self, uniprot_ac, uniprot_position):
         """Retrieves the consensus positions for this MetaDomain
@@ -88,15 +95,104 @@ class MetaDomain(object):
         # return the codons that correspond to this position
         return codons
     
+    def annotate_metadomain(self, reannotate=False):
+        """Annotate this meta domain with gnomAD and ClinVar variants"""
+        # check if a Meta Domain is already mapped
+        meta_domain_dir = METADOMAIN_DIR+self.domain_id
+        meta_domain_snv_annotation_file = meta_domain_dir+'/'+METADOMAIN_SNV_ANNOTATION_FILE_NAME
+        
+        # initialize the meta_domain_annotation as a list
+        meta_domain_annotation = []
+        
+        # Check if the mapping has previously been annotated already
+        if os.path.exists(meta_domain_snv_annotation_file) and not reannotate:
+            # The mapping exists, load it
+            _log.info('Loading previously annotated MetaDomain for domain id: '+str(self.domain_id))
+            # Read the files
+            _log.info("Reading '{}'".format(meta_domain_snv_annotation_file))
+            meta_domain_annotation = pd.read_csv(meta_domain_snv_annotation_file)
+        else:
+            # The annotation does not exists yet, or needs be recreated/reannotated
+            _log.info('Start annotation of MetaDomain for domain id: '+str(self.domain_id))
+           
+            # Retrieve all codons
+            for consensus_position in range(self.consensus_length):
+                meta_codons = self.get_codons_aligned_to_consensus_position(consensus_position)
+                
+                # iterate over meta_codons and add to metadom_entry
+                for meta_codon_repr in meta_codons.keys():
+                    # Check if we are dealing with the gene and protein_pos of interest
+                    # just take the first
+                    meta_codon = meta_codons[meta_codon_repr][0]
+                    
+                    gnomad_variant_annotation = annotateSNVs(annotateTranscriptWithGnomADData,
+                                             mappings_per_chr_pos=meta_codon.retrieve_mappings_per_chromosome(),
+                                             strand=meta_codon.strand, 
+                                             chromosome=meta_codon.chr,
+                                             regions=meta_codon.regions)
+                    
+                    for chrom_pos in gnomad_variant_annotation.keys():
+                        for variant in gnomad_variant_annotation[chrom_pos]:
+                            for _codon in meta_codons[meta_codon_repr]:
+                                # create a variant object for this variant
+                                variant = SingleNucleotideVariant.initializeFromVariant(_codon=_codon, _chr_position=chrom_pos, _alt_nucleotide=variant['ALT'], _variant_source='gnomAD')
+                                
+                                # create the variant entry
+                                variant_entry = variant.toDict()
+                                variant_entry['unique_snv_str_representation'] = variant.unique_snv_str_representation()
+                                
+                                # append gnomAD specific information
+                                variant_entry['allele_number'] = variant['AN']
+                                variant_entry['allele_count'] = variant['AC']
+                                
+                                meta_domain_annotation.append(variant_entry)
+                    
+                    clinvar_variant_annotation = annotateSNVs(annotateTranscriptWithClinvarData,
+                                             mappings_per_chr_pos=meta_codon.retrieve_mappings_per_chromosome(),
+                                             strand=meta_codon.strand, 
+                                             chromosome=meta_codon.chr,
+                                             regions=meta_codon.regions)
+                    
+                    
+                    for chrom_pos in clinvar_variant_annotation.keys():
+                        for variant in clinvar_variant_annotation[chrom_pos]:
+                            for _codon in meta_codons[meta_codon_repr]:
+                                # create a variant object for this variant
+                                variant = SingleNucleotideVariant.initializeFromVariant(_codon=_codon, _chr_position=chrom_pos, _alt_nucleotide=variant['ALT'], _variant_source='ClinVar')
+                                
+                                # create the variant entry
+                                variant_entry = variant.toDict()
+                                variant_entry['unique_snv_str_representation'] = variant.unique_snv_str_representation()
+                                
+                                # append ClinVar specific information
+                                variant_entry['clinvar_ID'] = variant['ID']
+                                
+                                meta_domain_annotation.append(variant_entry)
+                        
+            # convert meta_domain_mapping to a pandas Dataframe
+            meta_domain_annotation = pd.DataFrame(meta_domain_annotation)
+            
+            # save meta_domain_mapping to disk
+            meta_domain_annotation.to_csv(meta_domain_snv_annotation_file)
+            
+            # set to variable
+            self.meta_domain_annotation = meta_domain_annotation
+            
+            _log.info('Finished annotation of MetaDomain for domain id: '+str(self.domain_id))
+    
     def __init__(self, domain_id, consensus_length, n_instances, meta_domain_mapping):
         self.domain_id = domain_id
         self.consensus_length = consensus_length
         self.n_instances = n_instances
         self.meta_domain_mapping = meta_domain_mapping
+        self.meta_domain_annotation = pd.DataFrame()
         
         # derive from meta_domain_mapping
         self.n_proteins = len(pd.unique(self.meta_domain_mapping.uniprot_ac))
         self.n_transcripts = len(pd.unique(self.meta_domain_mapping.gencode_transcription_id))
+        
+        # Annotate this meta domain
+        self.annotate_metadomain()
         
     @classmethod
     def initializeFromDomainID(cls, domain_id, recreate=False):        
