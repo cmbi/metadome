@@ -64,7 +64,7 @@ class SingleNucleotideVariant(Codon):
         """Returns a three letter representation of the amino acid residue for this codon"""
         return Codon.one_to_three_letter_amino_acid_residue(self.alt_amino_acid_residue)
     
-    def unique_str_representation(self):
+    def unique_snv_str_representation(self):
         return str(self.chr)+";"+str(self.regions)+";"+"("+str(self.strand)+")"+\
             ";"+str(self.base_pair_representation)+">"+str(self.alt_base_pair_representation)+\
             ";"+str(self.three_letter_amino_acid_residue())+">"+str(self.alt_three_letter_amino_acid_residue())+\
