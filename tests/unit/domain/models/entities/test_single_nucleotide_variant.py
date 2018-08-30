@@ -35,9 +35,9 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
         _alt_nucleotide='A'
         _var_codon_position=2
         _chromosome_position=3
-        
+        _variant_source = 'test_data'
         # should succeed
-        _var_from_var = SingleNucleotideVariant.initializeFromVariant(_codon, _chromosome_position, _alt_nucleotide)
+        _var_from_var = SingleNucleotideVariant.initializeFromVariant(_codon, _chromosome_position, _alt_nucleotide, _variant_source)
         _var_from_init = SingleNucleotideVariant(_gencode_transcription_id=_codon.gencode_transcription_id,
                                 _uniprot_ac=_codon.uniprot_ac, _strand=_codon.strand.value,
                                 _base_pair_representation=_codon.base_pair_representation, 
@@ -53,7 +53,7 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
                                 _variant_type=_variant_type, 
                                 _alt_amino_acid_residue=_alt_amino_acid_residue, 
                                 _ref_nucleotide=_ref_nucleotide, _alt_nucleotide=_alt_nucleotide, 
-                                _var_codon_position=_var_codon_position)
+                                _var_codon_position=_var_codon_position, _variant_source=_variant_source)
         
         # Check if the init went okay
         self.assertTrue(_var_from_init.alt_amino_acid_residue == _var_from_var.alt_amino_acid_residue == _alt_amino_acid_residue)
@@ -62,6 +62,7 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
         self.assertTrue(_var_from_init.variant_type.value == _var_from_var.variant_type.value == _variant_type)
         self.assertTrue(_var_from_init.var_codon_position == _var_from_var.var_codon_position == _var_codon_position)
         self.assertTrue(_var_from_init.alt_base_pair_representation == _var_from_var.alt_base_pair_representation == 'ATA')
+        self.assertTrue(_var_from_init.variant_source == _var_from_var.variant_source == _variant_source)
         
         # Create a dictionary from the variant
         _d = _var_from_init.toDict()
@@ -74,14 +75,16 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
         self.assertTrue(_var_from_dict.variant_type.value == _variant_type)
         self.assertTrue(_var_from_dict.var_codon_position == _var_codon_position)
         self.assertTrue(_var_from_dict.alt_base_pair_representation == 'ATA')
+        self.assertTrue(_var_from_dict.variant_source == _variant_source)
         
     def test_initializeFromVariantFailures(self):
         _codon = mock_Codon.mock_Methionine()
         _alt_nucleotide='A'
         _chromosome_position=4
+        _variant_source = 'test_data'
         
         with self.assertRaises(MalformedVariantException):
-            SingleNucleotideVariant.initializeFromVariant(_codon, _chromosome_position, _alt_nucleotide)
+            SingleNucleotideVariant.initializeFromVariant(_codon, _chromosome_position, _alt_nucleotide, _variant_source)
         
         
     def test_initializeFromDictFailures(self):
@@ -114,7 +117,8 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
                                     _cDNA_position_three=_codon.cDNA_position_three,
                                     _variant_type='missense', 
                                     _alt_amino_acid_residue='I', 
-                                    _ref_nucleotide='G', _alt_nucleotide='G', _var_codon_position=2)
+                                    _ref_nucleotide='G', _alt_nucleotide='G', 
+                                    _var_codon_position=2, _variant_source='test_data')
             
         #raise MalformedVariantException("No SNV could be made: The ref '"+str(_ref_nucleotide)+"' and alt '"+str(_alt_nucleotide)+"' nucleotides should both have total length '1'")
         with self.assertRaises(MalformedVariantException):
@@ -132,7 +136,8 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
                                     _cDNA_position_three=_codon.cDNA_position_three,
                                     _variant_type='missense', 
                                     _alt_amino_acid_residue='I', 
-                                    _ref_nucleotide='TG', _alt_nucleotide='A', _var_codon_position=2)
+                                    _ref_nucleotide='TG', _alt_nucleotide='A', 
+                                    _var_codon_position=2, _variant_source='test_data')
         with self.assertRaises(MalformedVariantException):
             _test = SingleNucleotideVariant(_gencode_transcription_id=_codon.gencode_transcription_id,
                                     _uniprot_ac=_codon.uniprot_ac, _strand=_codon.strand.value,
@@ -148,7 +153,8 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
                                     _cDNA_position_three=_codon.cDNA_position_three,
                                     _variant_type='missense', 
                                     _alt_amino_acid_residue='I', 
-                                    _ref_nucleotide='G', _alt_nucleotide='TA', _var_codon_position=2)
+                                    _ref_nucleotide='G', _alt_nucleotide='TA', 
+                                    _var_codon_position=2, _variant_source='test_data')
         
         #raise MalformedVariantException("No SNV could be made: _var_codon_position, indicating the variant in the basepair position in the codon should be 0, 1, or 2 but was '"+str(_var_codon_position)+"'")
         with self.assertRaises(MalformedVariantException):
@@ -166,7 +172,8 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
                                     _cDNA_position_three=_codon.cDNA_position_three,
                                     _variant_type='missense', 
                                     _alt_amino_acid_residue='I', 
-                                    _ref_nucleotide='G', _alt_nucleotide='A', _var_codon_position=4)
+                                    _ref_nucleotide='G', _alt_nucleotide='A', 
+                                    _var_codon_position=4, _variant_source='test_data')
             
         #raise MalformedVariantException("No SNV could be made: the ref nucleoide '"+str(self.ref_nucleotide)+"' does not correspond to the var_codon_position '"+str(self.var_codon_position)+"' in the base_pair_representation '"+str(self.base_pair_representation)+"'")
         with self.assertRaises(MalformedVariantException):
@@ -184,7 +191,8 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
                                     _cDNA_position_three=_codon.cDNA_position_three,
                                     _variant_type='missense', 
                                     _alt_amino_acid_residue='I', 
-                                    _ref_nucleotide='T', _alt_nucleotide='A', _var_codon_position=2)
+                                    _ref_nucleotide='T', _alt_nucleotide='A', 
+                                    _var_codon_position=2, _variant_source='test_data')
 
         # raise MalformedVariantException('No SNV could be made: Variant type cold not be converted to domain.models.entities.SingleNucleotideVariant.VariantType(Enum) for provided: '+str(_variant_type))
         with self.assertRaises(MalformedVariantException):
@@ -202,7 +210,8 @@ class Test_SingleNucleotideVariant(unittest.TestCase):
                                     _cDNA_position_three=_codon.cDNA_position_three,
                                     _variant_type='not a variant type', 
                                     _alt_amino_acid_residue='I', 
-                                    _ref_nucleotide='G', _alt_nucleotide='A', _var_codon_position=2)
+                                    _ref_nucleotide='G', _alt_nucleotide='A', 
+                                    _var_codon_position=2, _variant_source='test_data')
 
     def test_initializeFromMappings(self):
         with self.assertRaises(NotImplementedError):
