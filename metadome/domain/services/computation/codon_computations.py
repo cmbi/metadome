@@ -1,5 +1,4 @@
 from metadome.domain.metrics.codon_statistics import codon_background_rates
-from Bio.Seq import translate
 from metadome.domain.models.entities.single_nucleotide_variant import SingleNucleotideVariant
 
 class ExternalREFAlleleNotEqualsTranscriptionException(Exception):
