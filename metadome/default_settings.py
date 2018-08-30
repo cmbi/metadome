@@ -72,6 +72,7 @@ RECONSTRUCT_METADOMAINS = False
 METADOMAIN_ALIGNMENT_FILE_NAME = 'metadomain_alignments' # Alignments are saved as: METADOMAIN_DIR+<Pfam_id>+'/'+METADOMAIN_ALIGNMENT_FILE_NAME
 METADOMAIN_MAPPING_FILE_NAME = 'metadomain_mappings' # Mappings are saved as: METADOMAIN_DIR+<Pfam_id>+'/'+METADOMAIN_MAPPING_FILE_NAME
 METADOMAIN_DETAILS_FILE_NAME = 'metadomain_details.json' # Details are saved as: METADOMAIN_DIR+<Pfam_id>+'/'+METADOMAIN_DETAILS_FILE_NAME
+METADOMAIN_SNV_ANNOTATION_FILE_NAME = 'metadomain_snv_annotation' # Annotations are saved as: METADOMAIN_DIR+<Pfam_id>+'/'+METADOMAIN_SNV_ANNOTATION_FILE_NAME
 
 # Pre-build visualization files
 PRE_BUILD_VISUALIZATION_DIR = DATA_DIR+"metadome_visualization/"
