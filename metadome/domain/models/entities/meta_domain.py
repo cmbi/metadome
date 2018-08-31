@@ -178,19 +178,16 @@ class MetaDomain(object):
             
             _log.info('Finished annotation of MetaDomain for domain id: '+str(self.domain_id))
     
-    def __init__(self, domain_id, consensus_length, n_instances, meta_domain_mapping):
+    def __init__(self, domain_id, consensus_length, n_instances, meta_domain_mapping, meta_domain_annotation):
         self.domain_id = domain_id
         self.consensus_length = consensus_length
         self.n_instances = n_instances
         self.meta_domain_mapping = meta_domain_mapping
-        self.meta_domain_annotation = pd.DataFrame()
+        self.meta_domain_annotation = meta_domain_annotation
         
         # derive from meta_domain_mapping
         self.n_proteins = len(pd.unique(self.meta_domain_mapping.uniprot_ac))
         self.n_transcripts = len(pd.unique(self.meta_domain_mapping.gencode_transcription_id))
-        
-        # Annotate this meta domain
-        self.annotate_metadomain()
         
     @classmethod
     def initializeFromDomainID(cls, domain_id, recreate=False):        
@@ -259,7 +256,10 @@ class MetaDomain(object):
             raise UnsupportedMetaDomainIdentifier("Expected a Pfam domain, instead the identifier '"+str(domain_id)+"' was received")
         
         # Attempt to create the object
-        meta_domain = cls(domain_id, consensus_length, n_instances, meta_domain_mapping)
+        meta_domain = cls(domain_id, consensus_length, n_instances, meta_domain_mapping, pd.DataFrame())
+        
+        # Annotate this meta domain
+        meta_domain.annotate_metadomain()
         
         # return the object
         return meta_domain
