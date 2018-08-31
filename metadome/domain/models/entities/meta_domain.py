@@ -5,7 +5,9 @@ from metadome.domain.models.entities.codon import Codon
 from metadome.default_settings import METADOMAIN_DIR,\
     METADOMAIN_MAPPING_FILE_NAME, METADOMAIN_DETAILS_FILE_NAME,\
     METADOMAIN_SNV_ANNOTATION_FILE_NAME
+
 import pandas as pd
+import numpy as np
 import json
 import os
 
@@ -35,7 +37,7 @@ class MetaDomain(object):
     meta_domain_mapping        pandas.DataFrame containing all codons annotated with corresponding consensus position
     meta_domain_annotation     pandas.DataFrame containing all SNVs with corresponding consensus position
     """
-    
+        
     def get_annotated_SNVs_for_consensus_position(self, consensus_position):
         """Retrieves SNVs for this consensus position as:
         {SingleNucleotideVariant.unique_var_str_representation():  dict()}"""
@@ -114,6 +116,23 @@ class MetaDomain(object):
                 
         # return the codons that correspond to this position
         return codons
+    
+    def get_alignment_depth_for_consensus_position(self, consensus_position):
+        """Retrieves the number of aligned codons for this consensus position"""        
+        if consensus_position < 0:
+            raise ConsensusPositionOutOfBounds("The provided consensus position ('"+str(consensus_position)+"') is below zero, this position foes not exist")
+        if consensus_position >= self.consensus_length:
+            raise ConsensusPositionOutOfBounds("The provided consensus position ('"+str(consensus_position)+"') is above the maximum consensus length ('"+str(self.consensus_length)+"'), this position foes not exist")
+        
+        # Retrieve all codons aligned to the consensus position
+        aligned_to_position = self.meta_domain_mapping[self.meta_domain_mapping.consensus_pos == consensus_position].to_dict('records')
+
+        unique_keys = [Codon.initializeFromDict(codon_dict).unique_str_representation() for codon_dict in aligned_to_position]
+        return len(np.unique(unique_keys))
+    
+    def get_max_alignment_depth(self):
+        alignment_depths = [ self.get_alignment_depth_for_consensus_position(consensus_position) for consensus_position in range(self.consensus_length)]
+        return int(np.max(alignment_depths))
     
     def annotate_metadomain(self, reannotate=False):
         """Annotate this meta domain with gnomAD and ClinVar variants"""
