@@ -41,7 +41,7 @@ def annotate_SNVs_for_codons(annotateTranscriptFunction, codons, variant_source)
             for variant in variant_annotation[chrom_pos]:
                 for _codon in meta_codons[meta_codon_repr]:
                     # create a variant object for this variant
-                    SNV = SingleNucleotideVariant.initializeFromVariant(_codon=codon, _chr_position=chrom_pos, _alt_nucleotide=variant['ALT'], _variant_source=variant_source)
+                    SNV = SingleNucleotideVariant.initializeFromVariant(_codon=_codon, _chr_position=chrom_pos, _alt_nucleotide=variant['ALT'], _variant_source=variant_source)
                     
                     # create the variant entry
                     variant_entry = extract_variant_source_info(SNV.toDict(), variant, variant_source)
