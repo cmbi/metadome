@@ -192,11 +192,8 @@ def analyse_transcript(transcript_id):
                 codon = gene_region.retrieve_codon_for_protein_position(protein_pos)
                  
                 # create new entry for this variant
-                variant_entry = SingleNucleotideVariant.initializeFromVariant(_codon=codon, _chr_position=chrom_pos, _alt_nucleotide=variant['ALT'], _variant_source='ClinVar').toDict()
-
-                # append ClinVar specific information
-                variant_entry['clinvar_ID'] = variant['ID']
-                 
+                variant_entry = SingleNucleotideVariant.initializeFromVariant(_codon=codon, _chr_position=chrom_pos, _alt_nucleotide=variant['ALT'], _variant_source='ClinVar').toClinVarJson(ClinVar_id=variant['ID'])
+                
                 region_positional_annotation[protein_pos]['ClinVar'].append(variant_entry)
          
         # annotate the positions further
