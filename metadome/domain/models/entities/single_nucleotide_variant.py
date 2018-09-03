@@ -61,6 +61,17 @@ class SingleNucleotideVariant(Codon):
         else:
             return VariantType.synonymous
 
+    def get_genomic_position_of_change(self):
+        """Retrieves the genomic variant position"""
+        if self.var_codon_position == 0:
+            return self.chromosome_position_base_pair_one
+        elif self.var_codon_position == 1:
+            return self.chromosome_position_base_pair_two
+        elif self.var_codon_position == 2:
+            return self.chromosome_position_base_pair_three
+        else:
+            raise MalformedVariantException("The var codon positions is not set correctly, expected in range 0-2m but was '"+str(self.var_codon_position)+"'")
+        
     def alt_three_letter_amino_acid_residue(self):
         """Returns a three letter representation of the amino acid residue for this codon"""
         return Codon.one_to_three_letter_amino_acid_residue(self.alt_amino_acid_residue)
@@ -232,7 +243,23 @@ class SingleNucleotideVariant(Codon):
                                 _alt_nucleotide=_alt_nucleotide,
                                 _var_codon_position=_var_codon_position,
                                 _variant_source=_variant_source)
-   
+    
+    def toJson(self):
+        json_entry = {}
+        json_entry["alt"] = self.alt_nucleotide
+        json_entry["alt_aa"] = self.alt_amino_acid_residue
+        json_entry["alt_aa_triplet"] = self.alt_three_letter_amino_acid_residue()
+        json_entry["alt_codon"] = self.alt_base_pair_representation
+        json_entry["pos"] = self.get_genomic_position_of_change()
+        json_entry["ref"] = self.ref_nucleotide
+        json_entry["type"] = self.variant_type.value
+        return json_entry
+    
+    def toClinVarJson(self, ClinVar_id):
+        json_entry = self.toJson()
+        json_entry["clinvar_ID"] = ClinVar_id
+        return json_entry
+    
     def __repr__(self):
         return "<SingleNucleotideVariant(chr='%s', chr_positions='%s', strand='%s', ref_codon='%s', ref_aa='%s',)>" % (
                             self.chr, str(self.regions), self.strand, self.base_pair_representation, self.amino_acid_residue)
