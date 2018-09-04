@@ -1,6 +1,7 @@
 from metadome.domain.data_generation.mapping.meta_domain_mapping import generate_pfam_aligned_codons
 from metadome.domain.services.annotation.codon_annotation import annotate_ClinVar_SNVs_for_codons,\
     annotate_gnomAD_SNVs_for_codons
+from metadome.domain.models.entities.single_nucleotide_variant import SingleNucleotideVariant
 from metadome.domain.models.entities.codon import Codon
 from metadome.default_settings import METADOMAIN_DIR,\
     METADOMAIN_MAPPING_FILE_NAME, METADOMAIN_DETAILS_FILE_NAME,\
@@ -12,7 +13,6 @@ import json
 import os
 
 import logging
-from metadome.domain.models.entities.single_nucleotide_variant import SingleNucleotideVariant
 
 _log = logging.getLogger(__name__)
 
