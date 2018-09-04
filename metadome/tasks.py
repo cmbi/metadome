@@ -30,8 +30,6 @@ def get_task(job_name):
         task = create_prebuild_visualization
     elif job_name == 'retrieve':
         task = retrieve_prebuild_visualization
-    elif job_name == 'mock_it':
-        task = mock_response
     else:
         raise ValueError("Unexpected input_type '{}'".format(job_name))
  
@@ -60,19 +58,8 @@ def get_celery_worker_status():
 @celery_app.task(bind=True,
                  autoretry_for=(RecoverableError,),
                  retry_kwargs={'max_retries': 50})
-def mock_response(self):
-    _log.info('Mocking PTPN11...')
-         
-    from metadome.presentation.api.routes_mock import mockup_tol_and_metadom, mock_ptpn11
-    return mock_ptpn11()
-
-
-@celery_app.task(bind=True,
-                 autoretry_for=(RecoverableError,),
-                 retry_kwargs={'max_retries': 50})
 def initialize_metadomain(self, domain_id):
     return MetaDomain.initializeFromDomainID(domain_id)
-
 
 @celery_app.task(bind=True,
                  autoretry_for=(RecoverableError,),
@@ -122,6 +109,58 @@ def create_prebuild_visualization(self, transcript_id):
         
     return result
 
+def retrieve_metadomain_annotation(transcript_id, protein_position):
+    # Retrieve the gene from the database
+    try:
+        gene = GeneRepository.retrieve_gene(transcript_id)
+    except RepositoryException as e:
+        return {'error': 'No gene region could be build for transcript {}, reason: {}'.format(transcript_id, e)}
+    
+    # build the gene region
+    gene_region = GeneRegion(gene)
+    
+    if not gene_region is None:
+        # create the values that are to be returned
+        normal_variants = []
+        pathogenic_variants = []
+        
+        # retrieve the codon
+        current_codon = gene_region.retrieve_codon_for_protein_position(protein_position)
+
+        for domain in gene_region.interpro_domains:
+            if domain.ext_db_id.startswith('PF') and domain.uniprot_start <= protein_position <= domain.uniprot_stop:
+                # retrieve the metadomain
+                meta_domain = MetaDomain(domain.ext_db_id)
+                
+                consensus_positions = meta_domain.get_consensus_positions_for_uniprot_position(gene_region.uniprot_ac, protein_position)
+                
+                for consensus_position in consensus_positions:
+                    # Retrieve the meta codons for this position
+                    meta_snvs = meta_domain.get_annotated_SNVs_for_consensus_position(consensus_position)
+                    # iterate over meta_codons and add to metadom_entry
+                    for meta_snv_repr in meta_snvs.keys():
+                        if not current_codon.unique_str_representation() in meta_snv_repr:
+                            # unique variant at homologous position, can just take the first from the list
+                            meta_snv = meta_snvs[meta_snv_repr][0]
+                        
+                            if meta_snv['variant_source'] == 'gnomAD':
+                                # convert the variant to the expected format
+                                variant_entry = SingleNucleotideVariant.initializeFromDict(meta_snv).toGnommADJson()
+                                
+                                # append to the list of variants
+                                normal_variants.append(variant_entry)
+                            elif meta_snv['variant_source'] == 'ClinVar':
+                                # convert the variant to the expected format
+                                variant_entry = SingleNucleotideVariant.initializeFromDict(meta_snv).toClinVarJson(ClinVar_id=meta_snv['ID'])
+                                
+                                # append to the list of variants
+                                pathogenic_variants.append(variant_entry)
+                                
+        result = {"pathogenic_variants":pathogenic_variants, "normal_variants":normal_variants}
+    else:
+        result = {'error': 'No gene region could be build for transcript '+str(transcript_id)}
+
+    return result
 def analyse_transcript(transcript_id):
     # Retrieve the gene from the database
     try:
