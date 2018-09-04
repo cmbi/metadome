@@ -257,7 +257,15 @@ class SingleNucleotideVariant(Codon):
     
     def toClinVarJson(self, ClinVar_id):
         json_entry = self.toJson()
+        # append ClinVar specific information
         json_entry["clinvar_ID"] = ClinVar_id
+        return json_entry
+    
+    def toGnommADJson(self, AN, AC):
+        json_entry = self.toJson()
+        # append gnomAD specific information
+        json_entry['allele_number'] = AN
+        json_entry['allele_count'] = AC
         return json_entry
     
     def __repr__(self):
