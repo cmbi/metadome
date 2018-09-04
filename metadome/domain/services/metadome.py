@@ -29,7 +29,7 @@ class MetadomeStrategyFactory(object):
             if rebuild:
                 job_name = 'create'
                 # return rebuild id
-        
+            
             # check for existence of the dir
             if os.path.exists(visualization_path):
                 # the file exists, job is retrieving
@@ -44,8 +44,6 @@ class MetadomeStrategyFactory(object):
             return CreateVisualizationStrategy(job_name, transcript_id)
         elif job_name == 'retrieve':
             return RetrieveVisualizationStrategy(job_name, transcript_id)
-        elif job_name == 'mock_it':
-            return MockVisualizationStrategy(job_name)
         else:
             raise ValueError("Unexpected input type '{}'".format(transcript_id))
 
@@ -75,14 +73,3 @@ class RetrieveVisualizationStrategy(object):
         result = task.delay(self.transcript_id)
         return result.id, self.job_name
     
-class MockVisualizationStrategy(object):
-    def __init__(self, job_name):
-        self.job_name = job_name
-        
-    def __call__(self):
-        from metadome.tasks import get_task
-        task = get_task('mock_it')
-        _log.debug("Calling task '{}'".format(task.__name__))
-
-        result = task.delay()
-        return result.id, self.job_name
