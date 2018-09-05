@@ -6,6 +6,7 @@ from builtins import Exception
 
 import traceback
 import logging
+import json
 
 _log = logging.getLogger(__name__)
 
@@ -40,9 +41,38 @@ def get_transcript_ids_for_gene(gene_name):
         transcript_entry['has_protein_data'] = not t.protein_id is None
         transcript_results.append(transcript_entry)
     
-    
-    
     return jsonify(trancript_ids=transcript_results, message=message)
+
+@bp.route('/get_metadomain_annotation', methods=['GET'])
+def get_metadomain_annotation_stub():
+    """This endpoint is a stub, to ensure deeper endpoints may be used"""
+    pass
+
+@bp.route('/get_metadomain_annotation/<string:transcript_id>/<int:protein_pos>/<string:domain_request>')
+def get_metadomain_annotation(transcript_id, protein_pos, domain_request):
+    _log.debug('get_metadomain_annotation with: transcript_id: '+str(transcript_id)+', protein_pos: '+str(protein_pos)+', domain_request: '+str(domain_request))
+    
+    # Try to tokenize the domain request
+    try:
+        tokens = domain_request.split(':')
+        
+        domain_request_as_json = "{"
+        for token in tokens:
+            if token.startswith('PF'):
+                domain_request_as_json+= '"'+token+'":'
+            else:
+                domain_request_as_json+=token
+        domain_request_as_json+="}"
+        _log.debug(domain_request_as_json)
+        domain_positions = json.loads(domain_request_as_json)
+    except Exception as e:
+        return jsonify({"error:"+str(e)})
+    
+    # attempt to retrieve the response for a metadomain position
+    from metadome.tasks import retrieve_metadomain_annotation as rma
+    response = rma(transcript_id, protein_pos, domain_positions)
+    
+    return jsonify(response)
 
 @bp.route('/submit_gene_analysis', methods=['GET'])
 def submit_gene_analysis_job_stub():
