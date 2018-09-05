@@ -590,42 +590,6 @@ function createPositionalInformation(domain_metadomain_coverage, transcript_id, 
 	}
 }
 
-function createClinVarTableBody(ClinvarVariants){
-    var html_table= '';
-    // here comes the data
-    for (index = 0; index < ClinvarVariants.length; index++){
-		variant = ClinvarVariants[index];
-		html_table += '<tr>';
-		html_table += '<td>'+variant.chr+'</td>';
-		html_table += '<td>'+variant.chr_positions+'</td>';
-		html_table += '<td>'+variant.ref_codon+'>'+variant.alt_codon+'</td>';
-		html_table += '<td>'+variant.ref_aa_triplet+'>'+variant.alt_aa_triplet+'</td>';
-		html_table += '<td>'+variant.type+'</td>';
-		html_table += '<td><a href="https://www.ncbi.nlm.nih.gov/clinvar/variation/' + variant.clinvar_ID + '/" target="_blank">' + variant.clinvar_ID + '</a></td>';
-		html_table += '</tr>';
-    }
-    	
-    return html_table;
-}
-
-function createGnomADTableBody(gnomADVariants){
-    var html_table= '';
-    // here comes the data
-    for (index = 0; index < gnomADVariants.length; index++){
-	variant = gnomADVariants[index];
-	html_table += '<tr>';
-	html_table += '<td>'+variant.chr+'</td>';
-	html_table += '<td>'+variant.chr_positions+'</td>';
-	html_table += '<td>'+variant.ref_codon+'>'+variant.alt_codon+'</td>';
-	html_table += '<td>'+variant.ref_aa_triplet+'>'+variant.alt_aa_triplet+'</td>';
-	html_table += '<td>'+variant.type+'</td>';
-	html_table += '<td>' + parseFloat(variant.allele_count/variant.allele_number).toFixed(6) + '</td>';
-	html_table += '</tr>';
-    }
-    	
-    return html_table;
-}
-
 //Adds positional information for a selected position
 function FillPositionalInformation(domain_metadomain_coverage, position_data, data){
     // Reset the positional information
@@ -733,3 +697,160 @@ function FillPositionalInformation(domain_metadomain_coverage, position_data, da
     document.getElementById("positional_information_overlay_body").innerHTML += meta_domain_information;
 }
 
+//Update the positional information table with new values
+function addRowToPositionalInformationTable(domain_metadomain_coverage, d, transcript_id) {
+	var new_row = d3.select('#position_information_tbody').append('tr').attr('class', 'tr').attr("id", "positional_table_info_" + d.values[0].protein_pos);
+	
+	new_row.append('th').text(d.values[0].protein_pos);
+	new_row.append('td').text(d.values[0].ref_aa_triplet);
+
+	var domain_ids = "-";
+	var clinvar_at_pos = "-";
+	var related_gnomad = "-";
+	var related_clinvar = "-";
+	
+	// Add clinvar at position information
+	if ("ClinVar" in d.values[0]){
+	    clinvar_at_pos = ""+d.values[0].ClinVar.length;
+	}
+	else{
+	    clinvar_at_pos = "0";
+	}
+	
+	// add domain and metadomain information to the information
+	if (Object.keys(d.values[0].domains).length > 0){
+	    var domain_id_list = Object.keys(d.values[0].domains);
+	    var n_domains_at_position = Object.keys(d.values[0].domains).length;
+	    domain_ids = "";
+	    related_gnomad = 0;
+	    related_clinvar = 0;
+	    for (i = 0; i < n_domains_at_position; i++){
+		if (i+1 == n_domains_at_position){
+		    domain_ids += domain_id_list[i];
+		}	
+		else{
+		    domain_ids += domain_id_list[i]+", ";
+		}
+		// append normal and pathogenic variant count
+		if (!(d.values[0].domains[domain_id_list[i]] == null)){
+    		    related_gnomad += d.values[0].domains[domain_id_list[i]].normal_variant_count;
+    		    related_clinvar += d.values[0].domains[domain_id_list[i]].pathogenic_variant_count;
+		}
+		else{
+			related_gnomad = "-";
+			related_clinvar = "-";
+		}
+	    }
+	}
+	new_row.append('td').text(domain_ids);
+	new_row.append('td').text(clinvar_at_pos);
+	new_row.append('td').text(related_gnomad);
+	new_row.append('td').text(related_clinvar);
+	
+	// Add interactiveness to the rows
+	new_row.on("click", function() {
+	    d3.selectAll('.tr').classed("is-selected", false);
+	    d3.select(this).classed("is-selected", true);
+	    
+	    // Call this method found in dashboard.js
+	    createPositionalInformation(domain_metadomain_coverage, transcript_id, d)
+	}).on("mouseover", function(d, i) {
+	    d3.select(this).style("cursor", "pointer");
+	});
+		
+	// Sort the table to the protein positions
+	sortTable();
+}
+
+function createClinVarTableHeader(){
+    var html_table= '';
+    // Define the header
+    html_table += '<table class="table is-hoverable is-narrow">';
+    html_table += '<thead><tr style="border-style:hidden;">';
+    html_table += '<th><abbr title="Chromosome">Chr</abbr></th>';
+    html_table += '<th><abbr title="Chromosome poition">Pos</abbr></th>';
+    html_table += '<th><abbr title="Change of codon">Codon change</abbr></th>';
+    html_table += '<th><abbr title="Change of residue">Residue change</abbr></th>';
+    html_table += '<th><abbr title="Type of mutation">Type</abbr></th>';
+    html_table += '<th><abbr title="ClinVar Identifier">ClinVar ID</abbr></th>';
+    html_table += '</tr></thead><tfoot></tfoot><tbody>';
+    return html_table;
+}
+
+function createClinVarTableBody(ClinvarVariants){
+    var html_table= '';
+    // here comes the data
+    for (index = 0; index < ClinvarVariants.length; index++){
+		variant = ClinvarVariants[index];
+		html_table += '<tr>';
+		html_table += '<td>'+variant.chr+'</td>';
+		html_table += '<td>'+variant.chr_positions+'</td>';
+		html_table += '<td>'+variant.ref_codon+'>'+variant.alt_codon+'</td>';
+		html_table += '<td>'+variant.ref_aa_triplet+'>'+variant.alt_aa_triplet+'</td>';
+		html_table += '<td>'+variant.type+'</td>';
+		html_table += '<td><a href="https://www.ncbi.nlm.nih.gov/clinvar/variation/' + variant.clinvar_ID + '/" target="_blank">' + variant.clinvar_ID + '</a></td>';
+		html_table += '</tr>';
+    }
+    	
+    return html_table;
+}
+
+function createGnomADTableHeader(){
+    var html_table= '';
+    // Define the header
+    html_table += '<table class="table is-hoverable is-narrow">';
+    html_table += '<thead><tr style="border-style:hidden;">';
+    html_table += '<th><abbr title="Chromosome">Chr</abbr></th>';
+    html_table += '<th><abbr title="Chromosome poition">Pos</abbr></th>';
+    html_table += '<th><abbr title="Change of codon">Codon change</abbr></th>';
+    html_table += '<th><abbr title="Change of residue">Residue change</abbr></th>';
+    html_table += '<th><abbr title="Type of mutation">Type</abbr></th>';
+    html_table += '<th><abbr title="Allele frequency">Allele Frequency</abbr></th>';
+    html_table += '</tr></thead><tfoot></tfoot><tbody>';
+    return html_table;
+}
+
+function createGnomADTableBody(gnomADVariants){
+    var html_table= '';
+    // here comes the data
+    for (index = 0; index < gnomADVariants.length; index++){
+	variant = gnomADVariants[index];
+	html_table += '<tr>';
+	html_table += '<td>'+variant.chr+'</td>';
+	html_table += '<td>'+variant.chr_positions+'</td>';
+	html_table += '<td>'+variant.ref_codon+'>'+variant.alt_codon+'</td>';
+	html_table += '<td>'+variant.ref_aa_triplet+'>'+variant.alt_aa_triplet+'</td>';
+	html_table += '<td>'+variant.type+'</td>';
+	html_table += '<td>' + parseFloat(variant.allele_count/variant.allele_number).toFixed(6) + '</td>';
+	html_table += '</tr>';
+    }
+    	
+    return html_table;
+}
+
+function createTableFooter(){
+    return '</tbody></table>';
+}
+
+function sortTable(){
+	var rows = $('#position_information_tbody tr').get();
+	
+	rows.sort(function(a, b) {
+	    var A = parseInt($(a).children('th').eq(0).text());
+	    var B = parseInt($(b).children('th').eq(0).text());
+	
+	    if(A < B) {
+	      return -1;
+	    }
+	
+	    if(A > B) {
+	      return 1;
+	    }
+	
+	    return 0;
+	});
+	
+	$.each(rows, function(index, row) {
+	  $('#position_information_tbody').append(row);
+});
+}
