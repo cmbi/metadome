@@ -259,7 +259,7 @@ function createGraph(obj) {
 	drawMetaDomainLandscape(domain_data, dataGroup);
 
 	// Add schematic protein overview as a custom Axis
-	createSchematicProtein(domain_metadomain_coverage, dataGroup);
+	createSchematicProtein(domain_metadomain_coverage, dataGroup, obj.transcript_id);
 
 	// Finally draw the context zoom
 	addContextZoomView(domain_data, dataGroup.length);
@@ -300,138 +300,6 @@ function createGnomADTableHeader(){
 
 function createTableFooter(){
     return '</tbody></table>';
-}
-
-function createClinVarTableBody(chr, chr_pos, ref_codon, ref_residue, ClinvarVariants){
-    var html_table= '';
-    // here comes the data
-    for (index = 0; index < ClinvarVariants.length; index++){
-		variant = ClinvarVariants[index];
-		html_table += '<tr>';
-		html_table += '<td>'+chr+'</td>';
-		html_table += '<td>'+chr_pos+'</td>';
-		html_table += '<td>'+ref_codon+'>'+variant.alt_codon+'</td>';
-		html_table += '<td>'+ref_residue+'>'+variant.alt_aa_triplet+'</td>';
-		html_table += '<td>'+variant.type+'</td>';
-		html_table += '<td><a href="https://www.ncbi.nlm.nih.gov/clinvar/variation/' + variant.clinvar_ID + '/" target="_blank">' + variant.clinvar_ID + '</a></td>';
-		html_table += '</tr>';
-    }
-    	
-    return html_table;
-}
-
-function createGnomADTableBody(chr, chr_pos, ref_codon, ref_residue, gnomADVariants){
-    var html_table= '';
-    // here comes the data
-    for (index = 0; index < gnomADVariants.length; index++){
-	variant = gnomADVariants[index];
-	html_table += '<tr>';
-	html_table += '<td>'+chr+'</td>';
-	html_table += '<td>'+chr_pos+'</td>';
-	html_table += '<td>'+ref_codon+'>'+variant.alt_codon+'</td>';
-	html_table += '<td>'+ref_residue+'>'+variant.alt_aa_triplet+'</td>';
-	html_table += '<td>'+variant.type+'</td>';
-	html_table += '<td>' + parseFloat(variant.allele_count/variant.allele_number).toFixed(6) + '</td>';
-	html_table += '</tr>';
-    }
-    	
-    return html_table;
-}
-
-// Adds positional information for a selected position
-function createPositionalInformation(domain_metadomain_coverage, position_data){
-    // Reset the positional information
-    document.getElementById("positional_information_overlay_title").innerHTML = '<div class="label"><label class="title">Positional information (p.'+ position_data.values[0].protein_pos+')</label></div><label class="label" >'+document.getElementById("geneDetails").innerHTML +'</label>';
-    document.getElementById("positional_information_overlay_body").innerHTML = '';
-
-    
-    // Add information on position to the HTML
-    document.getElementById("positional_information_overlay_body").innerHTML +='<label class="label">Location details</label>'
-    document.getElementById("positional_information_overlay_body").innerHTML += '<p>Chr: '+position_data.values[0].chr+', strand: '+position_data.values[0].strand+'</p>';
-    document.getElementById("positional_information_overlay_body").innerHTML += '<p>Gene: '+ position_data.values[0].chr_positions +'</p>';
-    document.getElementById("positional_information_overlay_body").innerHTML += '<p>Protein: p.'+ position_data.values[0].protein_pos +' '+ position_data.values[0].ref_aa_triplet+'</p>';
-    document.getElementById("positional_information_overlay_body").innerHTML += '<p>cDNA: '+ position_data.values[0].cdna_pos +' '+ position_data.values[0].ref_codon +'</p>';
-    
-    // retrieve domain information
-    var domain_information = "";
-    var meta_domain_information = "";
-    if (Object.keys(position_data.values[0].domains).length > 0){
-		var domain_ids = '';
-		var domain_id_list = Object.keys(position_data.values[0].domains);
-		var n_domains_at_position = Object.keys(position_data.values[0].domains).length;
-		
-		for (i = 0; i < n_domains_at_position; i++){
-		    if (i+1 == n_domains_at_position){
-			domain_ids += '<a href="http://pfam.xfam.org/family/' + domain_id_list[i] + '" target="_blank">'+domain_id_list[i]+"</a>";
-		    }	
-		    else{
-			domain_ids += '<a href="http://pfam.xfam.org/family/' + domain_id_list[i] + '" target="_blank">'+domain_id_list[i]+", </a>";
-		    }
-		    
-		    // add meta domain information
-		    if (!(position_data.values[0].domains[domain_id_list[i]] == null)){
-		    	// compute coverage
-		    	position_coverage = Math.round(((position_data.values[0].domains[domain_id_list[i]].other_codons.length/domain_metadomain_coverage[domain_id_list[i]])*100)*10)/10;
-		    	
-		    	// Add information to the report
-				meta_domain_information += '<hr><label class="label">Meta-domain information for domain '+domain_id_list[i]+':</label>';
-				meta_domain_information += '<p>Aligned to consensus position '+ position_data.values[0].domains[domain_id_list[i]].consensus_pos+', related to '+ position_data.values[0].domains[domain_id_list[i]].other_codons.length +' other codons throughout the genome (with a '+position_coverage+'\% alignment coverage).</p>';
-				
-				
-				var gnomAD_table = '<hr><label class="label">Variants in gnomAD SNVs at homologous positions:</label>';
-				gnomAD_table += createGnomADTableHeader();
-				var clinvar_table = '<hr><label class="label">Pathogenic ClinVar SNVs at homologous positions:</label>';
-				clinvar_table += createClinVarTableHeader();
-				for (j = 0; j < position_data.values[0].domains[domain_id_list[i]].other_codons.length; j++){
-				    var other_codon = position_data.values[0].domains[domain_id_list[i]].other_codons[j];
-				    if (other_codon.normal_variants.length>0){
-				    	gnomAD_table += createGnomADTableBody(other_codon.chr, other_codon.chr_positions+' ('+other_codon.strand+')', other_codon.ref_codon, other_codon.ref_aa_triplet, other_codon.normal_variants);
-				    }
-				    if (other_codon.pathogenic_variants.length>0){
-				    	clinvar_table += createClinVarTableBody(other_codon.chr, other_codon.chr_positions+' ('+other_codon.strand+')', other_codon.ref_codon, other_codon.ref_aa_triplet, other_codon.pathogenic_variants);
-				    }
-				}
-				
-				// Add the footers
-				clinvar_table += createTableFooter();
-				gnomAD_table += createTableFooter();
-				
-				// Reset the tables if there are no variants
-				if (position_data.values[0].domains[domain_id_list[i]].normal_variant_count == 0){
-				    gnomAD_table = "";
-				}
-				if (position_data.values[0].domains[domain_id_list[i]].pathogenic_variant_count == 0){
-				    clinvar_table = "";
-				}
-				
-				// Add the meta-domain information to the domain information
-				meta_domain_information += clinvar_table + gnomAD_table;
-		    }
-		    else{
-			meta_domain_information += '<label class="label">No meta-domain information at position for domain '+domain_id_list[i]+'</label>';
-		    }
-		}
-		
-		// Add the domain info to the html element
-		domain_information += '<p>Position is part of protein domain(s): '+domain_ids+'</p>'
-    }
-    
-    // Add the domain information to the html element
-    document.getElementById("positional_information_overlay_body").innerHTML += domain_information
-
-    // Add clinvar at position information
-    document.getElementById("positional_information_overlay_body").innerHTML += '<hr>';
-	document.getElementById("positional_information_overlay_body").innerHTML += '<label class="label">Known pathogenic ClinVar SNVs at position</label>';
-    if ("ClinVar" in position_data.values[0]){
-		// Add ClinVar variant table
-    	document.getElementById("positional_information_overlay_body").innerHTML += createClinVarTableHeader()+ createClinVarTableBody(position_data.values[0].chr, position_data.values[0].chr_positions, position_data.values[0].ref_codon, position_data.values[0].ref_aa_triplet, position_data.values[0].ClinVar)+ createTableFooter();
-    }
-    else{
-    	document.getElementById("positional_information_overlay_body").innerHTML += '<p>No ClinVar SNVs found at position</p>';
-    }
-    
-    // Add the meta-domain information to the html element
-    document.getElementById("positional_information_overlay_body").innerHTML += meta_domain_information;
 }
 
 function drawMetaDomainLandscape(domain_data, data){
@@ -733,7 +601,7 @@ function createToleranceGraph(dataGroup) {
 }
 
 // Draw the axis and labels
-function createSchematicProtein(domain_metadomain_coverage, groupedTolerance) {
+function createSchematicProtein(domain_metadomain_coverage, groupedTolerance, transcript_id) {
 	// Add the Axis
 	var focusAxis = main_svg.append("g")
 		.attr("class", "focusAxis")
@@ -827,7 +695,7 @@ function createSchematicProtein(domain_metadomain_coverage, groupedTolerance) {
 		    if (!d.values[0].selected) {
 				d3.select(this).style("fill", "green").style("fill-opacity", 0.7);
 				d.values[0].selected = true;			
-				addRowToPositionalInformationTable(domain_metadomain_coverage, d);
+				addRowToPositionalInformationTable(domain_metadomain_coverage, d, transcript_id);
 				selected_positions += 1;
 				$("#position_information_table").removeClass('is-hidden');
 			    document.getElementById("selected_positions_explanation").innerHTML = 'Click on one of the selected positions in the table to view more information';
@@ -1169,7 +1037,7 @@ function toggleClinvarVariantsInProtein(clinvar_checkbox){
 }
 
 // Update the positional information table with new values
-function addRowToPositionalInformationTable(domain_metadomain_coverage, d) {
+function addRowToPositionalInformationTable(domain_metadomain_coverage, d, transcript_id) {
 	var new_row = d3.select('#position_information_tbody').append('tr').attr('class', 'tr').attr("id", "positional_table_info_" + d.values[0].protein_pos);
 	
 	new_row.append('th').text(d.values[0].protein_pos);
@@ -1222,8 +1090,9 @@ function addRowToPositionalInformationTable(domain_metadomain_coverage, d) {
 	new_row.on("click", function() {
 	    d3.selectAll('.tr').classed("is-selected", false);
 	    d3.select(this).classed("is-selected", true);
-	    createPositionalInformation(domain_metadomain_coverage, d);
-	    $("#positional_information_overlay").addClass('is-active');
+	    
+	    // Call this method found in dashboard.js
+	    createPositionalInformation(domain_metadomain_coverage, transcript_id, d)
 	}).on("mouseover", function(d, i) {
 	    d3.select(this).style("cursor", "pointer");
 	});
