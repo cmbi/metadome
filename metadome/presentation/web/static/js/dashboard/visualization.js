@@ -268,40 +268,6 @@ function createGraph(obj) {
 	toggleToleranceLandscapeOrMetadomainLandscape();
 }
 
-function createClinVarTableHeader(){
-    var html_table= '';
-    // Define the header
-    html_table += '<table class="table is-hoverable is-narrow">';
-    html_table += '<thead><tr style="border-style:hidden;">';
-    html_table += '<th><abbr title="Chromosome">Chr</abbr></th>';
-    html_table += '<th><abbr title="Chromosome poition">Pos</abbr></th>';
-    html_table += '<th><abbr title="Change of codon">Codon change</abbr></th>';
-    html_table += '<th><abbr title="Change of residue">Residue change</abbr></th>';
-    html_table += '<th><abbr title="Type of mutation">Type</abbr></th>';
-    html_table += '<th><abbr title="ClinVar Identifier">ClinVar ID</abbr></th>';
-    html_table += '</tr></thead><tfoot></tfoot><tbody>';
-    return html_table;
-}
-
-function createGnomADTableHeader(){
-    var html_table= '';
-    // Define the header
-    html_table += '<table class="table is-hoverable is-narrow">';
-    html_table += '<thead><tr style="border-style:hidden;">';
-    html_table += '<th><abbr title="Chromosome">Chr</abbr></th>';
-    html_table += '<th><abbr title="Chromosome poition">Pos</abbr></th>';
-    html_table += '<th><abbr title="Change of codon">Codon change</abbr></th>';
-    html_table += '<th><abbr title="Change of residue">Residue change</abbr></th>';
-    html_table += '<th><abbr title="Type of mutation">Type</abbr></th>';
-    html_table += '<th><abbr title="Allele frequency">Allele Frequency</abbr></th>';
-    html_table += '</tr></thead><tfoot></tfoot><tbody>';
-    return html_table;
-}
-
-function createTableFooter(){
-    return '</tbody></table>';
-}
-
 function drawMetaDomainLandscape(domain_data, data){
     // get all possible domain ids
     meta_domain_ids = new Set();
@@ -1035,94 +1001,6 @@ function toggleClinvarVariantsInProtein(clinvar_checkbox){
 		return draw_position_schematic_protein(d, this);
 	});
 }
-
-// Update the positional information table with new values
-function addRowToPositionalInformationTable(domain_metadomain_coverage, d, transcript_id) {
-	var new_row = d3.select('#position_information_tbody').append('tr').attr('class', 'tr').attr("id", "positional_table_info_" + d.values[0].protein_pos);
-	
-	new_row.append('th').text(d.values[0].protein_pos);
-	new_row.append('td').text(d.values[0].ref_aa_triplet);
-
-	var domain_ids = "-";
-	var clinvar_at_pos = "-";
-	var related_gnomad = "-";
-	var related_clinvar = "-";
-	
-	// Add clinvar at position information
-	if ("ClinVar" in d.values[0]){
-	    clinvar_at_pos = ""+d.values[0].ClinVar.length;
-	}
-	else{
-	    clinvar_at_pos = "0";
-	}
-	
-	// add domain and metadomain information to the information
-	if (Object.keys(d.values[0].domains).length > 0){
-	    var domain_id_list = Object.keys(d.values[0].domains);
-	    var n_domains_at_position = Object.keys(d.values[0].domains).length;
-	    domain_ids = "";
-	    related_gnomad = 0;
-	    related_clinvar = 0;
-	    for (i = 0; i < n_domains_at_position; i++){
-		if (i+1 == n_domains_at_position){
-		    domain_ids += domain_id_list[i];
-		}	
-		else{
-		    domain_ids += domain_id_list[i]+", ";
-		}
-		// append normal and pathogenic variant count
-		if (!(d.values[0].domains[domain_id_list[i]] == null)){
-    		    related_gnomad += d.values[0].domains[domain_id_list[i]].normal_variant_count;
-    		    related_clinvar += d.values[0].domains[domain_id_list[i]].pathogenic_variant_count;
-		}
-		else{
-			related_gnomad = "-";
-			related_clinvar = "-";
-		}
-	    }
-	}
-	new_row.append('td').text(domain_ids);
-	new_row.append('td').text(clinvar_at_pos);
-	new_row.append('td').text(related_gnomad);
-	new_row.append('td').text(related_clinvar);
-	
-	// Add interactiveness to the rows
-	new_row.on("click", function() {
-	    d3.selectAll('.tr').classed("is-selected", false);
-	    d3.select(this).classed("is-selected", true);
-	    
-	    // Call this method found in dashboard.js
-	    createPositionalInformation(domain_metadomain_coverage, transcript_id, d)
-	}).on("mouseover", function(d, i) {
-	    d3.select(this).style("cursor", "pointer");
-	});
-		
-	// Sort the table to the protein positions
-	sortTable();
-}
-
-function sortTable(){
-    var rows = $('#position_information_tbody tr').get();
-
-    rows.sort(function(a, b) {
-        var A = parseInt($(a).children('th').eq(0).text());
-        var B = parseInt($(b).children('th').eq(0).text());
-    
-        if(A < B) {
-          return -1;
-        }
-    
-        if(A > B) {
-          return 1;
-        }
-    
-        return 0;
-    });
-
-    $.each(rows, function(index, row) {
-      $('#position_information_tbody').append(row);
-    });
-  }
 
 // Rescale the landscape for zooming or brushing purposes
 function rescaleLandscape(){
