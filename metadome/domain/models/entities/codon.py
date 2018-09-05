@@ -244,6 +244,23 @@ class Codon(object):
         
         return _d
     
+    def toCodonJson(self):
+        json_entry = {}
+        
+        # Add positional information
+        json_entry['strand'] = self.strand.value
+        json_entry['protein_pos'] = self.amino_acid_position
+        json_entry['cdna_pos'] = self.pretty_print_cDNA_region()
+        json_entry['chr'] = self.chr
+        json_entry['chr_positions'] = self.pretty_print_chr_region()
+        
+        # Add residue and nucleotide information
+        json_entry['ref_aa'] = self.amino_acid_residue
+        json_entry['ref_aa_triplet'] = self.three_letter_amino_acid_residue()
+        json_entry['ref_codon'] = self.base_pair_representation
+        
+        return json_entry
+    
     def __repr__(self):
         return "<Codon(representation='%s', amino_acid_residue='%s', chr='%s', chr_positions='%s', strand='%s')>" % (
                             self.base_pair_representation, self.amino_acid_residue, self.chr, str(self.regions), self.strand )
