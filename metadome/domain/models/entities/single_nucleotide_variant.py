@@ -74,7 +74,10 @@ class SingleNucleotideVariant(Codon):
         
     def alt_three_letter_amino_acid_residue(self):
         """Returns a three letter representation of the amino acid residue for this codon"""
-        return Codon.one_to_three_letter_amino_acid_residue(self.alt_amino_acid_residue)
+        if self.alt_amino_acid_residue == '*':
+            return self.alt_amino_acid_residue
+        else:
+            return Codon.one_to_three_letter_amino_acid_residue(self.alt_amino_acid_residue)
     
     def unique_snv_str_representation(self):
         return str(self.variant_source)+":"+self.unique_str_representation()+\
@@ -261,11 +264,11 @@ class SingleNucleotideVariant(Codon):
         json_entry["clinvar_ID"] = ClinVar_id
         return json_entry
     
-    def toGnommADJson(self, AN, AC):
+    def toGnommADJson(self, allele_count, allele_number):
         json_entry = self.toJson()
         # append gnomAD specific information
-        json_entry['allele_number'] = AN
-        json_entry['allele_count'] = AC
+        json_entry['allele_number'] = allele_number
+        json_entry['allele_count'] = allele_count
         return json_entry
     
     def __repr__(self):
