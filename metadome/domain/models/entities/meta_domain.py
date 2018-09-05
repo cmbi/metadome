@@ -22,6 +22,9 @@ class UnsupportedMetaDomainIdentifier(Exception):
 class ConsensusPositionOutOfBounds(Exception):
     pass
 
+class NotInMetaDomain(Exception):
+    pass
+
 class MetaDomain(object):
     """
     MetaDomain Model Entity
@@ -87,6 +90,17 @@ class MetaDomain(object):
             _log.info("No alignment for domain '"+str(self.domain_id)+"' for uniprot_ac '"+str(uniprot_ac)+"' on position '"+str(uniprot_position)+"'" )
         
         return consensus_positions
+    
+    def get_codon_for_transcript_and_position(self, transcript_id, protein_position):
+        """Construct the codon for a provided position"""
+        # Retrieve all codons aligned to the consensus position
+        aligned_to_position = self.meta_domain_mapping[(self.meta_domain_mapping.gencode_transcription_id == transcript_id) & (self.meta_domain_mapping.amino_acid_position == protein_position)].to_dict('records')
+        
+        if len(aligned_to_position) == 0:
+            raise NotInMetaDomain("No codons found to be aligned for metadomain '"+str(self.domain_id)+"' for transcript '"+str(transcript_id)+"' at position '"+str(protein_position)+"'")
+        else:
+            return Codon.initializeFromDict(aligned_to_position[0])
+        
     
     def get_codons_aligned_to_consensus_position(self, consensus_position):
         """Retrieves codons for this consensus position as:
