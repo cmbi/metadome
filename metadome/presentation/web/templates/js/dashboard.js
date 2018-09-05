@@ -561,32 +561,40 @@ function createPositionalInformation(domain_metadomain_coverage, transcript_id, 
 	domain_ids = Object.keys(position_json.values[0].domains);
 	for (i = 0; i < domain_ids.length; i++){
 		domain_id = domain_ids[i];
-		domain_request += domain_id + ":[";
 		
-		// append the consensus positions
-		for (j = 0; j < position_json.values[0].domains[domain_id].consensus_pos.length; j ++) {
-			domain_request += position_json.values[0].domains[domain_id].consensus_pos[j];
-			if (j+1 < position_json.values[0].domains[domain_id].consensus_pos.length) {
+		// Check if this position is meta domain suitable
+	    if (!(position_json.values[0].domains[domain_id] == null)){		
+			domain_request += domain_id + ":[";
+			
+			// append the consensus positions
+			for (j = 0; j < position_json.values[0].domains[domain_id].consensus_pos.length; j ++) {
+				domain_request += position_json.values[0].domains[domain_id].consensus_pos[j];
+				if (j+1 < position_json.values[0].domains[domain_id].consensus_pos.length) {
+					domain_request += ",";
+				}
+			}
+			domain_request += "]";
+			if (i+1 < domain_ids.length) {
 				domain_request += ",";
 			}
-		}
-		domain_request += "]";
-		if (i+1 < domain_ids.length) {
-			domain_request += ",";
-		}
+	    }
 	}
-	
-	if (domain_request == ""){
+    
+   	if (domain_request != ""){
+		// Activate the loading overlay
+    	$("#loading_overlay").addClass('is-active');
+    	
+		// Execute the GET request
+		$.get("{{ url_for('api.get_metadomain_annotation_stub') }}" + "/" + transcript_id + "/" + protein_position + "/" + domain_request, function(data){
+	    	$("#loading_overlay").removeClass('is-active');
+			FillPositionalInformation(domain_metadomain_coverage, position_json, data);
+		    $("#positional_information_overlay").addClass('is-active');
+		});
+	}
+	else{
 		// No domain request, so we can fill in the information without performing a GET request
 		FillPositionalInformation(domain_metadomain_coverage, position_json, {});
 	    $("#positional_information_overlay").addClass('is-active');
-	}
-	else{
-		// Execute the GET request
-		$.get("{{ url_for('api.get_metadomain_annotation_stub') }}" + "/" + transcript_id + "/" + protein_position + "/" + domain_request, function(data){
-			FillPositionalInformation(domain_metadomain_coverage, position_json, data);
-		    $("#positional_information_overlay").addClass('is-active');
-		} );
 	}
 }
 
