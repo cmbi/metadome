@@ -47,7 +47,7 @@ services:
             - interpro_temp:/usr/interpro_temp
     db:
         restart: always
-        image: postgres
+        image: postgres:10
         environment:
            - ./metadome/postgres_credentials.py
         ports:
