@@ -47,7 +47,7 @@ services:
             - interpro_temp:/usr/interpro_temp
     db:
         restart: always
-        image: postgres
+        image: postgres:10
         environment:
            - ./metadome/postgres_credentials.py
         ports:
@@ -56,11 +56,11 @@ services:
             - metadome_postgres_db:/var/lib/postgresql/data
     redis:
         restart: always
-        image: redis
+        image: redis:4.0
         ports:
           - "6379:6379"
     rabbitmq:
-        image: rabbitmq
+        image: rabbitmq:3.7
         ports:
           - "15672:15672"
 volumes:
