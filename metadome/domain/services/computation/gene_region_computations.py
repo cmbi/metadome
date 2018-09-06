@@ -55,20 +55,10 @@ def compute_tolerance_landscape(gene_region, sliding_window_size, min_frequency=
         
         # retrieve codon
         protein_pos = i + gene_region.protein_region_start # correct for gene region start
-        current_codon = gene_region.retrieve_codon_for_protein_position(protein_pos)
-        
-        # Add positional information
-        tolerance_landscape_entry['strand'] = current_codon.strand.value
-        tolerance_landscape_entry['protein_pos'] = current_codon.amino_acid_position
-        tolerance_landscape_entry['cdna_pos'] = current_codon.pretty_print_cDNA_region()
-        tolerance_landscape_entry['chr'] = current_codon.chr
-        tolerance_landscape_entry['chr_positions'] = current_codon.pretty_print_chr_region()
-        
-        # Add residue and nucleotide information
-        tolerance_landscape_entry['ref_aa'] = current_codon.amino_acid_residue
-        tolerance_landscape_entry['ref_aa_triplet'] = current_codon.three_letter_amino_acid_residue()
-        tolerance_landscape_entry['ref_codon'] = current_codon.base_pair_representation
-
+        current_codon = gene_region.retrieve_codon_for_protein_position(protein_pos).toCodonJson()
+        for key in current_codon.keys():
+            tolerance_landscape_entry[key] = current_codon[key]
+            
         # Add information to landscape
         tolerance_landscape.append(tolerance_landscape_entry)
 

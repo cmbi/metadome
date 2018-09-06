@@ -1,8 +1,14 @@
 from metadome.domain.data_generation.mapping.meta_domain_mapping import generate_pfam_aligned_codons
-from metadome.domain.models.entities.codon import Codon, MalformedCodonException
+from metadome.domain.services.annotation.codon_annotation import annotate_ClinVar_SNVs_for_codons,\
+    annotate_gnomAD_SNVs_for_codons
+from metadome.domain.models.entities.single_nucleotide_variant import SingleNucleotideVariant
+from metadome.domain.models.entities.codon import Codon
 from metadome.default_settings import METADOMAIN_DIR,\
-    METADOMAIN_MAPPING_FILE_NAME, METADOMAIN_DETAILS_FILE_NAME
+    METADOMAIN_MAPPING_FILE_NAME, METADOMAIN_DETAILS_FILE_NAME,\
+    METADOMAIN_SNV_ANNOTATION_FILE_NAME
+
 import pandas as pd
+import numpy as np
 import json
 import os
 
@@ -13,10 +19,10 @@ _log = logging.getLogger(__name__)
 class UnsupportedMetaDomainIdentifier(Exception):
     pass
 
-class NotEnoughOccurrencesForMetaDomain(Exception):
+class ConsensusPositionOutOfBounds(Exception):
     pass
 
-class ConsensusPositionOutOfBounds(Exception):
+class NotInMetaDomain(Exception):
     pass
 
 class MetaDomain(object):
@@ -32,7 +38,34 @@ class MetaDomain(object):
     n_instances                int number of unique instances containing this domain
     n_transcripts              int number of unique transcripts containing this domain
     meta_domain_mapping        pandas.DataFrame containing all codons annotated with corresponding consensus position
+    meta_domain_annotation     pandas.DataFrame containing all SNVs with corresponding consensus position
     """
+        
+    def get_annotated_SNVs_for_consensus_position(self, consensus_position):
+        """Retrieves SNVs for this consensus position as:
+        {SingleNucleotideVariant.unique_var_str_representation():  dict()}"""
+        snvs = dict()
+        
+        if consensus_position < 0:
+            raise ConsensusPositionOutOfBounds("The provided consensus position ('"+str(consensus_position)+"') is below zero, this position foes not exist")
+        if consensus_position >= self.consensus_length:
+            raise ConsensusPositionOutOfBounds("The provided consensus position ('"+str(consensus_position)+"') is above the maximum consensus length ('"+str(self.consensus_length)+"'), this position foes not exist")
+        
+        # Retrieve all codons aligned to the consensus position
+        aligned_to_position = self.meta_domain_annotation[self.meta_domain_annotation.consensus_pos == consensus_position].to_dict('records')
+        
+        # first check if the consensus position is present in the mappings_per_consensus_pos
+        if len(aligned_to_position) >0:
+            for snv in aligned_to_position:
+                # aggregate duplicate chromosomal regions
+                if not snv['unique_snv_str_representation'] in snvs.keys():
+                    snvs[snv['unique_snv_str_representation']] = []
+
+                # add the codon to the dictionary
+                snvs[snv['unique_snv_str_representation']].append(snv)
+                
+        # return the codons that correspond to this position
+        return snvs
     
     def get_consensus_positions_for_uniprot_position(self, uniprot_ac, uniprot_position):
         """Retrieves the consensus positions for this MetaDomain
@@ -58,10 +91,21 @@ class MetaDomain(object):
         
         return consensus_positions
     
+    def get_codon_for_transcript_and_position(self, transcript_id, protein_position):
+        """Construct the codon for a provided position"""
+        # Retrieve all codons aligned to the consensus position
+        aligned_to_position = self.meta_domain_mapping[(self.meta_domain_mapping.gencode_transcription_id == transcript_id) & (self.meta_domain_mapping.amino_acid_position == protein_position)].to_dict('records')
+        
+        if len(aligned_to_position) == 0:
+            raise NotInMetaDomain("No codons found to be aligned for metadomain '"+str(self.domain_id)+"' for transcript '"+str(transcript_id)+"' at position '"+str(protein_position)+"'")
+        else:
+            return Codon.initializeFromDict(aligned_to_position[0])
+        
+    
     def get_codons_aligned_to_consensus_position(self, consensus_position):
         """Retrieves codons for this consensus position as:
         {Codon.unique_str_representation(): Codon}"""
-        codons = {}
+        codons = dict()
         
         if consensus_position < 0:
             raise ConsensusPositionOutOfBounds("The provided consensus position ('"+str(consensus_position)+"') is below zero, this position foes not exist")
@@ -73,7 +117,6 @@ class MetaDomain(object):
         
         # first check if the consensus position is present in the mappings_per_consensus_pos
         if len(aligned_to_position) >0:
-            codons = dict()
             for codon_dict in aligned_to_position:
                 # initialize a codon from the dataframe row
                 codon = Codon.initializeFromDict(codon_dict)
@@ -88,11 +131,73 @@ class MetaDomain(object):
         # return the codons that correspond to this position
         return codons
     
-    def __init__(self, domain_id, consensus_length, n_instances, meta_domain_mapping):
+    def get_alignment_depth_for_consensus_position(self, consensus_position):
+        """Retrieves the number of aligned codons for this consensus position"""        
+        if consensus_position < 0:
+            raise ConsensusPositionOutOfBounds("The provided consensus position ('"+str(consensus_position)+"') is below zero, this position foes not exist")
+        if consensus_position >= self.consensus_length:
+            raise ConsensusPositionOutOfBounds("The provided consensus position ('"+str(consensus_position)+"') is above the maximum consensus length ('"+str(self.consensus_length)+"'), this position foes not exist")
+        
+        # Retrieve all codons aligned to the consensus position
+        aligned_to_position = self.meta_domain_mapping[self.meta_domain_mapping.consensus_pos == consensus_position].to_dict('records')
+
+        unique_keys = [Codon.initializeFromDict(codon_dict).unique_str_representation() for codon_dict in aligned_to_position]
+        return len(np.unique(unique_keys))
+    
+    def get_max_alignment_depth(self):
+        alignment_depths = [ self.get_alignment_depth_for_consensus_position(consensus_position) for consensus_position in range(self.consensus_length)]
+        return int(np.max(alignment_depths))
+    
+    def annotate_metadomain(self, reannotate=False):
+        """Annotate this meta domain with gnomAD and ClinVar variants"""
+        # check if a Meta Domain is already mapped
+        meta_domain_dir = METADOMAIN_DIR+self.domain_id
+        meta_domain_snv_annotation_file = meta_domain_dir+'/'+METADOMAIN_SNV_ANNOTATION_FILE_NAME
+        
+        # initialize the meta_domain_annotation as a list
+        meta_domain_annotation = []
+        
+        # Check if the mapping has previously been annotated already
+        if os.path.exists(meta_domain_snv_annotation_file) and not reannotate:
+            # The mapping exists, load it
+            _log.info('Loading previously annotated MetaDomain for domain id: '+str(self.domain_id))
+            # Read the files
+            _log.info("Reading '{}'".format(meta_domain_snv_annotation_file))
+            self.meta_domain_annotation = pd.read_csv(meta_domain_snv_annotation_file)
+        else:
+            # The annotation does not exists yet, or needs be recreated/reannotated
+            _log.info('Start annotation of MetaDomain for domain id: '+str(self.domain_id))
+           
+            # Retrieve all codons
+            for consensus_position in range(self.consensus_length):
+                meta_codons = self.get_codons_aligned_to_consensus_position(consensus_position)
+                
+                # Annotate ClinVar and gnomAD SNVs
+                for unique_str_repr in meta_codons.keys():
+                    for snv in annotate_ClinVar_SNVs_for_codons(meta_codons[unique_str_repr]): 
+                        snv['consensus_pos'] = consensus_position
+                        meta_domain_annotation.append(snv)
+                    for snv in annotate_gnomAD_SNVs_for_codons(meta_codons[unique_str_repr]):
+                        snv['consensus_pos'] = consensus_position
+                        meta_domain_annotation.append(snv)
+                        
+            # convert meta_domain_mapping to a pandas Dataframe
+            meta_domain_annotation = pd.DataFrame(meta_domain_annotation)
+            
+            # save meta_domain_mapping to disk
+            meta_domain_annotation.to_csv(meta_domain_snv_annotation_file)
+            
+            # set to variable
+            self.meta_domain_annotation = meta_domain_annotation
+            
+            _log.info('Finished annotation of MetaDomain for domain id: '+str(self.domain_id))
+    
+    def __init__(self, domain_id, consensus_length, n_instances, meta_domain_mapping, meta_domain_annotation):
         self.domain_id = domain_id
         self.consensus_length = consensus_length
         self.n_instances = n_instances
         self.meta_domain_mapping = meta_domain_mapping
+        self.meta_domain_annotation = meta_domain_annotation
         
         # derive from meta_domain_mapping
         self.n_proteins = len(pd.unique(self.meta_domain_mapping.uniprot_ac))
@@ -165,7 +270,10 @@ class MetaDomain(object):
             raise UnsupportedMetaDomainIdentifier("Expected a Pfam domain, instead the identifier '"+str(domain_id)+"' was received")
         
         # Attempt to create the object
-        meta_domain = cls(domain_id, consensus_length, n_instances, meta_domain_mapping)
+        meta_domain = cls(domain_id, consensus_length, n_instances, meta_domain_mapping, pd.DataFrame())
+        
+        # Annotate this meta domain
+        meta_domain.annotate_metadomain()
         
         # return the object
         return meta_domain

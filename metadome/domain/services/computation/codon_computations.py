@@ -1,35 +1,8 @@
 from metadome.domain.metrics.codon_statistics import codon_background_rates
-from Bio.Seq import translate
+from metadome.domain.models.entities.single_nucleotide_variant import SingleNucleotideVariant
 
 class ExternalREFAlleleNotEqualsTranscriptionException(Exception):
     pass
-
-def interpret_alt_codon(ref_codon, codon_pos, alt):
-    alt_codon =""
-    for i in range(len(ref_codon)):
-        if i == codon_pos:
-            alt_codon+= alt
-        else:
-            alt_codon+= ref_codon[i]
-    
-    return alt_codon
-
-def residue_variant_type(ref_residue, alt_residue):
-    if alt_residue == '*':
-        return 'nonsense'
-    elif alt_residue != ref_residue:
-        return 'missense'
-    else:
-        return 'synonymous'
-    
-def interpret_SNV_variant_type(ref_codon, codon_pos, alt):
-    # interpret alt codon
-    alt_codon = interpret_alt_codon(ref_codon=ref_codon, codon_pos=codon_pos, alt=alt)
-    # translate the residues
-    ref_residue = translate(ref_codon)
-    alt_residue = translate(alt_codon)
-    # interpret the variant type
-    return residue_variant_type(ref_residue, alt_residue)
 
 def retrieve_background_variant_counts(mappings_per_chromosome):
     # the value that is to be returned
@@ -73,7 +46,8 @@ def retrieve_variant_type_counts(mappings_per_chromosome, annotated_region):
                                                    " != annotation_entry['REF']")
             
             # interpret the variant type
-            variant_type = interpret_SNV_variant_type(ref_codon=codon, codon_pos=codon_pos, alt=annotation_entry['ALT'])
+            alt_codon = SingleNucleotideVariant.interpret_alt_codon(ref_basepair_representation=codon, var_codon_pos=codon_pos, alt_nucleotide=annotation_entry['ALT'])
+            variant_type = SingleNucleotideVariant.interpret_variant_type_from_codon_basepair_representations(ref_basepair_representation=codon, alt_basepair_representation=alt_codon).value
             
             # add variant_type to variant_type counts
             variant_type_counts[residue_position][variant_type] += 1

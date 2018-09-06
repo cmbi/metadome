@@ -1,8 +1,6 @@
 from metadome.domain.services.helper_functions import convertListOfIntegerToRanges, list_of_stringified_of_ranges
-from metadome.domain.services.computation.codon_computations import interpret_alt_codon, residue_variant_type
 from metadome.domain.models.gene import Strand
 from Bio.Data.IUPACData import protein_letters_1to3
-from Bio.Seq import translate
 
 class MalformedCodonException(Exception):
     pass
@@ -29,6 +27,17 @@ class Codon(object):
     cDNA_position_two                      int the position corresponding to the second base pair in the cDNA
     cDNA_position_three                    int the position corresponding to the third base pair in the cDNA
     """
+    @staticmethod
+    def one_to_three_letter_amino_acid_residue(amino_acid_residue):
+        """Returns a three letter representation of the provided amino acid residue"""
+        # Check if this is a Pyrrolysine
+        if amino_acid_residue == 'O':
+            return 'Pyl'
+        # Check if this is a Selenocysteine
+        if amino_acid_residue == 'U':
+            return 'Sec'
+        # Return one of the 20 amino acid residues
+        return protein_letters_1to3[amino_acid_residue];
 
     def unique_str_representation(self):
         return str(self.chr)+":"+str(self.regions)+"::("+str(self.strand)+")"
@@ -63,31 +72,9 @@ class Codon(object):
 
         return mappings_per_chromosome
     
-    def interpret_SNV_type(self, position, var_nucleotide):
-        """Interprets the new codon, residue and type of a SNV"""
-        codon_pos = self.retrieve_mappings_per_chromosome()[position]['codon_base_pair_position']
-        
-        alt_codon = interpret_alt_codon(self.base_pair_representation, codon_pos, var_nucleotide)
-        alt_residue = translate(alt_codon)
-        var_type = residue_variant_type(self.amino_acid_residue, alt_residue)
-        
-        if not var_type == 'nonsense':
-            alt_residue_triplet = protein_letters_1to3[alt_residue]
-        else:
-            alt_residue_triplet = alt_residue
-        
-        return alt_codon, alt_residue, alt_residue_triplet, var_type
-    
     def three_letter_amino_acid_residue(self):
         """Returns a three letter representation of the amino acid residue for this codon"""
-        # Check if this is a Pyrrolysine
-        if self.amino_acid_residue == 'O':
-            return 'Pyl'
-        # Check if this is a Selenocysteine
-        if self.amino_acid_residue == 'U':
-            return 'Sec'
-        # Return one of the 20 amino acid residues
-        return protein_letters_1to3[self.amino_acid_residue];
+        return Codon.one_to_three_letter_amino_acid_residue(self.amino_acid_residue)
     
     def pretty_print_cDNA_region(self):
         return "c."+str(self.cDNA_position_one)+"-"+str(self.cDNA_position_three)
@@ -256,6 +243,23 @@ class Codon(object):
         _d['cDNA_position_three'] = self.cDNA_position_three
         
         return _d
+    
+    def toCodonJson(self):
+        json_entry = {}
+        
+        # Add positional information
+        json_entry['strand'] = self.strand.value
+        json_entry['protein_pos'] = self.amino_acid_position
+        json_entry['cdna_pos'] = self.pretty_print_cDNA_region()
+        json_entry['chr'] = self.chr
+        json_entry['chr_positions'] = self.pretty_print_chr_region()
+        
+        # Add residue and nucleotide information
+        json_entry['ref_aa'] = self.amino_acid_residue
+        json_entry['ref_aa_triplet'] = self.three_letter_amino_acid_residue()
+        json_entry['ref_codon'] = self.base_pair_representation
+        
+        return json_entry
     
     def __repr__(self):
         return "<Codon(representation='%s', amino_acid_residue='%s', chr='%s', chr_positions='%s', strand='%s')>" % (
