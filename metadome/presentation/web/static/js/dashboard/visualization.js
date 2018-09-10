@@ -2,6 +2,7 @@
  * Global variables for landscape
  ******************************************************************************/
 var selected_positions = 0;
+var meta_domain_ids = new Set();
 
 var main_outerWidth = 1300;
 var main_outerHeight = 500;
@@ -183,13 +184,13 @@ var positionTip = d3.tip()
 function resetGraph(){
     // reset the variables
 	selected_positions = 0;
+	meta_domain_ids = new Set();
+	
 	$("#selected_positions_information").addClass('is-hidden');
 	document.getElementById("selected_positions_explanation").innerHTML = 'Click on one of positions in the schematic protein to obtain more information';
 	$("#position_information_table").addClass('is-hidden');
 	d3.selectAll('.tr').remove();
 
-	selected_positions = 0;
-	
 	// reset the svg
 	main_svg.selectAll("*").remove();
 	main_svg = d3.select("#landscape_svg");
@@ -270,7 +271,6 @@ function createGraph(obj) {
 
 function drawMetaDomainLandscape(domain_data, data){
     // get all possible domain ids
-    var meta_domain_ids = new Set();
     for (var i = 0; i < domain_data.length; i++){
     	if (domain_data[i].metadomain){
     		meta_domain_ids.add(domain_data[i].ID);
