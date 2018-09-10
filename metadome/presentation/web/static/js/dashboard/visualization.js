@@ -2,6 +2,7 @@
  * Global variables for landscape
  ******************************************************************************/
 var selected_positions = 0;
+var meta_domain_ids = new Set();
 
 var main_outerWidth = 1300;
 var main_outerHeight = 500;
@@ -156,14 +157,14 @@ var positionTip = d3.tip()
 	.attr('class', 'd3-tip')
 	.offset([ -10, 0 ])
 	.html(function(d, i) {
-	    positionTip_str = "<span>";
+	    var positionTip_str = "<span>";
 	    positionTip_str += "Position: p." + d.values[0].protein_pos + " " + d.values[0].cdna_pos + "</br>";
 	    positionTip_str += "Codon: " + d.values[0].ref_codon + "</br>";
 	    positionTip_str += "Residue: " + d.values[0].ref_aa_triplet;
 	    if (d.values[0].domains.length > 0){
 		positionTip_str += "</br> In domain(s): ";
 		var n_domains_at_position = d.values[0].domains.length;
-		for (i = 0; i < n_domains_at_position; i++){
+		for (var i = 0; i < n_domains_at_position; i++){
 		    if (i+1 == n_domains_at_position){
 			positionTip_str+= d.values[0].domains[i].ID;
 		    }else{
@@ -183,13 +184,13 @@ var positionTip = d3.tip()
 function resetGraph(){
     // reset the variables
 	selected_positions = 0;
+	meta_domain_ids = new Set();
+	
 	$("#selected_positions_information").addClass('is-hidden');
 	document.getElementById("selected_positions_explanation").innerHTML = 'Click on one of positions in the schematic protein to obtain more information';
 	$("#position_information_table").addClass('is-hidden');
 	d3.selectAll('.tr').remove();
 
-	selected_positions = 0;
-	
 	// reset the svg
 	main_svg.selectAll("*").remove();
 	main_svg = d3.select("#landscape_svg");
@@ -248,7 +249,7 @@ function createGraph(obj) {
 	
 	// create an overview of coverage per domain ID
 	var domain_metadomain_coverage = {}
-	for (i = 0; i < domain_data.length; i++) { 
+	for (var i = 0; i < domain_data.length; i++) { 
 		domain_metadomain_coverage[domain_data[i].ID] = domain_data[i].meta_domain_alignment_depth;
 	}
 	
@@ -270,8 +271,7 @@ function createGraph(obj) {
 
 function drawMetaDomainLandscape(domain_data, data){
     // get all possible domain ids
-    meta_domain_ids = new Set();
-    for (i = 0; i < domain_data.length; i++){
+    for (var i = 0; i < domain_data.length; i++){
     	if (domain_data[i].metadomain){
     		meta_domain_ids.add(domain_data[i].ID);
     	}
@@ -281,7 +281,7 @@ function drawMetaDomainLandscape(domain_data, data){
     var global_max_normal = 0;
     var global_max_pathogenic = 0;
     var global_max_value = 0;
-    for (i = 0; i < data.length; i++){
+    for (var i = 0; i < data.length; i++){
     	meta_domain_ids.forEach(domain_id => {
 			if (data[i].values[0].hasOwnProperty('domains') && data[i].values[0].domains[domain_id] != null){
 			    global_max_normal = Math.max(data[i].values[0].domains[domain_id].normal_missense_variant_count, global_max_normal);
@@ -316,7 +316,7 @@ function drawMetaDomainLandscape(domain_data, data){
 	.attr("class", "normal_missense_variant_count")
 	.attr("x", function(d) { return main_x(d.values[0].protein_pos - 0.5); })
 	.attr("y", function(d) { 
-		normal_missense_variant_count = 0;
+		var normal_missense_variant_count = 0;
 		if (d.values[0].domains != null){
 			meta_domain_ids.forEach(domain_id => {
 				if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
@@ -335,7 +335,7 @@ function drawMetaDomainLandscape(domain_data, data){
 	    	    }
 		})
 	.attr("height", function(d) { 
-		normal_missense_variant_count = 0;
+		var normal_missense_variant_count = 0;
 		if (d.values[0].domains != null){
 			meta_domain_ids.forEach(domain_id => {
 				if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
@@ -350,7 +350,7 @@ function drawMetaDomainLandscape(domain_data, data){
 	.style("fill", "green")
 	.on("mouseover", function(d) {
 		if (metadomain_graph_visible){
-			normal_missense_variant_count = 0;
+			var normal_missense_variant_count = 0;
 			if (d.values[0].domains != null){
 				meta_domain_ids.forEach(domain_id => {
 					if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
@@ -383,7 +383,7 @@ function drawMetaDomainLandscape(domain_data, data){
 	.attr("class", "pathogenic_missense_variant_count")
 	.attr("x", function(d) { return main_x(d.values[0].protein_pos); })
 	.attr("y", function(d) { 
-		pathogenic_missense_variant_count = 0;
+		var pathogenic_missense_variant_count = 0;
 		if (d.values[0].domains != null){
 			meta_domain_ids.forEach(domain_id => {
 				if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
@@ -402,7 +402,7 @@ function drawMetaDomainLandscape(domain_data, data){
 	    	    }
 		})
 	.attr("height", function(d) { 
-		pathogenic_missense_variant_count = 0;
+		var pathogenic_missense_variant_count = 0;
 		if (d.values[0].domains != null){
 			meta_domain_ids.forEach(domain_id => {
 				if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
@@ -417,7 +417,7 @@ function drawMetaDomainLandscape(domain_data, data){
 	.style("fill", "red")
 	.on("mouseover", function(d) {
 		if (metadomain_graph_visible){
-			pathogenic_missense_variant_count = 0;
+			var pathogenic_missense_variant_count = 0;
 			if (d.values[0].domains != null){
 				meta_domain_ids.forEach(domain_id => {
 					if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
@@ -451,9 +451,9 @@ function drawMetaDomainLandscape(domain_data, data){
 	.attr("x", function(d) { return main_x(d.values[0].protein_pos); })
 	.attr("y", function(d) { 
 		if (d.values[0].domains != null){
-			not_aligned_poition = 0;
+			var not_aligned_poition = 0;
 			
-			for (i = 0; i < domain_data.length; i++){
+			for (var i = 0; i < domain_data.length; i++){
 		    	if (domain_data[i].start <= d.values[0].protein_pos && d.values[0].protein_pos < domain_data[i].stop && d.values[0].domains[domain_data[i].ID] == null){
 		    		not_aligned_poition = 1;
 		    	}
@@ -479,7 +479,7 @@ function drawMetaDomainLandscape(domain_data, data){
 	.style("fill", "black")
 	.on("mouseover", function(d) {
 		if (metadomain_graph_visible){
-			pathogenic_missense_variant_count = 0;
+			var pathogenic_missense_variant_count = 0;
 			if (d.values[0].domains != null){
 				meta_domain_ids.forEach(domain_id => {
 					if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
@@ -957,7 +957,7 @@ function toggleToleranceLandscapeOrMetadomainLandscape(){
 }
 
 function draw_position_schematic_protein(d, element){
-	pathogenic_missense_variant_count = 0;
+	var pathogenic_missense_variant_count = 0;
 	if (clinvar_variants_visible){
 		// count any pathogenic variants at this position
 		if (d.values[0].ClinVar != null) {
