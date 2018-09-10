@@ -385,7 +385,7 @@ function getTranscript() {
 				transcript_id_results.trancript_ids.sort(function(a,b){return (a.aa_length<b.aa_length) ? 1 : ((b.aa_length<a.aa_length) ? -1: 0);});
 				
 				// Add the transcripts as options
-				for (i = 0; i < transcript_id_results.trancript_ids.length; i++) {
+				for (var i = 0; i < transcript_id_results.trancript_ids.length; i++) {
 					var opt = new Option();
 					opt.value = i;
 					opt.text = transcript_id_results.trancript_ids[i].gencode_id + " ("+ transcript_id_results.trancript_ids[i].aa_length +"aa)" ;
@@ -554,20 +554,20 @@ function loadDoc() {
 // annotates meta domain information for a position
 function createPositionalInformation(domain_metadomain_coverage, transcript_id, position_json) {
     // Retrieve the needed information for the GET request
-    protein_position = position_json.values[0].protein_pos;
+    var protein_position = position_json.values[0].protein_pos;
 
     // Construct the request for this domain and the aligned positions
     var requested_domains = {};
-    domain_ids = Object.keys(position_json.values[0].domains);
-    for (i = 0; i < domain_ids.length; i++){
-        domain_id = domain_ids[i];
+    var domain_ids = Object.keys(position_json.values[0].domains);
+    for (var i = 0; i < domain_ids.length; i++){
+        var domain_id = domain_ids[i];
 
         // Check if this position is meta domain suitable
         if (!(position_json.values[0].domains[domain_id] == null)){		
             requested_domains[domain_id] = [];
 
             // append the consensus positions
-            for (j = 0; j < position_json.values[0].domains[domain_id].consensus_pos.length; j ++) {
+            for (var j = 0; j < position_json.values[0].domains[domain_id].consensus_pos.length; j ++) {
                 requested_domains[domain_id].push(position_json.values[0].domains[domain_id].consensus_pos[j])
             }
         }
@@ -581,7 +581,7 @@ function createPositionalInformation(domain_metadomain_coverage, transcript_id, 
                      "transcript_id": transcript_id,
                      "protein_position": protein_position};
 
-        // Execute the GET request
+        // Execute the POST request
         $.ajax(
           {
              type: 'POST',
@@ -626,7 +626,7 @@ function FillPositionalInformation(domain_metadomain_coverage, position_data, da
 		var domain_id_list = Object.keys(position_data.values[0].domains);
 		var n_domains_at_position = Object.keys(position_data.values[0].domains).length;
 		
-		for (i = 0; i < n_domains_at_position; i++){
+		for (var i = 0; i < n_domains_at_position; i++){
 		    if (i+1 == n_domains_at_position){
 			domain_ids += '<a href="http://pfam.xfam.org/family/' + domain_id_list[i] + '" target="_blank">'+domain_id_list[i]+"</a>";
 		    }	
@@ -637,10 +637,10 @@ function FillPositionalInformation(domain_metadomain_coverage, position_data, da
 		    // add meta domain information
 		    if (!(position_data.values[0].domains[domain_id_list[i]] == null)){
 		    	// retrieve the domain_information from the data object
-		    	meta_domain = data[domain_id_list[i]];
+		    	var meta_domain = data[domain_id_list[i]];
 		    	
 		    	// compute coverage
-		    	position_coverage = Math.round(((meta_domain.alignment_depth/domain_metadomain_coverage[domain_id_list[i]])*100)*10)/10;
+		    	var position_coverage = Math.round(((meta_domain.alignment_depth/domain_metadomain_coverage[domain_id_list[i]])*100)*10)/10;
 		    	
 		    	// Add information to the report
 				meta_domain_information += '<hr><label class="label">Meta-domain information for domain '+domain_id_list[i]+':</label>';
@@ -690,10 +690,10 @@ function FillPositionalInformation(domain_metadomain_coverage, position_data, da
 	document.getElementById("positional_information_overlay_body").innerHTML += '<label class="label">Known pathogenic ClinVar SNVs at position</label>';
     if ("ClinVar" in position_data.values[0]){
 		// Add ClinVar variant table
-    	clinvar_variants = position_data.values[0].ClinVar;
+    	var clinvar_variants = position_data.values[0].ClinVar;
     	
     	// Add the positional information
-        for (index = 0; index < clinvar_variants.length; index++){
+        for (var index = 0; index < clinvar_variants.length; index++){
         	clinvar_variants[index].chr = position_data.values[0].chr;
         	clinvar_variants[index].chr_positions = position_data.values[0].chr_positions;
         	clinvar_variants[index].ref_codon = position_data.values[0].ref_codon;
@@ -738,22 +738,22 @@ function addRowToPositionalInformationTable(domain_metadomain_coverage, d, trans
 	    domain_ids = "";
 	    related_gnomad = 0;
 	    related_clinvar = 0;
-	    for (i = 0; i < n_domains_at_position; i++){
-		if (i+1 == n_domains_at_position){
-		    domain_ids += domain_id_list[i];
-		}	
-		else{
-		    domain_ids += domain_id_list[i]+", ";
-		}
-		// append normal and pathogenic variant count
-		if (!(d.values[0].domains[domain_id_list[i]] == null)){
-    		    related_gnomad += d.values[0].domains[domain_id_list[i]].normal_variant_count;
-    		    related_clinvar += d.values[0].domains[domain_id_list[i]].pathogenic_variant_count;
-		}
-		else{
-			related_gnomad = "-";
-			related_clinvar = "-";
-		}
+	    for (var i = 0; i < n_domains_at_position; i++){
+			if (i+1 == n_domains_at_position){
+			    domain_ids += domain_id_list[i];
+			}	
+			else{
+			    domain_ids += domain_id_list[i]+", ";
+			}
+			// append normal and pathogenic variant count
+			if (!(d.values[0].domains[domain_id_list[i]] == null)){
+	    		    related_gnomad += d.values[0].domains[domain_id_list[i]].normal_variant_count;
+	    		    related_clinvar += d.values[0].domains[domain_id_list[i]].pathogenic_variant_count;
+			}
+			else{
+				related_gnomad = "-";
+				related_clinvar = "-";
+			}
 	    }
 	}
 	new_row.append('td').text(domain_ids);
@@ -794,8 +794,8 @@ function createClinVarTableHeader(){
 function createClinVarTableBody(ClinvarVariants){
     var html_table= '';
     // here comes the data
-    for (index = 0; index < ClinvarVariants.length; index++){
-		variant = ClinvarVariants[index];
+    for (var index = 0; index < ClinvarVariants.length; index++){
+		var variant = ClinvarVariants[index];
 		html_table += '<tr>';
 		html_table += '<td>'+variant.chr+'</td>';
 		html_table += '<td>'+variant.chr_positions+'</td>';
@@ -827,16 +827,16 @@ function createGnomADTableHeader(){
 function createGnomADTableBody(gnomADVariants){
     var html_table= '';
     // here comes the data
-    for (index = 0; index < gnomADVariants.length; index++){
-	variant = gnomADVariants[index];
-	html_table += '<tr>';
-	html_table += '<td>'+variant.chr+'</td>';
-	html_table += '<td>'+variant.chr_positions+'</td>';
-	html_table += '<td>'+variant.ref_codon+'>'+variant.alt_codon+'</td>';
-	html_table += '<td>'+variant.ref_aa_triplet+'>'+variant.alt_aa_triplet+'</td>';
-	html_table += '<td>'+variant.type+'</td>';
-	html_table += '<td>' + parseFloat(variant.allele_count/variant.allele_number).toFixed(6) + '</td>';
-	html_table += '</tr>';
+    for (var index = 0; index < gnomADVariants.length; index++){
+		var variant = gnomADVariants[index];
+		html_table += '<tr>';
+		html_table += '<td>'+variant.chr+'</td>';
+		html_table += '<td>'+variant.chr_positions+'</td>';
+		html_table += '<td>'+variant.ref_codon+'>'+variant.alt_codon+'</td>';
+		html_table += '<td>'+variant.ref_aa_triplet+'>'+variant.alt_aa_triplet+'</td>';
+		html_table += '<td>'+variant.type+'</td>';
+		html_table += '<td>' + parseFloat(variant.allele_count/variant.allele_number).toFixed(6) + '</td>';
+		html_table += '</tr>';
     }
     	
     return html_table;
