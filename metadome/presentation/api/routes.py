@@ -1,5 +1,6 @@
 from metadome.domain.repositories import GeneRepository
 from metadome.domain.services.metadome import process_visualization_request
+from metadome.domain.transcript import is_transcript_id
 
 from flask import Blueprint, jsonify, render_template, request
 from builtins import Exception
@@ -7,6 +8,12 @@ from builtins import Exception
 import traceback
 import logging
 import json
+
+
+from metadome.controllers.job import (create_visualization_job_if_needed,
+                                      get_visualization_status,
+                                      retrieve_visualization)
+
 
 _log = logging.getLogger(__name__)
 
@@ -85,10 +92,30 @@ def submit_gene_analysis_job_for_transcript(transcript_id):
     return jsonify({'job_id': job_id,
                       'job_name': job_name,})
 
+
+@bp.route('/submit_visualization/<transcript_id>/', methods=['GET'])
+def submit_visualization_job_for_transcript(transcript_id):
+    _log.debug("submitted {}".format(transcript_id))
+
+    if is_transcript_id(transcript_id):
+        create_visualization_job_if_needed(transcript_id)
+        return jsonify({'transcript_id': transcript_id})
+    else:
+        return jsonify({'error': "not a valid transcript id"}), 400
+
+
 @bp.route('/status', methods=['GET'])
 def get_job_status_stub():
     """This endpoint is a stub, to ensure deeper endpoints may be used"""
     pass
+
+
+@bp.route('/status/<transcript_id>/', methods=['GET'])
+def get_visualization_status_for_transcript(transcript_id):
+    status = get_visualization_status(transcript_id)
+
+    return jsonify({'status': status})
+
 
 @bp.route('/status/<job_name>/<job_id>/', methods=['GET'])
 def get_job_status(job_name, job_id):
@@ -110,6 +137,22 @@ def get_job_result_stub():
     """This endpoint is a stub, to ensure deeper endpoints may be used"""
     pass
      
+
+@bp.route('/result/<transcript_id>/', methods=['GET'])
+def get_visualization_result_for_transcript(transcript_id):
+    try:
+        result = retrieve_visualization(transcript_id)
+        return jsonify(result)
+    except FileNotFoundError:
+        return jsonify({'error': "file not found"}), 404
+
+
+@bp.route('/error/<transcript_id>/', methods=['GET'])
+def get_visualization_error_for_transcript(transcript_id):
+    error = retrieve_error(transcript_id)
+    return jsonify({'error': error})
+
+
 @bp.route('/result/<job_name>/<job_id>/', methods=['GET'])
 def get_job_result(job_name, job_id):
     from metadome.tasks import get_task

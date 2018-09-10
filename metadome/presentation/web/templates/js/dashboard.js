@@ -846,7 +846,7 @@ function createTableFooter(){
     return '</tbody></table>';
 }
 
-function sortTable(){
+function sortTable() {
 	var rows = $('#position_information_tbody tr').get();
 	
 	rows.sort(function(a, b) {
@@ -866,5 +866,5 @@ function sortTable(){
 	
 	$.each(rows, function(index, row) {
 	  $('#position_information_tbody').append(row);
-});
+    });
 }
