@@ -3,6 +3,7 @@ from flask_mail import Message
 import json
 import traceback
 from metadome import get_version
+from metadome.controllers.job import retrieve_error
 from metadome.domain.repositories import GeneRepository
 from metadome.domain.services.mail.mail import mail
 from metadome.presentation.web.forms import SupportForm
@@ -50,20 +51,31 @@ def contact():
 
     return render_template('contact.html', form=form)
 
+
 @bp.route('/about', methods=['GET'])
 def about():
     return render_template('about.html')
+
 
 @bp.route('/method', methods=['GET'])
 def method():
     return render_template('method.html')
 
+
+@bp.route('/visualization_error/<transcript_id>/', methods=['GET'])
+def visualization_error(transcript_id):
+    stacktrace = retrieve_error(transcript_id)
+    error = "error during visualization generation"
+    return render_template('error.html', msg=error, stack_trace=stacktrace)
+
+
 @bp.before_request
 def before_request():
     g.metadom_version = get_version()
 
+
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover
     _log.error("Unhandled exception:\n{}".format(error))
-    _log.error(traceback.print_exc())
-    return render_template('error.html', msg=error, stack_trace=traceback.print_exc()), 500
+    _log.error(traceback.format_exc())
+    return render_template('error.html', msg=error, stack_trace=traceback.format_exc()), 500

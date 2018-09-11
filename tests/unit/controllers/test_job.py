@@ -5,6 +5,7 @@ from time import sleep
 import json
 import logging
 import os
+import traceback
 
 from nose.tools import with_setup, ok_
 from mock import patch
@@ -13,7 +14,8 @@ from metadome.factory import create_app
 from metadome.controllers.job import (create_visualization_job_if_needed,
                                       get_visualization_status,
                                       retrieve_visualization, retrieve_error,
-                                      get_visualization_path)
+                                      get_visualization_path,
+                                      store_visualization, store_error)
 
 
 _log = logging.getLogger(__name__)
@@ -56,10 +58,11 @@ def test_run(mock_dir_path, mock_result, mock_delay):
                 sleep(5.0)
                 global app
                 with app.app_context():
-                    with open(get_visualization_path(self.transcript_id), 'w') as f:
-                        f.write(json.dumps({'id': 'test'}))
+                    store_visualization(self.transcript_id, {'id': 'test'})
                 self.status = "SUCCESS"
             except:
+                with app.app_context():
+                    store_error(self.transcript_id, traceback.format_exc())
                 self.status = "FAILURE"
 
     transcript_id = "test_transcript"

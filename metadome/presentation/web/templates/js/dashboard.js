@@ -492,7 +492,7 @@ function getVisualizationStatus(transcript_id) {
             if (data.status == 'SUCCESS')
                 getVisualizationResult(transcript_id);
             else if (data.status == 'FAILURE')
-                getVisualizationError(transcript_id);
+                showVisualizationError(transcript_id);
             else  // try again in 10 seconds..
                 setTimeout(function() { getVisualizationStatus(transcript_id);}, 10000);
         }
@@ -525,18 +525,9 @@ function getVisualizationResult(transcript_id) {
     );
 }
 
-function getVisualizationError(transcript_id) {
-    $.get(Flask.url_for("api.get_visualization_error_for_transcript",
-                        {'transcript_id': transcript_id}),
-        function(data) {
-            d3.select("svg").selectAll("*").remove();
-            $("#graph_control_field").addClass('is-hidden');
-            $("#toleranceGraphContainer").addClass('is-hidden');
-            $("#loading_overlay").removeClass('is-active');
-
-            // TODO: show the error somehow
-        }
-    );
+function showVisualizationError(transcript_id) {
+    // Forward to the error page.
+    window.location.href = Flask.url_for("web.visualization_error", {'transcript_id': transcript_id});
 }
 
 // annotates meta domain information for a position

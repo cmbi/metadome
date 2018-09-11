@@ -6,7 +6,7 @@ from metadome.domain.models.entities.meta_domain import MetaDomain,\
 from metadome.domain.services.computation.gene_region_computations import compute_tolerance_landscape
 from metadome.domain.services.annotation.gene_region_annotators import annotateTranscriptWithClinvarData
 from metadome.domain.services.annotation.annotation import annotateSNVs
-from metadome.controllers.job import get_visualization_error_path
+from metadome.controllers.job import store_error, store_visualization
 from metadome.domain.error import RecoverableError
 import numpy as np
 
@@ -88,32 +88,14 @@ def create_prebuild_visualization(self, transcript_id):
         _log.info("Attempting to create visualization for '{}'".format(transcript_id))
 
         result = analyse_transcript(transcript_id)
-
         if 'error' in result.keys():
             _log.info("Something went wrong while trying to create visualization for '{}'".format(transcript_id))
-            return result
-        _log.info("Succeeded in creating visualization for '{}', saving as prebuild...".format(transcript_id))
+            raise RuntimeError(result['error'])
 
-        # Check if the directory already exists
-        base_visualization_dir = flask_app.config['PRE_BUILD_VISUALIZATION_DIR']
-        if not os.path.exists(base_visualization_dir):
-            os.makedirs(base_visualization_dir)
-
-        # Check if the directory for the gene already exists
-        visualization_dir = base_visualization_dir + transcript_id + '/'
-        if not os.path.exists(visualization_dir):
-            os.makedirs(visualization_dir)
-
-        # Determine path to the file and check that it exists.
-        visualization_path = visualization_dir + flask_app.config['PRE_BUILD_VISUALIZATION_FILE_NAME']
-
-        with open(visualization_path, 'w') as f:
-            json.dump(result, f)
-
+        store_visualization(transcript_id, result)
         return result
     except:
-        with open(get_visualization_error_path(transcript_id), 'r') as err_file:
-            err_file.write(traceback.format_exc())
+        store_error(transcript_id, traceback.format_exc())
         raise
 
 def retrieve_metadomain_annotation(transcript_id, protein_position, domain_positions):

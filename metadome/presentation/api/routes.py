@@ -1,6 +1,6 @@
 from metadome.domain.repositories import GeneRepository
 from metadome.domain.services.helper_functions import is_transcript_id
-from metadome.controllers.job import create_visualization_job_if_needed
+from metadome.controllers.job import create_visualization_job_if_needed, retrieve_error
 
 
 from flask import Blueprint, jsonify, render_template, request
@@ -110,12 +110,14 @@ def get_visualization_result_for_transcript(transcript_id):
 
 @bp.route('/error/<transcript_id>/', methods=['GET'])
 def get_visualization_error_for_transcript(transcript_id):
-    error = retrieve_error(transcript_id)
-    return jsonify({'error': error})
+    stacktrace = retrieve_error(transcript_id)
+    error = "error running visualization job"
+    return jsonify({'error': error, 'stacktrace': stacktrace})
 
 
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover
     _log.error("Unhandled exception:{}\n{}"
                .format(error, traceback.format_exc()))
-    return jsonify({'error': str(error)}), 500
+    return jsonify({'error': str(error),
+                    'stacktrace': traceback.format_exc()}), 500
