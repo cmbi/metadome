@@ -72,7 +72,10 @@ def create_visualization_job_if_needed(transcript_id):
                           .format(transcript_id, task_id))
         else:
             from metadome.tasks import create_prebuild_visualization
-            create_prebuild_visualization.delay(transcript_id)
+            result = create_prebuild_visualization.delay(transcript_id)
+
+            with open(task_path, 'w') as f:
+                f.write(result.task_id)
 
             # From here on, the task itself will handle the creation of result and error files.
 
