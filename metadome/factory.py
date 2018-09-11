@@ -1,6 +1,7 @@
 import logging
 
 from flask import Flask
+from flask_jsglue import JSGlue
 from metadome.domain.services.mail.mail import mail
 from metadome.default_settings import MAIL_SERVER
 from celery import Celery
@@ -69,6 +70,8 @@ def create_app(settings=None):
     db.init_app(app)
     with app.app_context():
         db.create_all()
+
+    jsglue = JSGlue(app)
 
     return app
 
