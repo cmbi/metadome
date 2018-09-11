@@ -476,7 +476,7 @@ function visualize() {
                     type: 'POST',
                     url: "{{ url_for('api.submit_visualization_job_for_transcript') }}",
                     data: JSON.stringify({'transcript_id': transcript_id}),
-                    success: function(data) { getVisualizationStatus(data.transcript_id); },
+                    success: function(data) { getVisualizationStatus(data.transcript_id, 10000); },
                     contentType: "application/json",
                     dataType: 'json'
                 }
@@ -485,7 +485,7 @@ function visualize() {
     }
 }
 
-function getVisualizationStatus(transcript_id) {
+function getVisualizationStatus(transcript_id, delay) {
     $.get(Flask.url_for("api.get_visualization_status_for_transcript",
                         {'transcript_id': transcript_id}),
         function(data) {
@@ -493,8 +493,8 @@ function getVisualizationStatus(transcript_id) {
                 getVisualizationResult(transcript_id);
             else if (data.status == 'FAILURE')
                 showVisualizationError(transcript_id);
-            else  // try again in 10 seconds..
-                setTimeout(function() { getVisualizationStatus(transcript_id);}, 10000);
+            else  // try again after a while..
+                setTimeout(function() { getVisualizationStatus(transcript_id, 30000); }, delay);
         }
     );
 }
