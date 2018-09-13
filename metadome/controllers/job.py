@@ -61,15 +61,21 @@ def create_visualization_job_if_needed(transcript_id):
             if os.path.isfile(task_path):
                 os.remove(task_path)
 
-        if os.path.isfile(visualization_path):
-            _log.info("visualization file for transcript {} already exists"
-                      .format(transcript_id))
-
         elif os.path.isfile(task_path):
             with open(task_path, 'r') as f:
                 task_id = f.read()
-                _log.info("visualization job for transcript {} is already running as task {}"
+
+            result = AsyncResult(task_id)
+            if result.status == 'PENDING':  # PENDING means it's just not in the backend
+                os.remove(task_path)
+            else:
+                _log.info("visualization job for transcript {} is already submitted as task {}"
                           .format(transcript_id, task_id))
+                return
+
+        if os.path.isfile(visualization_path):
+            _log.info("visualization file for transcript {} already exists"
+                      .format(transcript_id))
         else:
             from metadome.tasks import create_prebuild_visualization
             result = create_prebuild_visualization.delay(transcript_id)
