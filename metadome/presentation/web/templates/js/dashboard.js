@@ -60,6 +60,7 @@ function show_tour_data_input(index) {
     	
     	// behaviour
     	$("#loading_overlay").addClass('is-active');
+        $("#loading_label").text("Loading...");
     	break;
     case 5: // fill the graph
     	$("#loading_overlay").removeClass('is-active');
@@ -471,12 +472,13 @@ function visualize() {
             var transcript_id = gtID.split(" ")[0];
 
             $("#loading_overlay").addClass('is-active');
+            $("#loading_label").text("Loading...");
             $.ajax(
                 {
                     type: 'POST',
                     url: "{{ url_for('api.submit_visualization_job_for_transcript') }}",
                     data: JSON.stringify({'transcript_id': transcript_id}),
-                    success: function(data) { getVisualizationStatus(data.transcript_id, 10000); },
+                    success: function(data) { getVisualizationStatus(data.transcript_id, 0); },
                     contentType: "application/json",
                     dataType: 'json'
                 }
@@ -485,7 +487,7 @@ function visualize() {
     }
 }
 
-function getVisualizationStatus(transcript_id, delay) {
+function getVisualizationStatus(transcript_id, checkCount) {
     $.get(Flask.url_for("api.get_visualization_status_for_transcript",
                         {'transcript_id': transcript_id}),
         function(data) {
@@ -493,8 +495,16 @@ function getVisualizationStatus(transcript_id, delay) {
                 getVisualizationResult(transcript_id);
             else if (data.status == 'FAILURE')
                 showVisualizationError(transcript_id);
-            else  // try again after a while..
-                setTimeout(function() { getVisualizationStatus(transcript_id, 30000); }, delay);
+            else {  // try again after a while..
+                var delay = 10000;
+                if (checkCount >= 5) {
+                    delay = 50000;
+                    $("#loading_label").html("Loading...</br>This is taking longer than usual, and may take up to an hour. You can choose to wait or check back later.");
+                }
+                checkCount++;
+
+                setTimeout(function() { getVisualizationStatus(transcript_id, checkCount); }, delay);
+            }
         }
     );
 }
@@ -555,6 +565,7 @@ function createPositionalInformation(domain_metadomain_coverage, transcript_id, 
     if (Object.keys(requested_domains).length > 0) {
         // Activate the loading overlay
         $("#loading_overlay").addClass('is-active');
+        $("#loading_label").text("Loading...");
 
         var input = {"requested_domains": requested_domains,
                      "transcript_id": transcript_id,
