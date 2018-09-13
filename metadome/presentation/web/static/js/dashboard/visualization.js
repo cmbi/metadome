@@ -250,7 +250,9 @@ function createGraph(obj) {
 	// create an overview of coverage per domain ID
 	var domain_metadomain_coverage = {}
 	for (var i = 0; i < domain_data.length; i++) { 
-		domain_metadomain_coverage[domain_data[i].ID] = domain_data[i].meta_domain_alignment_depth;
+		if (!(domain_data[i].ID in domain_metadomain_coverage)){
+			domain_metadomain_coverage[domain_data[i].ID] = domain_data[i].meta_domain_alignment_depth;
+		}
 	}
 	
 	// Draw all individual user interface elements based on the data
@@ -660,7 +662,8 @@ function createSchematicProtein(domain_metadomain_coverage, groupedTolerance, tr
 		}).on("click", function(d, i) {
 		    if (!d.values[0].selected) {
 				d3.select(this).style("fill", "green").style("fill-opacity", 0.7);
-				d.values[0].selected = true;			
+				d.values[0].selected = true;
+				
 				addRowToPositionalInformationTable(domain_metadomain_coverage, d, transcript_id);
 				selected_positions += 1;
 				$("#position_information_table").removeClass('is-hidden');
