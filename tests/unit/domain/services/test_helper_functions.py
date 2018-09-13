@@ -1,5 +1,8 @@
 import unittest
-from metadome.domain.services.helper_functions import create_sliding_window, convertListOfIntegerToRanges
+
+from metadome.domain.services.helper_functions import (create_sliding_window,
+                                                       convertListOfIntegerToRanges,
+                                                       is_transcript_id)
 
 class TestHelperFunctions(unittest.TestCase):
 
@@ -48,6 +51,10 @@ class TestHelperFunctions(unittest.TestCase):
                           {'sw_coverage': 0.45454545454545453, 'sw_range': range(0, 5)},
                           {'sw_coverage': 0.45454545454545453, 'sw_range': range(0, 5)},
                           {'sw_coverage': 0.45454545454545453, 'sw_range': range(0, 5)}])
+
+    def test_is_transcript_id(self):
+        self.assertTrue(is_transcript_id('ENST00000273580.7'))
+        self.assertFalse(is_transcript_id('foo'))
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

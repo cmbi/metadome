@@ -77,6 +77,8 @@ METADOMAIN_SNV_ANNOTATION_FILE_NAME = 'metadomain_snv_annotation' # Annotations 
 # Pre-build visualization files
 PRE_BUILD_VISUALIZATION_DIR = DATA_DIR+"metadome_visualization/"
 PRE_BUILD_VISUALIZATION_FILE_NAME = 'metadome_visualization.json' # Visualizations are saved as: PRE_BUILD_VISUALIZATION_DIR+<Transcript_id>+'/'+PRE_BUILD_VISUALIZATION_FILE_NAME
+PRE_BUILD_VISUALIZATION_TASK_FILE_NAME = 'visualization_task'
+PRE_BUILD_VISUALIZATION_ERROR_FILE_NAME = 'visualization_error'
 
 # PFAM specific files
 PFAM_DIR = DATA_DIR+"PFAM/Pfam30.0"

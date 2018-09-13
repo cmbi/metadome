@@ -60,6 +60,7 @@ function show_tour_data_input(index) {
     	
     	// behaviour
     	$("#loading_overlay").addClass('is-active');
+        $("#loading_label").text("Loading...");
     	break;
     case 5: // fill the graph
     	$("#loading_overlay").removeClass('is-active');
@@ -357,10 +358,11 @@ if (get_query_param('tour')) {
 function getTranscript() {
 	clearTranscripts();
 	var geneName = document.getElementById("geneName").value;
-	var xhttp = new XMLHttpRequest();
-	xhttp.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			var transcript_id_results = JSON.parse(xhttp.responseText);
+	if (typeof geneName !== 'undefined' && geneName.length > 0) {
+		// the variable is defined
+        $.get(Flask.url_for("api.get_transcript_ids_for_gene", {'gene_name': geneName}),
+          function(transcript_id_results)
+          {
 			document.getElementById("geneNameHelpMessage").innerHTML = transcript_id_results.message;
 
 			if (typeof transcript_id_results == 'undefined' || transcript_id_results == null || transcript_id_results.trancript_ids.length == 0) {
@@ -397,15 +399,8 @@ function getTranscript() {
 					dropdown.options.add(opt);
 				}
 			}
-		}
-	};
-	if (typeof geneName !== 'undefined' && geneName.length > 0) {
-		// the variable is defined
-		xhttp.open("GET", "{{ url_for('api.get_default_transcript_ids') }}"
-				+ "/" + geneName, true);
-		xhttp.setRequestHeader("Content-type",
-				"application/x-www-form-urlencoded");
-		xhttp.send();
+          }
+        );
 	}
 }
 
@@ -465,90 +460,84 @@ function saveSvg(svgEl, name) {
     document.body.removeChild(downloadLink);
 }
 
-// Function to get the data from the inputfield and send AJAX requests to the
-// webserver, returning arrays with json objects.
-function loadDoc() {
+function visualize() {
     resetGraphControl();
-	var selection = document.getElementsByClassName("dropdown")[0];
+    var selection = document.getElementsByClassName("dropdown")[0];
 
-	if (typeof selection !== 'undefined' && selection !== null && selection.length > 0) {
-		$("#loading_overlay").addClass('is-active');
-		var input = selection.options[selection.selectedIndex].text;
-		var gtID = input.toUpperCase();
+    if (selection !== undefined && selection !== null && selection.length > 0) {
+        var input = selection.options[selection.selectedIndex].text;
+        var gtID = input.toUpperCase();
 
-		var status = true;
-		if (gtID == "") {
-			status = false
-		}
-		if (status) {
+        if (gtID !== undefined && gtID.length > 0) {
+            var transcript_id = gtID.split(" ")[0];
 
-			var xhttp = new XMLHttpRequest();
-			xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200) {
-					var obj = JSON.parse(xhttp.responseText);
-					if (typeof obj == 'undefined' || obj == null || obj.length == 0) {
-						d3.select("svg").selectAll("*").remove();
-						$("#graph_control_field").addClass('is-hidden');
-						$("#toleranceGraphContainer").addClass('is-hidden');
-						$("#loading_overlay").removeClass('is-active');
-					} else {
-						// check if the job is done or we are retrieving the results of a job
-						if( obj.job_id != null && obj.job_name != null){
-							if (obj.status == 'SUCCESS'){
-								// if the status is SUCCESS, retrieve the results
-								xhttp.open("GET",
-										"{{ url_for('api.get_job_result_stub') }}" + "/"
-												+ obj.job_name + "/"
-												+ obj.job_id + "/", true);
-								xhttp.setRequestHeader("Content-type",
-										"application/x-www-form-urlencoded");
-								xhttp.send();
-							}
-							else{								
-								// check status
-								xhttp.open("GET",
-										"{{ url_for('api.get_job_status_stub') }}" + "/"
-												+ obj.job_name + "/"
-												+ obj.job_id + "/", true);
-								xhttp.setRequestHeader("Content-type",
-										"application/x-www-form-urlencoded");
-								xhttp.send();
-							}
-						}
-						else{
-							$("#loading_overlay").removeClass('is-active');
-							
-							$("#toleranceGraphContainer").removeClass('is-hidden');
-							$("#graph_control_field").removeClass('is-hidden');
-							var geneName = document.getElementById("geneName").value;
-							var geneDetails = document.getElementById("geneDetails");
-							geneDetails.innerHTML = 'Gene: '+obj.gene_name+' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='+obj.transcript_id+'" target="_blank">'+obj.transcript_id+'</a>, protein: <a href="https://www.uniprot.org/uniprot/'+obj.protein_ac+'" target="_blank">'+obj.protein_ac+'</a>)';
-							
-							// Draw the graph
-							createGraph(obj);
-	
-							// Download for the whole svg as svg
-							d3.select('#dlSVG').on('click', function() {
-								var fileName = 'Gene_'+obj.gene_name+'_transcript_'+obj.transcript_id+'_protein_'+obj.protein_ac+'_metadome';
-								saveSvg(document.getElementById('landscape_svg'), fileName);
-							});
-						}
-					}
-				}
-			};
-			if (typeof gtID !== 'undefined' && gtID.length > 0) {
-				// the variable is defined
-				// retrieve only the gt_id
-				var gencode_id = gtID.split(" ")[0];
-				xhttp.open("GET",
-						"{{ url_for('api.submit_gene_analysis_job_stub') }}" + "/"
-								+ gencode_id + "/", true);
-				xhttp.setRequestHeader("Content-type",
-						"application/x-www-form-urlencoded");
-				xhttp.send();
-			}
-		}
-	}
+            $("#loading_overlay").addClass('is-active');
+            $("#loading_label").text("Loading...");
+            $.ajax(
+                {
+                    type: 'POST',
+                    url: "{{ url_for('api.submit_visualization_job_for_transcript') }}",
+                    data: JSON.stringify({'transcript_id': transcript_id}),
+                    success: function(data) { getVisualizationStatus(data.transcript_id, 0); },
+                    contentType: "application/json",
+                    dataType: 'json'
+                }
+            );
+        }
+    }
+}
+
+function getVisualizationStatus(transcript_id, checkCount) {
+    $.get(Flask.url_for("api.get_visualization_status_for_transcript",
+                        {'transcript_id': transcript_id}),
+        function(data) {
+            if (data.status == 'SUCCESS')
+                getVisualizationResult(transcript_id);
+            else if (data.status == 'FAILURE')
+                showVisualizationError(transcript_id);
+            else {  // try again after a while..
+                var delay = 10000;
+                if (checkCount >= 5) {
+                    delay = 50000;
+                    $("#loading_label").html("Loading...</br>This is taking longer than usual, and may take up to an hour. You can choose to wait or check back later.");
+                }
+                checkCount++;
+
+                setTimeout(function() { getVisualizationStatus(transcript_id, checkCount); }, delay);
+            }
+        }
+    );
+}
+
+function getVisualizationResult(transcript_id) {
+    $.get(Flask.url_for("api.get_visualization_result_for_transcript",
+                        {'transcript_id': transcript_id}),
+        function(obj) {
+            $("#loading_overlay").removeClass('is-active');
+
+            $("#toleranceGraphContainer").removeClass('is-hidden');
+            $("#graph_control_field").removeClass('is-hidden');
+            var geneName = document.getElementById("geneName").value;
+            var geneDetails = document.getElementById("geneDetails");
+            geneDetails.innerHTML = 'Gene: ' + obj.gene_name + ' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='
+                                  + obj.transcript_id + '" target="_blank">' + obj.transcript_id
+                                  + '</a>, protein: <a href="https://www.uniprot.org/uniprot/'
+                                  + obj.protein_ac + '" target="_blank">' + obj.protein_ac + '</a>)';
+            // Draw the graph
+            createGraph(obj);
+
+            // Download for the whole svg as svg
+            d3.select('#dlSVG').on('click', function() {
+                var fileName = 'Gene_' + obj.gene_name + '_transcript_' + obj.transcript_id + '_protein_' + obj.protein_ac + '_metadome';
+                saveSvg(document.getElementById('landscape_svg'), fileName);
+            });
+        }
+    );
+}
+
+function showVisualizationError(transcript_id) {
+    // Forward to the error page.
+    window.location.href = Flask.url_for("web.visualization_error", {'transcript_id': transcript_id});
 }
 
 // annotates meta domain information for a position
@@ -576,6 +565,7 @@ function createPositionalInformation(domain_metadomain_coverage, transcript_id, 
     if (Object.keys(requested_domains).length > 0) {
         // Activate the loading overlay
         $("#loading_overlay").addClass('is-active');
+        $("#loading_label").text("Loading...");
 
         var input = {"requested_domains": requested_domains,
                      "transcript_id": transcript_id,
@@ -846,7 +836,7 @@ function createTableFooter(){
     return '</tbody></table>';
 }
 
-function sortTable(){
+function sortTable() {
 	var rows = $('#position_information_tbody tr').get();
 	
 	rows.sort(function(a, b) {
@@ -866,5 +856,5 @@ function sortTable(){
 	
 	$.each(rows, function(index, row) {
 	  $('#position_information_tbody').append(row);
-});
+    });
 }
