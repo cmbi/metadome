@@ -559,8 +559,8 @@ function createToleranceGraph(dataGroup) {
 		.attr('class', 'line')
 		.attr('id', 'toleranceLine')
 		.attr('fill', 'none')
-		.attr("stroke", "steelblue")
-		.attr('stroke-width', "2px")
+		.attr("stroke", "black")
+		.attr('stroke-width', "0.5px")
 		.style("clip-path", "url(#clip)")
 		.attr('d', toleranceLine);
 
