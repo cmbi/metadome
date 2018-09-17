@@ -193,7 +193,8 @@ function resetGraph(){
 
 	// reset the svg
 	main_svg.selectAll("*").remove();
-	main_svg = d3.select("#landscape_svg");
+	main_svg = d3.select("#landscape_svg").attr("width", main_outerWidth)
+	.attr("height", main_outerHeight);
 }
 
 // Creates all graph elements based on the obj
@@ -582,7 +583,7 @@ function createSchematicProtein(domain_metadomain_coverage, groupedTolerance, tr
 		.attr("class", "focusAxisElement")
 		.attr("transform", "translate(" + main_marginPositionInfo.left + ","	+ main_marginPositionInfo.top + ")")
 		.style("fill", "none");
-
+	
 	// Call the tooltips
 	main_svg.call(positionTip);
 
@@ -618,12 +619,7 @@ function createSchematicProtein(domain_metadomain_coverage, groupedTolerance, tr
 		.style("fill", "black")
 		.style("clip-path", "url(#clip)")
 		.text(function(d, i) {
-			if (d.values[0].protein_pos%5 == 0){
-			    return d.values[0].ref_aa +" ("+d.values[0].protein_pos+")";
-			}
-			else{
-				return d.values[0].ref_aa;
-			}
+			return d.values[0].ref_aa;
 		});
 
 	// Add a rectangle per position
@@ -1073,9 +1069,6 @@ function rescaleLandscape(){
 	.attr("text-anchor", "middle")
 	.style("opacity", function(d, i) {
 		var textwidth = 13;
-		if (d.values[0].protein_pos%5 == 0){
-			textwidth = d3.select('#toleranceAxisText_' + d.values[0].protein_pos).node().getComputedTextLength();
-		}
 	    var rectwidth = d3.select('#toleranceAxisRect_' + d.values[0].protein_pos).node().width.animVal.value;
 	    if ((textwidth *0.75) >= rectwidth) {
 		return 0;
