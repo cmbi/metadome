@@ -468,7 +468,7 @@ function visualize() {
         var input = selection.options[selection.selectedIndex].text;
         var gtID = input.toUpperCase();
 
-        if (gtID !== undefined && gtID.length > 0) {
+        if (gtID !== undefined && gtID.length > 0 && !selection.options[selection.selectedIndex].disabled) {
             var transcript_id = gtID.split(" ")[0];
 
             $("#loading_overlay").addClass('is-active');
