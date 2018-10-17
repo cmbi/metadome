@@ -61,7 +61,7 @@
 var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
 
 // Firefox 1.0+
-var isFirefox = typeof InstallTrigger !== 'undefined';
+var isFirefox =  /firefox/i.test(navigator.userAgent);
 
 // Safari 3.0+ "[object HTMLElementConstructor]" 
 var isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || safari.pushNotification);
@@ -79,7 +79,7 @@ var isChrome = !!window.chrome && !!window.chrome.webstore;
 var isBlink = (isChrome || isOpera) && !!window.CSS;
 
 // Warn users if they are using something other than Chrome or Firefox
-if (!(isChrome || isFireFox)){
+if (!(isChrome || isFirefox)){
 	$("#IE_warning_overlay").addClass("is-active");
 }
 </script>
