@@ -1,0 +1,133 @@
+{% extends "base.html" %} {% block content %}
+
+<!-- Staring definition of site content -->
+<section class="section">
+  <div class="box">
+    <section class="section">
+      <div class='content'>
+        <h1 class="title" style="color: #00AFDC;">Help</h1>
+        
+        <h3 class="title" style="color: #00AFDC;">Tutorial</h3>
+        <p>
+          To get more familiar with the using MetaDome and all of it's functionality we strongly advise to <a href="{{ url_for('web.dashboard') }}?tour=true">
+          start the tour</a>. If you feel that any questions are not addressed in the FAQ below, please <a href="{{ url_for('web.contact') }}">contact us</a>. 
+        </p>
+        
+        <h3 class="title" style="color: #00AFDC;">Browser compatibility</h3>
+        <p>
+          The MetaDome web server was developed for <a href="https://www.google.com/chrome/">Google Chrome</a> and 
+      <a href="https://www.mozilla.org/en-US/firefox/new/">Firefox</a>. We recommend using one of these browsers to access all functionility 
+        </p>
+          <table class="table">
+			  <thead>
+			    <tr>
+			      <th><abbr title="OS">OS</abbr></th>
+			      <th><abbr title="Version">Version</abbr></th>
+			      <th><abbr title="Chrome">Chrome</abbr></th>
+			      <th><abbr title="Firefox">Firefox</abbr></th>
+			      <th><abbr title="Microsoft Edge">Microsoft Edge</abbr></th>
+			      <th><abbr title="Microsoft IE">Microsoft IE</abbr></th>
+			      <th><abbr title="Safari">Safari</abbr></th>
+			    </tr>
+			  </thead>
+			  <tbody>
+			    <tr>
+			      <th>Linux</th>
+			      <td>Ubuntu 16.04 & 18.04</td>
+			      <td>70.0</td>
+			      <td>63.0</td>
+			      <td>n/a</td>
+			      <td>n/a</td>
+			      <td>n/a</td>
+			    </tr>
+			    <tr>
+			      <th>MacOS</th>
+			      <td>Mojave</td>
+			      <td>70.0</td>
+			      <td>63.0</td>
+			      <td>n/a</td>
+			      <td>n/a</td>
+			      <td>Not supported</td>
+			    </tr>
+			    <tr>
+			      <th>Windows</th>
+			      <td>7 & 10</td>
+			      <td>70.0</td>
+			      <td>63.0</td>
+			      <td>Not tested</td>
+			      <td>Not supported</td>
+			      <td>n/a</td>
+			    </tr>
+			  </tbody>
+			</table>
+        
+        <h1 class="title" style="color: #00AFDC;">Frequently Asked Questions</h1>
+
+        <p>
+		  <div class="label">how should I interpret poitional information and where should I pay close attention to?</div>
+          <div class="box">
+            answer
+          </div>
+          
+		  <div class="label">waarom kijken nar andere domeinen?</div>
+          <div class="box">
+            answer
+          </div>
+          
+		  <div class="label">how much data has been used?</div>
+          <div class="box">
+            answer
+          </div>
+          
+		  <div class="label">mRNA validation -> less polution of the data?</div>
+          <div class="box">
+            answer
+          </div>
+          
+		  <div class="label">I cannot find the domain that must be in my gene of interest?</div>
+          <div class="box">
+            answer
+          </div>
+          
+		  <div class="label">Why are there black boxes in my domain?</div>
+          <div class="box">
+            answer
+          </div>
+          
+		  <div class="label">alignment coverage?</div>
+          <div class="box">
+            answer
+          </div>
+          
+		  <div class="label">interpretation of related gnomad variation?</div>
+          <div class="box">
+            answer
+          </div>
+          
+		  <div class="label">where are the tolerance landscape' colours based on?</div>
+          <div class="box">
+            answer
+          </div>
+          
+		  <div class="label">waar komen de clinvar varianten vandaan?</div>
+          <div class="box">
+            answer
+          </div>
+          
+		  <div class="label">low covered regions? -> effect on dnds, we do not expect that this impacts domains</div>
+          <div class="box">
+            answer
+          </div>
+          
+		  <div class="label">correctie op codons bij Dn/Ds?</div>
+          <div class="box">
+            answer
+          </div>
+        </p>
+        
+      </div>
+    </section>
+  </div>
+</section>
+
+{% endblock %} {% block js %} {% endblock %}
