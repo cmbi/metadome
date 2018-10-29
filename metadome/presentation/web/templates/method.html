@@ -112,14 +112,15 @@
         </p>
         
         <h1 class="title" style="color: #00AFDC;">Computing genetic tolerance and generating a tolerance landscape</h1>
+        <a name="tolerance_computation"></a>
 
         <p>
           We use the non-synonymous over synonymous ratio to quantify genetic tolerance in our Tolerance Landscape
           visualization. In our setting this score is based on the single nucleotide missense and synonymous 
           variants (SNVs) from gnomAD in a protein-coding region. This score was corrected for the sequence 
           composition of the protein coding region based on the total possible missense and synonymous SNVs.
-          The generation of a Tolerance Landscape is a result of computing this ratio as a sliding window of size 10 
-          over the entirety of the gene’s protein. 
+          The generation of a Tolerance Landscape is a result of computing this ratio as a sliding window of 21 
+          residues over the entirety of the protein of interest (e.g. calculated for ten residues left and right of each residue). 
         </p>
         
       </div>
