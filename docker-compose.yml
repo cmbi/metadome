@@ -65,7 +65,7 @@ services:
         ports:
           - "15672:15672"
 volumes:
-   data: 
+   data:
       driver_opts:
         type: none
         # Please set the 'device' here to a local folder you are okay with MetaDome to create additional files and folders
@@ -89,13 +89,13 @@ volumes:
         # Please set the 'device' here to a local folder to where your gnomAD vcf is stored
         device: <ABSOLUTE PATH>
         o: bind
-   pfam: 
+   pfam:
       driver_opts:
         type: none
         # Please set the 'device' here to a local folder to where your PFAM is located
         device: <ABSOLUTE PATH>
         o: bind
-   uniprot: 
+   uniprot:
       driver_opts:
         type: none
         # Please set the 'device' here to a local folder to where your UniProt is located
