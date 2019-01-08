@@ -84,9 +84,9 @@ Clone the repository and go into the project folder:
     git clone https://github.com/cmbi/metadome.git
     cd metadome
 
-First configure the volumes (at the \<ABSOLUTE PATH\>) to correspond with your data folders in the docker-compose.yml (lines 66, 72, 78, 84, 90, 96).
+First configure the volumes (at the \<ABSOLUTE PATH\>) to correspond with your data folders in the docker-compose.yml (lines 72, 78, 84, 90, 96, 102).
 
-Also make sure to create a folder in your data folder specifically to contain the MetaDome mapping database and at the path to line 102 in the docker-compose.yml. This database is to be created on a first run (see First time set-up below).
+Also make sure to create a folder in your data folder specifically to contain the MetaDome mapping database and at the path to line 108 in the docker-compose.yml. This database is to be created on a first run (see First time set-up below).
 
 ### (Optional) Credentials configuration
 If you are planning to expose the MetaDome server to a public adress, please make sure you get the security in order.
