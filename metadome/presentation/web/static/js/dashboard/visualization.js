@@ -265,6 +265,7 @@ function createGraph(obj) {
 	createToleranceGraph(dataGroup);
 	createToleranceGraphLegend();
 	drawMetaDomainLandscape(domain_data, dataGroup);
+	createMetaDomainLegend();
 
 	// Add schematic protein overview as a custom Axis
 	createSchematicProtein(domain_metadomain_coverage, dataGroup, obj.transcript_id);
@@ -883,11 +884,6 @@ function createToleranceGraphLegend() {
 		.attr("transform", "translate(" + main_marginLegend.left + "," + main_marginLegend.top + ")")
 		.style("fill", "url(#legendGradient)");
 
-	var context = main_svg.append("g")
-		.attr("class", "context")
-		.attr("id", "zoom_landscape")
-		.attr("transform", "translate(" + main_marginContext.left + "," + main_marginContext.top + ")");
-
 	// append legend text
 	main_svg.append("text")
 		.attr("text-anchor", "middle")
@@ -925,6 +921,108 @@ function createToleranceGraphLegend() {
 		.style('user-select', 'none');
 }
 
+//Draw the legend for the MetaDomain landscape
+function createMetaDomainLegend(){
+	// append colors
+	main_svg.append("rect")
+		.attr("width", 70)
+		.attr("height", 20)
+		.attr("x", 0)
+		.attr("y", 20)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainRect")
+		.style("fill", "green");
+	
+	// append colors
+	main_svg.append("rect")
+		.attr("width", 70)
+		.attr("height", 20)
+		.attr("x", 0)
+		.attr("y", 105)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainRect")
+		.style("fill", "red");
+	
+	// append colors
+	main_svg.append("rect")
+		.attr("width", 70)
+		.attr("height", 20)
+		.attr("x", 0)
+		.attr("y", 190)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainRect")
+		.style("fill", "black");
+
+	// append legend text
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 20)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("gnomAD")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 35)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("missense in")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 50)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("homologues")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+	
+	// append legend text
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 105)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("ClinVar")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 120)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("missense in")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 135)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("homologues")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+
+	// append legend text
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 190)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("no alignment")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+}
+
 /*******************************************************************************
  * Interactive behaviour functions
  ******************************************************************************/
@@ -933,25 +1031,31 @@ function createToleranceGraphLegend() {
 function toggleToleranceLandscapeOrMetadomainLandscape(){
 	// get the tolerance graph
     var tolerance_graph = d3.select("#tolerance_graph");
-    var legend = d3.select("#legendGradientRect");
-    var legend_text = d3.selectAll(".legendGradientText");
+    var tolerance_legend = d3.select("#legendGradientRect");
+    var tolerance_legend_text = d3.selectAll(".legendGradientText");
 
     // Get the metadomain graph
     var metadomain_graph = d3.select("#metadomain_graph");
+    var meta_legend = d3.selectAll(".legendMetaDomainRect");
+    var meta_legend_text = d3.selectAll(".legendMetaDomainText");
 
     switch($('input[name=landscape_checkbox]:checked', '#checkbox_for_landscape').val()){
         case "metadomain_landscape":
             tolerance_graph.style("opacity", 0);
-            legend.style("opacity", 0);
-            legend_text.style("opacity", 0);
+            tolerance_legend.style("opacity", 0);
+            tolerance_legend_text.style("opacity", 0);
             metadomain_graph.style("opacity", 1);
+            meta_legend_text.style("opacity", 1);
+            meta_legend.style("opacity", 1);
             metadomain_graph_visible = true;
             break;
         case "tolerance_landscape":
             tolerance_graph.style("opacity", 1);
-            legend.style("opacity", 1);
-            legend_text.style("opacity", 1);
+            tolerance_legend.style("opacity", 1);
+            tolerance_legend_text.style("opacity", 1);
             metadomain_graph.style("opacity", 0);
+            meta_legend_text.style("opacity", 0);
+            meta_legend.style("opacity", 0);
             metadomain_graph_visible = false;
             break;
 	default:
