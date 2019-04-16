@@ -160,7 +160,8 @@ var positionTip = d3.tip()
 	    var positionTip_str = "<span>";
 	    positionTip_str += "Position: p." + d.values[0].protein_pos + " " + d.values[0].cdna_pos + "</br>";
 	    positionTip_str += "Codon: " + d.values[0].ref_codon + "</br>";
-	    positionTip_str += "Residue: " + d.values[0].ref_aa_triplet;
+	    positionTip_str += "Residue: " + d.values[0].ref_aa_triplet + "</br>";
+	    positionTip_str += "Tolerance score (dn/ds): "+ (Math.round((d.values[0].sw_dn_ds)*100)/100) +' ('+tolerance_rating(d.values[0].sw_dn_ds) +')';
 	    if (d.values[0].domains.length > 0){
 		positionTip_str += "</br> In domain(s): ";
 		var n_domains_at_position = d.values[0].domains.length;
@@ -1132,5 +1133,29 @@ function tolerance_color(score) {
 		return toleranceColorGradient[7].color;
 	} else {
 		return toleranceColorGradient[8].color;
+	}
+}
+
+//the color coding for specific tolerance scores
+//color #f29e2e indicates the average dn/ds tolerance score over all genes
+function tolerance_rating(score) {
+	if (score <= 0.175) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">highly intolerant</label>';
+	} else if (score <= 0.35) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">intolerant</label>' ;
+	} else if (score <= 0.525) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">intolerant</label>' ;
+	} else if (score <= 0.7) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">slightly intolerant</label>' ;
+	} else if (score <= 0.875) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">neutral</label>' ;
+	} else if (score <= 1.025) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">slightly tolerant</label>' ;
+	} else if (score <= 1.2) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">tolerant</label>' ;
+	} else if (score <= 1.375) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">tolerant</label>' ;
+	} else {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">highly tolerant</label>' ;
 	}
 }

@@ -605,8 +605,8 @@ function createPositionalInformation(domain_metadomain_coverage, transcript_id, 
 }
 
 //Adds positional information for a selected position
-function FillPositionalInformation(domain_metadomain_coverage, position_data, data){
-    // Reset the positional information
+function FillPositionalInformation(domain_metadomain_coverage, position_data, data){	
+	// Reset the positional information
     document.getElementById("positional_information_overlay_title").innerHTML = '<div class="label"><label class="title">Positional information (p.'+ position_data.values[0].protein_pos+')</label></div><label class="label" >'+document.getElementById("geneDetails").innerHTML +'</label>';
     document.getElementById("positional_information_overlay_body").innerHTML = '';
 
@@ -617,6 +617,9 @@ function FillPositionalInformation(domain_metadomain_coverage, position_data, da
     document.getElementById("positional_information_overlay_body").innerHTML += '<p>Gene: '+ position_data.values[0].chr_positions +'</p>';
     document.getElementById("positional_information_overlay_body").innerHTML += '<p>Protein: p.'+ position_data.values[0].protein_pos +' '+ position_data.values[0].ref_aa_triplet+'</p>';
     document.getElementById("positional_information_overlay_body").innerHTML += '<p>cDNA: '+ position_data.values[0].cdna_pos +' '+ position_data.values[0].ref_codon +'</p>';
+    
+    document.getElementById("positional_information_overlay_body").innerHTML += '<p>Tolerance score (dn/ds): '+ (Math.round((position_data.values[0].sw_dn_ds)*100)/100) +' ('+tolerance_rating(position_data.values[0].sw_dn_ds) +')</p>';
+    
     
     // retrieve domain information
     var domain_information = "";
