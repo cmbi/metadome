@@ -16,6 +16,16 @@ $("#geneName").keyup(function(event) {
     }
 });
 
+// when the user presses the ESC the overlays are disabled
+document.addEventListener("keydown", keyPress, false);
+function keyPress (e) {
+    if(e.key === "Escape") {
+    	$("#domain_information_overlay").removeClass("is-active");
+    	$("#positional_information_overlay").removeClass("is-active");
+        d3.selectAll(".tr").classed("is-selected", false);
+    }
+}
+
 function get_query_param(param) {
 	var result =  window.location.search.match(
 			new RegExp("(\\?|&)" + param + "(\\[\\])?=([^&]*)"));
