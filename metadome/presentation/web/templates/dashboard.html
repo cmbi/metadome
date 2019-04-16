@@ -115,13 +115,24 @@ $( function() {
               Show Gene's <abbr title="A graph that displays missense over synonymous ratios per position for the entire protein, based on gnomAD variants">Tolerance Landscape</abbr>
             </label>
           </div>
+        </div>
+        
+        <div class="field is-grouped">
           <div class="control">
+            <label class="text">
+              Display ClinVar variants:
+            </label>
             <label class="checkbox"> <input id="clinvar_checkbox"
               type="checkbox" onclick="toggleClinvarVariantsInProtein(this)">
-              Show ClinVar variants
+              in this protein
+            </label>
+            <label class="checkbox"> <input id="clinvar_homologues_checkbox"
+              type="checkbox" onclick="toggleHomologousClinvarVariantsInProtein(this)">
+              in homologue protein domains
             </label>
           </div>
         </div>
+        
         <div class="field is-grouped" id="graph_control_field_buttons">
           <div class="control">
             <button id='dlSVG' name="downloadButton" type="button"

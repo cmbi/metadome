@@ -83,6 +83,9 @@ var metadomain_graph_visible = true;
 // indicates if clinvar variants are annotated in the schematic protein representation
 var clinvar_variants_visible = false;
 
+//indicates if homologous clinvar variants are annotated in the schematic protein representation
+var homologous_clinvar_variants_visible = false;
+
 // indicates the various colors to indicate the tolerance
 var toleranceColorGradient = [ {
 	offset : "0%",
@@ -963,12 +966,15 @@ function draw_position_schematic_protein(d, element){
 		if (d.values[0].ClinVar != null) {
 			pathogenic_missense_variant_count += d.values[0].ClinVar.length;
 		}
-		
+	}
+
+	var homologous_pathogenic_missense_variant_count = 0;
+	if (homologous_clinvar_variants_visible){
 		// count pathogenic variants linked via meta-domain relationships
 		if (d.values[0].domains != null){
 			meta_domain_ids.forEach(domain_id => {
 				if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
-					pathogenic_missense_variant_count = Math.max(d.values[0].domains[domain_id].pathogenic_missense_variant_count, pathogenic_missense_variant_count);
+					homologous_pathogenic_missense_variant_count = d.values[0].domains[domain_id].pathogenic_missense_variant_count;
 				}
 			});
 		}
@@ -986,6 +992,13 @@ function draw_position_schematic_protein(d, element){
 		return 'red';
 	}
 	
+	// if containing pathogenic variants, display it as red
+	if (homologous_pathogenic_missense_variant_count > 0){
+		d3.select(element).style("fill-opacity", 0.7);
+		return 'red';
+	}
+	
+	
 	else{
 		d3.select(element).style("fill-opacity", 0.2);
 		return "grey";
@@ -1001,6 +1014,17 @@ function toggleClinvarVariantsInProtein(clinvar_checkbox){
 		return draw_position_schematic_protein(d, this);
 	});
 }
+
+function toggleHomologousClinvarVariantsInProtein(clinvar_checkbox){
+	var focusAxis = d3.select("#tolerance_axis");
+
+	homologous_clinvar_variants_visible = clinvar_checkbox.checked;
+	
+	focusAxis.selectAll(".toleranceAxisTick").style("fill", function(d, i) {
+		return draw_position_schematic_protein(d, this);
+	});
+}
+
 
 // Rescale the landscape for zooming or brushing purposes
 function rescaleLandscape(){
