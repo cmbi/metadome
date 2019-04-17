@@ -61,9 +61,9 @@ def about():
 def method():
     return render_template('method.html')
 
-@bp.route('/help', methods=['GET'])
+@bp.route('/faq', methods=['GET'])
 def help_page():
-    return render_template('help.html')
+    return render_template('faq.html')
 
 @bp.route('/visualization_error/<transcript_id>/', methods=['GET'])
 def visualization_error(transcript_id):
