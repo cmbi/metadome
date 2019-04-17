@@ -261,7 +261,7 @@ function createGraph(obj) {
 	}
 	
 	// Draw all individual user interface elements based on the data
-	annotateDomains(domain_data, positional_annotation);
+	annotateDomains(domain_data, positional_annotation, domain_metadomain_coverage);
 	createToleranceGraph(dataGroup);
 	createToleranceGraphLegend();
 	drawMetaDomainLandscape(domain_data, dataGroup);
@@ -684,7 +684,7 @@ function createSchematicProtein(domain_metadomain_coverage, groupedTolerance, tr
 }
 
 // Draw the domain annotation
-function annotateDomains(protDomain, tolerance_data) {
+function annotateDomains(protDomain, tolerance_data, domain_metadomain_coverage) {
 	// append domain view
 	var domains = main_svg.append("g")
 		.attr("class", "domains")
@@ -763,7 +763,7 @@ function annotateDomains(protDomain, tolerance_data) {
 		    
 		    // if there is any, add meta-domain details
 		    if (d.metadomain){
-			    document.getElementById("domain_information_overlay_content").innerHTML += 'This domain has '+d.meta_domain_alignment_depth+' homologous occurrences throughout the human genome.';
+			    document.getElementById("domain_information_overlay_content").innerHTML += 'This domain has '+domain_metadomain_coverage[d.ID]+' homologous occurrences throughout the human genome.';
 		    }
 		    document.getElementById("domain_information_overlay_content").innerHTML += '</label>';
 
