@@ -5,7 +5,8 @@ from metadome.domain.models.entities.meta_domain import MetaDomain,\
     UnsupportedMetaDomainIdentifier
 from metadome.domain.services.computation.gene_region_computations import compute_tolerance_landscape
 from metadome.domain.services.annotation.gene_region_annotators import annotateTranscriptWithClinvarData
-from metadome.domain.services.annotation.annotation import annotateSNVs
+from metadome.domain.services.annotation.annotation import annotateSNVs,\
+    convertNucleotide
 from metadome.controllers.job import store_error, store_visualization
 from metadome.domain.error import RecoverableError
 import numpy as np
@@ -18,6 +19,7 @@ import traceback
 import json
 import os
 import logging
+from metadome.domain.models.gene import Strand
 
 _log = logging.getLogger(__name__)
 
@@ -147,6 +149,11 @@ def retrieve_metadomain_annotation(transcript_id, protein_position, domain_posit
             # Retrieve the meta SNVs for this position
             meta_snvs = meta_domain.get_annotated_SNVs_for_consensus_position(consensus_position)
             
+            # Retrieve the matching gene names for the transcripts
+            transcript_ids = [meta_snvs[meta_snv_repr][0]['gencode_transcription_id'] for meta_snv_repr in meta_snvs.keys()]
+            transcripts_to_gene = GeneRepository.retrieve_gene_names_for_multiple_transcript_ids(transcript_ids)
+            
+#             hier ergens iets doen: retrieve_gene_names_for_multiple_transcript_ids???
             # iterate over meta_codons and add to metadom_entry
             for meta_snv_repr in meta_snvs.keys():
                 if not current_codon.unique_str_representation() in meta_snv_repr:
@@ -156,8 +163,16 @@ def retrieve_metadomain_annotation(transcript_id, protein_position, domain_posit
                     # initiate the SNV variant
                     snv_variant = SingleNucleotideVariant.initializeFromDict(meta_snv)
                 
+                    # Convert to the original nucleotide
+                    if snv_variant.strand == Strand.minus:
+                        snv_variant.ref_nucleotide = convertNucleotide(snv_variant.ref_nucleotide)
+                        snv_variant.alt_nucleotide = convertNucleotide(snv_variant.alt_nucleotide)
+                
                     # start the variant entry and add the codon based information
                     variant_entry = snv_variant.toCodonJson()
+                    
+                    # Add the gene name
+                    variant_entry['gene_name'] = transcripts_to_gene[snv_variant.gencode_transcription_id]
                     
                     # Add the variant specific information
                     if meta_snv['variant_source'] == 'gnomAD':

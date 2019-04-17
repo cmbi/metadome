@@ -784,9 +784,9 @@ function createClinVarTableHeader(){
     // Define the header
     html_table += '<table class="table is-hoverable is-narrow">';
     html_table += '<thead><tr style="border-style:hidden;">';
-    html_table += '<th><abbr title="Chromosome">Chr</abbr></th>';
-    html_table += '<th><abbr title="Chromosome poition">Pos</abbr></th>';
-    html_table += '<th><abbr title="Change of codon">Codon change</abbr></th>';
+    html_table += '<th><abbr title="Gene Symbol">Gene</abbr></th>';
+    html_table += '<th><abbr title="Chromosomal position">Position</abbr></th>';
+    html_table += '<th><abbr title="Change of nucleotide">Variant</abbr></th>';
     html_table += '<th><abbr title="Change of residue">Residue change</abbr></th>';
     html_table += '<th><abbr title="Type of mutation">Type</abbr></th>';
     html_table += '<th><abbr title="ClinVar Identifier">ClinVar ID</abbr></th>';
@@ -800,9 +800,9 @@ function createClinVarTableBody(ClinvarVariants){
     for (var index = 0; index < ClinvarVariants.length; index++){
 		var variant = ClinvarVariants[index];
 		html_table += '<tr>';
-		html_table += '<td>'+variant.chr+'</td>';
-		html_table += '<td>'+variant.chr_positions+'</td>';
-		html_table += '<td>'+variant.ref_codon+'>'+variant.alt_codon+'</td>';
+		html_table += '<td>'+variant.gene_name+'</td>';
+		html_table += '<td><a href="http://grch37.ensembl.org/Homo_sapiens/Location/View?db=core;r='+variant.chr.substr(3)+':'+variant.pos+'" target="_blank">'+variant.chr+':'+variant.pos+'</a></td>';
+		html_table += '<td>'+variant.ref+'>'+variant.alt+'</td>';
 		html_table += '<td>'+variant.ref_aa_triplet+'>'+variant.alt_aa_triplet+'</td>';
 		html_table += '<td>'+variant.type+'</td>';
 		html_table += '<td><a href="https://www.ncbi.nlm.nih.gov/clinvar/variation/' + variant.clinvar_ID + '/" target="_blank">' + variant.clinvar_ID + '</a></td>';
@@ -817,12 +817,12 @@ function createGnomADTableHeader(){
     // Define the header
     html_table += '<table class="table is-hoverable is-narrow">';
     html_table += '<thead><tr style="border-style:hidden;">';
-    html_table += '<th><abbr title="Chromosome">Chr</abbr></th>';
-    html_table += '<th><abbr title="Chromosome poition">Pos</abbr></th>';
-    html_table += '<th><abbr title="Change of codon">Codon change</abbr></th>';
+    html_table += '<th><abbr title="Gene Symbol">Gene</abbr></th>';
+    html_table += '<th><abbr title="Chromosomal position">Position</abbr></th>';
+    html_table += '<th><abbr title="Change of nucleotide">Variant</abbr></th>';
     html_table += '<th><abbr title="Change of residue">Residue change</abbr></th>';
     html_table += '<th><abbr title="Type of mutation">Type</abbr></th>';
-    html_table += '<th><abbr title="Allele frequency">Allele Frequency</abbr></th>';
+    html_table += '<th><abbr title="Allele frequency">gnomAD Allele Frequency</abbr></th>';
     html_table += '</tr></thead><tfoot></tfoot><tbody>';
     return html_table;
 }
@@ -833,12 +833,12 @@ function createGnomADTableBody(gnomADVariants){
     for (var index = 0; index < gnomADVariants.length; index++){
 		var variant = gnomADVariants[index];
 		html_table += '<tr>';
-		html_table += '<td>'+variant.chr+'</td>';
-		html_table += '<td>'+variant.chr_positions+'</td>';
-		html_table += '<td>'+variant.ref_codon+'>'+variant.alt_codon+'</td>';
+		html_table += '<td>'+variant.gene_name+'</td>';
+		html_table += '<td><a href="http://grch37.ensembl.org/Homo_sapiens/Location/View?db=core;r='+variant.chr.substr(3)+':'+variant.pos+'" target="_blank">'+variant.chr+':'+variant.pos+'</a></td>';
+		html_table += '<td>'+variant.ref+'>'+variant.alt+'</td>';
 		html_table += '<td>'+variant.ref_aa_triplet+'>'+variant.alt_aa_triplet+'</td>';
-		html_table += '<td>'+variant.type+'</td>';
-		html_table += '<td>' + parseFloat(variant.allele_count/variant.allele_number).toFixed(6) + '</td>';
+		html_table += '<td>'+variant.type+'</td>';		
+		html_table += '<td><a href="https://gnomad.broadinstitute.org/variant/'+variant.chr+'-'+variant.pos+'-'+variant.ref+'-'+variant.alt +'" target="_blank">'+parseFloat(variant.allele_count/variant.allele_number).toFixed(6)+'</a></td>';
 		html_table += '</tr>';
     }
     	
