@@ -264,7 +264,7 @@ function createGraph(obj) {
 	annotateDomains(domain_data, positional_annotation, domain_metadomain_coverage);
 	createToleranceGraph(dataGroup);
 	createToleranceGraphLegend();
-	drawMetaDomainLandscape(domain_data, dataGroup);
+	drawMetaDomainLandscape(domain_data, dataGroup, domain_metadomain_coverage, obj.transcript_id);
 	createMetaDomainLegend();
 
 	// Add schematic protein overview as a custom Axis
@@ -277,7 +277,7 @@ function createGraph(obj) {
 	toggleToleranceLandscapeOrMetadomainLandscape();
 }
 
-function drawMetaDomainLandscape(domain_data, data){
+function drawMetaDomainLandscape(domain_data, data, domain_metadomain_coverage, transcript_id){
     // get all possible domain ids
     for (var i = 0; i < domain_data.length; i++){
     	if (domain_data[i].metadomain){
@@ -356,6 +356,10 @@ function drawMetaDomainLandscape(domain_data, data){
 		})
 	.style("clip-path", "url(#clip)")
 	.style("fill", "green")
+	.on("click", function(d) {
+	    // Call this method found in dashboard.js
+	    createPositionalInformation(domain_metadomain_coverage, transcript_id, d)
+	})
 	.on("mouseover", function(d) {
 		if (metadomain_graph_visible){
 			var normal_missense_variant_count = 0;
@@ -423,6 +427,10 @@ function drawMetaDomainLandscape(domain_data, data){
 		})
 	.style("clip-path", "url(#clip)")
 	.style("fill", "red")
+	.on("click", function(d) {
+	    // Call this method found in dashboard.js
+	    createPositionalInformation(domain_metadomain_coverage, transcript_id, d)
+	})
 	.on("mouseover", function(d) {
 		if (metadomain_graph_visible){
 			var pathogenic_missense_variant_count = 0;
