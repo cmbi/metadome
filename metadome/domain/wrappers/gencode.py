@@ -1,7 +1,7 @@
 import logging
 from metadome.default_settings import GENCODE_HG_TRANSLATION_FILE,\
     GENCODE_SWISSPROT_FILE, GENCODE_HG_TRANSCRIPTION_FILE,\
-    GENCODE_HG_ANNOTATION_FILE_GFF3, GENCODE_BASIC_FILE
+    GENCODE_HG_ANNOTATION_FILE_GFF3, GENCODE_BASIC_FILE, GENCODE_REFSEQ_FILE
 from metadome.domain.parsers import gff3
 from Bio.Seq import translate
 import urllib
@@ -384,3 +384,35 @@ def retrieve_all_protein_coding_gene_names():
                 gene_names.add(tokens[5])
                 
     return list(gene_names)
+
+def retrieve_refseq_identifiers_for_transcript(gencode_id):
+    """Retrieves the refseq identifiers for a Gencode transcript"""
+    result = {}
+    result['NP'] = []
+    result['NM'] = []
+    result['NR'] = []
+    with open(GENCODE_REFSEQ_FILE) as gencode_refseq:
+        # read the lines in the file
+        lines = gencode_refseq.readlines()
+        for line in lines:
+            # check if the unique identifier is on the current line
+            if gencode_id in line:
+                #Add the result to hits
+                tokens = line.split('\t')
+                
+                # Only add the translation to the translation list if the gene_name exactly matches the one we are looking for
+                if gencode_id == tokens[0]:
+                    # add the results
+                    for token in tokens[1:]:
+                        token = token.strip()
+                        if token.startswith('NP'):
+                            result['NP'].append(token)
+                        elif token.startswith('NM'):
+                            result['NM'].append(token)
+                        elif token.startswith('NR'):
+                            result['NR'].append(token)
+                        elif len(token) == 0:
+                            continue
+                        else:
+                            _log.warning("When retrieving matching RefSeq ids for "+gencode_id+" unexpected token: "+token)    
+    return result

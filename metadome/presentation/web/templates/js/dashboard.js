@@ -400,7 +400,12 @@ function getTranscript() {
 				for (var i = 0; i < transcript_id_results.trancript_ids.length; i++) {
 					var opt = new Option();
 					opt.value = i;
-					opt.text = transcript_id_results.trancript_ids[i].gencode_id + " ("+ transcript_id_results.trancript_ids[i].aa_length +"aa)" ;
+					if ( transcript_id_results.trancript_ids[i].refseq_nm_numbers === ""){
+						opt.text = transcript_id_results.trancript_ids[i].gencode_id + " ("+ transcript_id_results.trancript_ids[i].aa_length +"aa)" ;
+					}
+					else {
+						opt.text = transcript_id_results.trancript_ids[i].gencode_id + " / "+ transcript_id_results.trancript_ids[i].refseq_nm_numbers+" ("+ transcript_id_results.trancript_ids[i].aa_length +"aa)" ;
+					}
 					
 					if (!transcript_id_results.trancript_ids[i].has_protein_data){
 						opt.disabled = true;
@@ -529,9 +534,22 @@ function getVisualizationResult(transcript_id) {
             $("#graph_control_field").removeClass('is-hidden');
             var geneName = document.getElementById("geneName").value;
             var geneDetails = document.getElementById("geneDetails");
+            
+            var refSeqLinks = "";
+            if (obj.refseq_ids.length > 0) {
+            	refSeqLinks += "RefSeq: "; 	
+	            for (var i = 0; i < obj.refseq_ids.length; i++){
+	            	if (i > 0){
+	            		refSeqLinks += ', ';
+	            	}
+	            	refSeqLinks += '<a href="https://www.ncbi.nlm.nih.gov/nuccore/'+obj.refseq_ids[i]+'" target="_blank">'+obj.refseq_ids[i]+'</a>';
+	            }
+	            refSeqLinks += ','
+            }
+            
             geneDetails.innerHTML = 'Gene: ' + obj.gene_name + ' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='
                                   + obj.transcript_id + '" target="_blank">' + obj.transcript_id
-                                  + '</a>, protein: <a href="https://www.uniprot.org/uniprot/'
+                                  + '</a>, '+refSeqLinks+' protein: <a href="https://www.uniprot.org/uniprot/'
                                   + obj.protein_ac + '" target="_blank">' + obj.protein_ac + '</a>)';
             // Draw the graph
             createGraph(obj);

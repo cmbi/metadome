@@ -14,6 +14,7 @@ import json
 from metadome.controllers.job import (create_visualization_job_if_needed,
                                       get_visualization_status,
                                       retrieve_visualization)
+from metadome.domain.wrappers.gencode import retrieve_refseq_identifiers_for_transcript
 
 
 _log = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ def get_transcript_ids_for_gene(gene_name):
     _log.debug('get_transcript_ids_for_gene')
     # retrieve the transcript ids for this gene
     trancripts = GeneRepository.retrieve_all_transcript_ids(gene_name)
-
+    
     # check if there was any return value
     if len(trancripts) > 0:
         message = "Retrieved transcripts for gene '"+trancripts[0].gene_name+"'"
@@ -39,9 +40,14 @@ def get_transcript_ids_for_gene(gene_name):
 
     transcript_results = []
     for t in trancripts:
+        # retrieve matching refseq identifiers for this transcript 
+        refseq_ids = retrieve_refseq_identifiers_for_transcript(t.gencode_transcription_id)
+        refseq_nm_numbers = ", ".join(nm_number for nm_number in refseq_ids['NM'])
+        
         transcript_entry = {}
         transcript_entry['aa_length'] = t.sequence_length
         transcript_entry['gencode_id'] = t.gencode_transcription_id
+        transcript_entry['refseq_nm_numbers'] = refseq_nm_numbers
         transcript_entry['has_protein_data'] = not t.protein_id is None
         transcript_results.append(transcript_entry)
 

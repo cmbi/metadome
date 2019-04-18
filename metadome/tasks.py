@@ -20,6 +20,7 @@ import json
 import os
 import logging
 from metadome.domain.models.gene import Strand
+from metadome.domain.wrappers.gencode import retrieve_refseq_identifiers_for_transcript
 
 _log = logging.getLogger(__name__)
 
@@ -153,7 +154,6 @@ def retrieve_metadomain_annotation(transcript_id, protein_position, domain_posit
             transcript_ids = [meta_snvs[meta_snv_repr][0]['gencode_transcription_id'] for meta_snv_repr in meta_snvs.keys()]
             transcripts_to_gene = GeneRepository.retrieve_gene_names_for_multiple_transcript_ids(transcript_ids)
             
-#             hier ergens iets doen: retrieve_gene_names_for_multiple_transcript_ids???
             # iterate over meta_codons and add to metadom_entry
             for meta_snv_repr in meta_snvs.keys():
                 if not current_codon.unique_str_representation() in meta_snv_repr:
@@ -197,6 +197,7 @@ def retrieve_metadomain_annotation(transcript_id, protein_position, domain_posit
         domain_results[domain_id]["alignment_depth"] = alignment_depth
 
     return domain_results
+
 def analyse_transcript(transcript_id):
     # Retrieve the gene from the database
     try:
@@ -206,6 +207,9 @@ def analyse_transcript(transcript_id):
 
     # build the gene region
     gene_region = GeneRegion(gene)
+    
+    # Retrieve the refseq ids    
+    refseq_ids = retrieve_refseq_identifiers_for_transcript(transcript_id)
 
     if not gene_region is None:
         # generate the positional annotation for this gene by first computing the tolerance landscape
@@ -289,7 +293,7 @@ def analyse_transcript(transcript_id):
 
                         if domain["metadomain"] and len(consensus_positions)>0:
                             d['domains'][domain['ID']] = create_meta_domain_entry(gene_region, meta_domains[domain['ID']], consensus_positions, db_position)
-        result = {"transcript_id":transcript_id, "protein_ac":gene_region.uniprot_ac, "gene_name":gene_region.gene_name, "positional_annotation":region_positional_annotation, "domains":Pfam_domains}
+        result = {"transcript_id":transcript_id, "refseq_ids":refseq_ids['NM'], "protein_ac":gene_region.uniprot_ac, "gene_name":gene_region.gene_name, "positional_annotation":region_positional_annotation, "domains":Pfam_domains}
     else:
         result = {'error': 'No gene region could be build for transcript '+str(transcript_id)}
 
