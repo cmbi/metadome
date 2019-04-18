@@ -547,9 +547,9 @@ function getVisualizationResult(transcript_id) {
 	            refSeqLinks += ','
             }
             
-            geneDetails.innerHTML = 'Gene: ' + obj.gene_name + ' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='
+            geneDetails.innerHTML = 'Protein of ' + obj.gene_name + ' (GENCODE: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='
                                   + obj.transcript_id + '" target="_blank">' + obj.transcript_id
-                                  + '</a>, '+refSeqLinks+' protein: <a href="https://www.uniprot.org/uniprot/'
+                                  + '</a>, '+refSeqLinks+' UniProt: <a href="https://www.uniprot.org/uniprot/'
                                   + obj.protein_ac + '" target="_blank">' + obj.protein_ac + '</a>)';
             // Draw the graph
             createGraph(obj);
