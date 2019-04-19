@@ -83,6 +83,9 @@ var metadomain_graph_visible = true;
 // indicates if clinvar variants are annotated in the schematic protein representation
 var clinvar_variants_visible = false;
 
+//indicates if homologous clinvar variants are annotated in the schematic protein representation
+var homologous_clinvar_variants_visible = false;
+
 // indicates the various colors to indicate the tolerance
 var toleranceColorGradient = [ {
 	offset : "0%",
@@ -160,7 +163,8 @@ var positionTip = d3.tip()
 	    var positionTip_str = "<span>";
 	    positionTip_str += "Position: p." + d.values[0].protein_pos + " " + d.values[0].cdna_pos + "</br>";
 	    positionTip_str += "Codon: " + d.values[0].ref_codon + "</br>";
-	    positionTip_str += "Residue: " + d.values[0].ref_aa_triplet;
+	    positionTip_str += "Residue: " + d.values[0].ref_aa_triplet + "</br>";
+	    positionTip_str += "Tolerance score (dn/ds): "+ (Math.round((d.values[0].sw_dn_ds)*100)/100) +' ('+tolerance_rating(d.values[0].sw_dn_ds) +')';
 	    if (d.values[0].domains.length > 0){
 		positionTip_str += "</br> In domain(s): ";
 		var n_domains_at_position = d.values[0].domains.length;
@@ -257,10 +261,11 @@ function createGraph(obj) {
 	}
 	
 	// Draw all individual user interface elements based on the data
-	annotateDomains(domain_data, positional_annotation);
+	annotateDomains(domain_data, positional_annotation, domain_metadomain_coverage);
 	createToleranceGraph(dataGroup);
 	createToleranceGraphLegend();
-	drawMetaDomainLandscape(domain_data, dataGroup);
+	drawMetaDomainLandscape(domain_data, dataGroup, domain_metadomain_coverage, obj.transcript_id);
+	createMetaDomainLegend();
 
 	// Add schematic protein overview as a custom Axis
 	createSchematicProtein(domain_metadomain_coverage, dataGroup, obj.transcript_id);
@@ -272,7 +277,7 @@ function createGraph(obj) {
 	toggleToleranceLandscapeOrMetadomainLandscape();
 }
 
-function drawMetaDomainLandscape(domain_data, data){
+function drawMetaDomainLandscape(domain_data, data, domain_metadomain_coverage, transcript_id){
     // get all possible domain ids
     for (var i = 0; i < domain_data.length; i++){
     	if (domain_data[i].metadomain){
@@ -351,6 +356,10 @@ function drawMetaDomainLandscape(domain_data, data){
 		})
 	.style("clip-path", "url(#clip)")
 	.style("fill", "green")
+	.on("click", function(d) {
+	    // Call this method found in dashboard.js
+	    createPositionalInformation(domain_metadomain_coverage, transcript_id, d)
+	})
 	.on("mouseover", function(d) {
 		if (metadomain_graph_visible){
 			var normal_missense_variant_count = 0;
@@ -418,6 +427,10 @@ function drawMetaDomainLandscape(domain_data, data){
 		})
 	.style("clip-path", "url(#clip)")
 	.style("fill", "red")
+	.on("click", function(d) {
+	    // Call this method found in dashboard.js
+	    createPositionalInformation(domain_metadomain_coverage, transcript_id, d)
+	})
 	.on("mouseover", function(d) {
 		if (metadomain_graph_visible){
 			var pathogenic_missense_variant_count = 0;
@@ -679,7 +692,7 @@ function createSchematicProtein(domain_metadomain_coverage, groupedTolerance, tr
 }
 
 // Draw the domain annotation
-function annotateDomains(protDomain, tolerance_data) {
+function annotateDomains(protDomain, tolerance_data, domain_metadomain_coverage) {
 	// append domain view
 	var domains = main_svg.append("g")
 		.attr("class", "domains")
@@ -758,7 +771,7 @@ function annotateDomains(protDomain, tolerance_data) {
 		    
 		    // if there is any, add meta-domain details
 		    if (d.metadomain){
-			    document.getElementById("domain_information_overlay_content").innerHTML += 'This domain has '+d.meta_domain_alignment_depth+' homologous occurrences throughout the human genome.';
+			    document.getElementById("domain_information_overlay_content").innerHTML += 'This domain has '+domain_metadomain_coverage[d.ID]+' homologous occurrences throughout the human genome.';
 		    }
 		    document.getElementById("domain_information_overlay_content").innerHTML += '</label>';
 
@@ -879,11 +892,6 @@ function createToleranceGraphLegend() {
 		.attr("transform", "translate(" + main_marginLegend.left + "," + main_marginLegend.top + ")")
 		.style("fill", "url(#legendGradient)");
 
-	var context = main_svg.append("g")
-		.attr("class", "context")
-		.attr("id", "zoom_landscape")
-		.attr("transform", "translate(" + main_marginContext.left + "," + main_marginContext.top + ")");
-
 	// append legend text
 	main_svg.append("text")
 		.attr("text-anchor", "middle")
@@ -921,6 +929,108 @@ function createToleranceGraphLegend() {
 		.style('user-select', 'none');
 }
 
+//Draw the legend for the MetaDomain landscape
+function createMetaDomainLegend(){
+	// append colors
+	main_svg.append("rect")
+		.attr("width", 70)
+		.attr("height", 20)
+		.attr("x", 0)
+		.attr("y", 20)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainRect")
+		.style("fill", "green");
+	
+	// append colors
+	main_svg.append("rect")
+		.attr("width", 70)
+		.attr("height", 20)
+		.attr("x", 0)
+		.attr("y", 105)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainRect")
+		.style("fill", "red");
+	
+	// append colors
+	main_svg.append("rect")
+		.attr("width", 70)
+		.attr("height", 20)
+		.attr("x", 0)
+		.attr("y", 190)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainRect")
+		.style("fill", "black");
+
+	// append legend text
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 20)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("gnomAD")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 35)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("missense in")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 50)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("homologues")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+	
+	// append legend text
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 105)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("ClinVar")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 120)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("missense in")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 135)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("homologues")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+
+	// append legend text
+	main_svg.append("text")
+		.attr("x", 0)
+		.attr("y", 190)
+		.attr("dy", 35)
+		.attr("class", "label legendMetaDomainText")
+		.text("no alignment")
+		.style("font-size", "12px")
+		.style('pointer-events', 'none')
+		.style('user-select', 'none');
+}
+
 /*******************************************************************************
  * Interactive behaviour functions
  ******************************************************************************/
@@ -929,25 +1039,31 @@ function createToleranceGraphLegend() {
 function toggleToleranceLandscapeOrMetadomainLandscape(){
 	// get the tolerance graph
     var tolerance_graph = d3.select("#tolerance_graph");
-    var legend = d3.select("#legendGradientRect");
-    var legend_text = d3.selectAll(".legendGradientText");
+    var tolerance_legend = d3.select("#legendGradientRect");
+    var tolerance_legend_text = d3.selectAll(".legendGradientText");
 
     // Get the metadomain graph
     var metadomain_graph = d3.select("#metadomain_graph");
+    var meta_legend = d3.selectAll(".legendMetaDomainRect");
+    var meta_legend_text = d3.selectAll(".legendMetaDomainText");
 
     switch($('input[name=landscape_checkbox]:checked', '#checkbox_for_landscape').val()){
         case "metadomain_landscape":
             tolerance_graph.style("opacity", 0);
-            legend.style("opacity", 0);
-            legend_text.style("opacity", 0);
+            tolerance_legend.style("opacity", 0);
+            tolerance_legend_text.style("opacity", 0);
             metadomain_graph.style("opacity", 1);
+            meta_legend_text.style("opacity", 1);
+            meta_legend.style("opacity", 1);
             metadomain_graph_visible = true;
             break;
         case "tolerance_landscape":
             tolerance_graph.style("opacity", 1);
-            legend.style("opacity", 1);
-            legend_text.style("opacity", 1);
+            tolerance_legend.style("opacity", 1);
+            tolerance_legend_text.style("opacity", 1);
             metadomain_graph.style("opacity", 0);
+            meta_legend_text.style("opacity", 0);
+            meta_legend.style("opacity", 0);
             metadomain_graph_visible = false;
             break;
 	default:
@@ -962,12 +1078,15 @@ function draw_position_schematic_protein(d, element){
 		if (d.values[0].ClinVar != null) {
 			pathogenic_missense_variant_count += d.values[0].ClinVar.length;
 		}
-		
+	}
+
+	var homologous_pathogenic_missense_variant_count = 0;
+	if (homologous_clinvar_variants_visible){
 		// count pathogenic variants linked via meta-domain relationships
 		if (d.values[0].domains != null){
 			meta_domain_ids.forEach(domain_id => {
 				if (d.values[0].hasOwnProperty('domains') && d.values[0].domains[domain_id] != null){
-					pathogenic_missense_variant_count = Math.max(d.values[0].domains[domain_id].pathogenic_missense_variant_count, pathogenic_missense_variant_count);
+					homologous_pathogenic_missense_variant_count = d.values[0].domains[domain_id].pathogenic_missense_variant_count;
 				}
 			});
 		}
@@ -985,6 +1104,13 @@ function draw_position_schematic_protein(d, element){
 		return 'red';
 	}
 	
+	// if containing pathogenic variants, display it as red
+	if (homologous_pathogenic_missense_variant_count > 0){
+		d3.select(element).style("fill-opacity", 0.7);
+		return 'red';
+	}
+	
+	
 	else{
 		d3.select(element).style("fill-opacity", 0.2);
 		return "grey";
@@ -1000,6 +1126,17 @@ function toggleClinvarVariantsInProtein(clinvar_checkbox){
 		return draw_position_schematic_protein(d, this);
 	});
 }
+
+function toggleHomologousClinvarVariantsInProtein(clinvar_checkbox){
+	var focusAxis = d3.select("#tolerance_axis");
+
+	homologous_clinvar_variants_visible = clinvar_checkbox.checked;
+	
+	focusAxis.selectAll(".toleranceAxisTick").style("fill", function(d, i) {
+		return draw_position_schematic_protein(d, this);
+	});
+}
+
 
 // Rescale the landscape for zooming or brushing purposes
 function rescaleLandscape(){
@@ -1132,5 +1269,29 @@ function tolerance_color(score) {
 		return toleranceColorGradient[7].color;
 	} else {
 		return toleranceColorGradient[8].color;
+	}
+}
+
+//the color coding for specific tolerance scores
+//color #f29e2e indicates the average dn/ds tolerance score over all genes
+function tolerance_rating(score) {
+	if (score <= 0.175) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">highly intolerant</label>';
+	} else if (score <= 0.35) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">intolerant</label>' ;
+	} else if (score <= 0.525) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">intolerant</label>' ;
+	} else if (score <= 0.7) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">slightly intolerant</label>' ;
+	} else if (score <= 0.875) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">neutral</label>' ;
+	} else if (score <= 1.025) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">slightly tolerant</label>' ;
+	} else if (score <= 1.2) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">tolerant</label>' ;
+	} else if (score <= 1.375) {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">tolerant</label>' ;
+	} else {
+		return '<label style="background-color:'+tolerance_color(score)+';color:black">highly tolerant</label>' ;
 	}
 }

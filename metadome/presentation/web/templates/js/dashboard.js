@@ -16,6 +16,16 @@ $("#geneName").keyup(function(event) {
     }
 });
 
+// when the user presses the ESC the overlays are disabled
+document.addEventListener("keydown", keyPress, false);
+function keyPress (e) {
+    if(e.key === "Escape") {
+    	$("#domain_information_overlay").removeClass("is-active");
+    	$("#positional_information_overlay").removeClass("is-active");
+        d3.selectAll(".tr").classed("is-selected", false);
+    }
+}
+
 function get_query_param(param) {
 	var result =  window.location.search.match(
 			new RegExp("(\\?|&)" + param + "(\\[\\])?=([^&]*)"));
@@ -181,7 +191,7 @@ function tour_fill_transcripts(){
 	dropdown.setAttribute('class', 'dropdown');
 	var opt = new Option();
 	opt.value = 1;
-	opt.text = "ENST00000296946.2 (435aa)";
+	opt.text = "ENST00000296946.2 / NM_003181.3 (435aa)";
 	dropdown.options.add(opt);
 }
 
@@ -390,7 +400,12 @@ function getTranscript() {
 				for (var i = 0; i < transcript_id_results.trancript_ids.length; i++) {
 					var opt = new Option();
 					opt.value = i;
-					opt.text = transcript_id_results.trancript_ids[i].gencode_id + " ("+ transcript_id_results.trancript_ids[i].aa_length +"aa)" ;
+					if ( transcript_id_results.trancript_ids[i].refseq_nm_numbers === ""){
+						opt.text = transcript_id_results.trancript_ids[i].gencode_id + " ("+ transcript_id_results.trancript_ids[i].aa_length +"aa)" ;
+					}
+					else {
+						opt.text = transcript_id_results.trancript_ids[i].gencode_id + " / "+ transcript_id_results.trancript_ids[i].refseq_nm_numbers+" ("+ transcript_id_results.trancript_ids[i].aa_length +"aa)" ;
+					}
 					
 					if (!transcript_id_results.trancript_ids[i].has_protein_data){
 						opt.disabled = true;
@@ -519,9 +534,22 @@ function getVisualizationResult(transcript_id) {
             $("#graph_control_field").removeClass('is-hidden');
             var geneName = document.getElementById("geneName").value;
             var geneDetails = document.getElementById("geneDetails");
-            geneDetails.innerHTML = 'Gene: ' + obj.gene_name + ' (transcript: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='
+            
+            var refSeqLinks = "";
+            if (obj.refseq_ids.length > 0) {
+            	refSeqLinks += "RefSeq: "; 	
+	            for (var i = 0; i < obj.refseq_ids.length; i++){
+	            	if (i > 0){
+	            		refSeqLinks += ', ';
+	            	}
+	            	refSeqLinks += '<a href="https://www.ncbi.nlm.nih.gov/nuccore/'+obj.refseq_ids[i]+'" target="_blank">'+obj.refseq_ids[i]+'</a>';
+	            }
+	            refSeqLinks += ','
+            }
+            
+            geneDetails.innerHTML = 'Protein of ' + obj.gene_name + ' (GENCODE: <a href="http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t='
                                   + obj.transcript_id + '" target="_blank">' + obj.transcript_id
-                                  + '</a>, protein: <a href="https://www.uniprot.org/uniprot/'
+                                  + '</a>, '+refSeqLinks+' UniProt: <a href="https://www.uniprot.org/uniprot/'
                                   + obj.protein_ac + '" target="_blank">' + obj.protein_ac + '</a>)';
             // Draw the graph
             createGraph(obj);
@@ -595,8 +623,8 @@ function createPositionalInformation(domain_metadomain_coverage, transcript_id, 
 }
 
 //Adds positional information for a selected position
-function FillPositionalInformation(domain_metadomain_coverage, position_data, data){
-    // Reset the positional information
+function FillPositionalInformation(domain_metadomain_coverage, position_data, data){	
+	// Reset the positional information
     document.getElementById("positional_information_overlay_title").innerHTML = '<div class="label"><label class="title">Positional information (p.'+ position_data.values[0].protein_pos+')</label></div><label class="label" >'+document.getElementById("geneDetails").innerHTML +'</label>';
     document.getElementById("positional_information_overlay_body").innerHTML = '';
 
@@ -607,6 +635,9 @@ function FillPositionalInformation(domain_metadomain_coverage, position_data, da
     document.getElementById("positional_information_overlay_body").innerHTML += '<p>Gene: '+ position_data.values[0].chr_positions +'</p>';
     document.getElementById("positional_information_overlay_body").innerHTML += '<p>Protein: p.'+ position_data.values[0].protein_pos +' '+ position_data.values[0].ref_aa_triplet+'</p>';
     document.getElementById("positional_information_overlay_body").innerHTML += '<p>cDNA: '+ position_data.values[0].cdna_pos +' '+ position_data.values[0].ref_codon +'</p>';
+    
+    document.getElementById("positional_information_overlay_body").innerHTML += '<p>Tolerance score (dn/ds): '+ (Math.round((position_data.values[0].sw_dn_ds)*100)/100) +' ('+tolerance_rating(position_data.values[0].sw_dn_ds) +')</p>';
+    
     
     // retrieve domain information
     var domain_information = "";
@@ -771,9 +802,9 @@ function createClinVarTableHeader(){
     // Define the header
     html_table += '<table class="table is-hoverable is-narrow">';
     html_table += '<thead><tr style="border-style:hidden;">';
-    html_table += '<th><abbr title="Chromosome">Chr</abbr></th>';
-    html_table += '<th><abbr title="Chromosome poition">Pos</abbr></th>';
-    html_table += '<th><abbr title="Change of codon">Codon change</abbr></th>';
+    html_table += '<th><abbr title="Gene Symbol">Gene</abbr></th>';
+    html_table += '<th><abbr title="Chromosomal position">Position</abbr></th>';
+    html_table += '<th><abbr title="Change of nucleotide">Variant</abbr></th>';
     html_table += '<th><abbr title="Change of residue">Residue change</abbr></th>';
     html_table += '<th><abbr title="Type of mutation">Type</abbr></th>';
     html_table += '<th><abbr title="ClinVar Identifier">ClinVar ID</abbr></th>';
@@ -787,9 +818,9 @@ function createClinVarTableBody(ClinvarVariants){
     for (var index = 0; index < ClinvarVariants.length; index++){
 		var variant = ClinvarVariants[index];
 		html_table += '<tr>';
-		html_table += '<td>'+variant.chr+'</td>';
-		html_table += '<td>'+variant.chr_positions+'</td>';
-		html_table += '<td>'+variant.ref_codon+'>'+variant.alt_codon+'</td>';
+		html_table += '<td>'+variant.gene_name+'</td>';
+		html_table += '<td><a href="http://grch37.ensembl.org/Homo_sapiens/Location/View?db=core;r='+variant.chr.substr(3)+':'+variant.pos+'" target="_blank">'+variant.chr+':'+variant.pos+'</a></td>';
+		html_table += '<td>'+variant.ref+'>'+variant.alt+'</td>';
 		html_table += '<td>'+variant.ref_aa_triplet+'>'+variant.alt_aa_triplet+'</td>';
 		html_table += '<td>'+variant.type+'</td>';
 		html_table += '<td><a href="https://www.ncbi.nlm.nih.gov/clinvar/variation/' + variant.clinvar_ID + '/" target="_blank">' + variant.clinvar_ID + '</a></td>';
@@ -804,12 +835,12 @@ function createGnomADTableHeader(){
     // Define the header
     html_table += '<table class="table is-hoverable is-narrow">';
     html_table += '<thead><tr style="border-style:hidden;">';
-    html_table += '<th><abbr title="Chromosome">Chr</abbr></th>';
-    html_table += '<th><abbr title="Chromosome poition">Pos</abbr></th>';
-    html_table += '<th><abbr title="Change of codon">Codon change</abbr></th>';
+    html_table += '<th><abbr title="Gene Symbol">Gene</abbr></th>';
+    html_table += '<th><abbr title="Chromosomal position">Position</abbr></th>';
+    html_table += '<th><abbr title="Change of nucleotide">Variant</abbr></th>';
     html_table += '<th><abbr title="Change of residue">Residue change</abbr></th>';
     html_table += '<th><abbr title="Type of mutation">Type</abbr></th>';
-    html_table += '<th><abbr title="Allele frequency">Allele Frequency</abbr></th>';
+    html_table += '<th><abbr title="Allele frequency">gnomAD Allele Frequency</abbr></th>';
     html_table += '</tr></thead><tfoot></tfoot><tbody>';
     return html_table;
 }
@@ -820,12 +851,12 @@ function createGnomADTableBody(gnomADVariants){
     for (var index = 0; index < gnomADVariants.length; index++){
 		var variant = gnomADVariants[index];
 		html_table += '<tr>';
-		html_table += '<td>'+variant.chr+'</td>';
-		html_table += '<td>'+variant.chr_positions+'</td>';
-		html_table += '<td>'+variant.ref_codon+'>'+variant.alt_codon+'</td>';
+		html_table += '<td>'+variant.gene_name+'</td>';
+		html_table += '<td><a href="http://grch37.ensembl.org/Homo_sapiens/Location/View?db=core;r='+variant.chr.substr(3)+':'+variant.pos+'" target="_blank">'+variant.chr+':'+variant.pos+'</a></td>';
+		html_table += '<td>'+variant.ref+'>'+variant.alt+'</td>';
 		html_table += '<td>'+variant.ref_aa_triplet+'>'+variant.alt_aa_triplet+'</td>';
-		html_table += '<td>'+variant.type+'</td>';
-		html_table += '<td>' + parseFloat(variant.allele_count/variant.allele_number).toFixed(6) + '</td>';
+		html_table += '<td>'+variant.type+'</td>';		
+		html_table += '<td><a href="https://gnomad.broadinstitute.org/variant/'+variant.chr+'-'+variant.pos+'-'+variant.ref+'-'+variant.alt +'" target="_blank">'+parseFloat(variant.allele_count/variant.allele_number).toFixed(6)+'</a></td>';
 		html_table += '</tr>';
     }
     	
