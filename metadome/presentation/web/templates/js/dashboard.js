@@ -532,7 +532,10 @@ function getVisualizationResult(transcript_id) {
 
             $("#toleranceGraphContainer").removeClass('is-hidden');
             $("#graph_control_field").removeClass('is-hidden');
-            var geneName = document.getElementById("geneName").value;
+            
+            // Set the object's gene name as the value
+            $("#geneName").val(obj.gene_name);
+            
             var geneDetails = document.getElementById("geneDetails");
             
             var refSeqLinks = "";
@@ -713,8 +716,12 @@ function FillPositionalInformation(domain_metadomain_coverage, position_data, da
 		// Add ClinVar variant table
     	var clinvar_variants = position_data.values[0].ClinVar;
     	
+    	// retrieve the gene name
+        var geneName = document.getElementById("geneName").value;
+    	
     	// Add the positional information
-        for (var index = 0; index < clinvar_variants.length; index++){
+        for (var index = 0; index < clinvar_variants.length; index++){        	
+        	clinvar_variants[index].gene_name = geneName;
         	clinvar_variants[index].chr = position_data.values[0].chr;
         	clinvar_variants[index].chr_positions = position_data.values[0].chr_positions;
         	clinvar_variants[index].ref_codon = position_data.values[0].ref_codon;
