@@ -628,12 +628,14 @@ function createPositionalInformation(domain_metadomain_coverage, transcript_id, 
 //Adds positional information for a selected position
 function FillPositionalInformation(domain_metadomain_coverage, position_data, data){	
 	// Reset the positional information
-    document.getElementById("positional_information_overlay_title").innerHTML = '<div class="label"><label class="title">Positional information (p.'+ position_data.values[0].protein_pos+')</label></div><label class="label" >'+document.getElementById("geneDetails").innerHTML +'</label>';
+    document.getElementById("positional_information_overlay_title").innerHTML = '<div class="label"><label class="title">Positional information (p.'+ position_data.values[0].protein_pos+')</label></div>';
     document.getElementById("positional_information_overlay_body").innerHTML = '';
 
     
     // Add information on position to the HTML
-    document.getElementById("positional_information_overlay_body").innerHTML +='<label class="label">Location details</label>'
+    document.getElementById("positional_information_overlay_body").innerHTML += '<label class="label">Protein details</label>';
+    document.getElementById("positional_information_overlay_body").innerHTML += '<p>'+document.getElementById("geneDetails").innerHTML +'</p>';
+    document.getElementById("positional_information_overlay_body").innerHTML += '</br><label class="label">Location details</label>';
     document.getElementById("positional_information_overlay_body").innerHTML += '<p>Chr: '+position_data.values[0].chr+', strand: '+position_data.values[0].strand+'</p>';
     document.getElementById("positional_information_overlay_body").innerHTML += '<p>Gene: '+ position_data.values[0].chr_positions +'</p>';
     document.getElementById("positional_information_overlay_body").innerHTML += '<p>Protein: p.'+ position_data.values[0].protein_pos +' '+ position_data.values[0].ref_aa_triplet+'</p>';
