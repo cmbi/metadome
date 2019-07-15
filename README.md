@@ -117,21 +117,14 @@ And tear it down via:
 
 # Citing MetaDome server
 
-We anticipate the publication of a method paper describing this web server in late 2018. Until that is published, please use the following citation when referencing the results in your report:
-```
-MetaDome web server, Nijmegen, The Netherlands
- (URL: https://stuart.radboudumc.nl/metadome) 
- [date (month, year) accessed].
-```
-Together with:
+Please cite the MetaDome web server article :
 
 ```
-Aggregation of population‐based genetic variation 
- over protein domain homologues and its potential 
- use in genetic diagnostics.
-Laurens Wiel, Hanka Venselaar, Joris A. Veltman, 
+MetaDome: Pathogenicity analysis of genetic variants 
+ through aggregation of homologous human protein domains.
+Laurens Wiel, Coos Baakman, Daan Gilissen, Joris A. Veltman, 
  Gert Vriend and Christian Gilissen.
-Human Mutation. (2017) 38, 1454–1463
+Human Mutation. (2019) 1-9, 10.1002/humu.23798
 ```
 
 # Contact
