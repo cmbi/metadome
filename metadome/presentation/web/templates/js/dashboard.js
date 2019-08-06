@@ -502,6 +502,21 @@ function visualize() {
     }
 }
 
+function visualizeTranscript(transcript_id) {
+    $("#loading_overlay").addClass('is-active');
+    $("#loading_label").text("Loading...");
+    $.ajax(
+        {
+            type: 'POST',
+            url: "{{ url_for('api.submit_visualization_job_for_transcript') }}",
+            data: JSON.stringify({'transcript_id': transcript_id}),
+            success: function(data) { getVisualizationStatus(data.transcript_id, 0); },
+            contentType: "application/json",
+            dataType: 'json'
+        }
+    );
+}
+
 function getVisualizationStatus(transcript_id, checkCount) {
     $.get(Flask.url_for("api.get_visualization_status_for_transcript",
                         {'transcript_id': transcript_id}),

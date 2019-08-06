@@ -19,6 +19,10 @@ bp = Blueprint('web', __name__)
 def index():
     return render_template('index.html')
 
+@bp.route('/transcript/<transcript_id>/', methods=['GET'])
+def transcript(transcript_id):
+    return render_template('dashboard.html', transcript_id=transcript_id)
+
 @bp.route('/dashboard', methods=['GET'])
 def dashboard():
     gene_names = GeneRepository.retrieve_all_gene_names_from_file()
