@@ -511,6 +511,10 @@ function visualizeTranscript(transcript_id) {
             url: "{{ url_for('api.submit_visualization_job_for_transcript') }}",
             data: JSON.stringify({'transcript_id': transcript_id}),
             success: function(data) { getVisualizationStatus(data.transcript_id, 0); },
+            error: function(response) {
+                obj = JSON.parse(response.responseText);
+                $("#error-feedback").text(obj['error']);
+            },
             contentType: "application/json",
             dataType: 'json'
         }
