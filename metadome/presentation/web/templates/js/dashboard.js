@@ -514,6 +514,7 @@ function visualizeTranscript(transcript_id) {
             error: function(response) {
                 obj = JSON.parse(response.responseText);
                 $("#error-feedback").text(obj['error']);
+                $("#loading_overlay").removeClass('is-active');
             },
             contentType: "application/json",
             dataType: 'json'
@@ -920,7 +921,7 @@ function sortTable() {
 
 function checkForTranscript() {
     var url = window.location.href;
-    var pattern = /\/transcript\/([A-Z0-9\.]+)\/$/;
+    var pattern = /\/transcript\/(.+)\/$/;
     var match = pattern.exec(url);
     if (match)
     {
