@@ -1,4 +1,4 @@
-from flask import Blueprint, g, render_template
+from flask import Blueprint, g, render_template, redirect, url_for
 from flask_mail import Message
 import json
 import traceback
@@ -18,6 +18,10 @@ bp = Blueprint('web', __name__)
 @bp.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
+
+@bp.route('/dashboard/transcript/', methods=['GET'])
+def transcript_empty():
+    return redirect(url_for('web.dashboard'))
 
 @bp.route('/dashboard/transcript/<transcript_id>/', methods=['GET'])
 def transcript(transcript_id):
