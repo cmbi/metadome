@@ -917,3 +917,17 @@ function sortTable() {
 	  $('#position_information_tbody').append(row);
     });
 }
+
+function checkForTranscript() {
+    var url = window.location.href;
+    var pattern = /\/transcript\/([A-Z0-9\.]+)\/$/;
+    var match = pattern.exec(url);
+    if (match)
+    {
+        var transcriptID = match[1];
+
+        visualizeTranscript(transcriptID);
+    }
+}
+
+checkForTranscript();
