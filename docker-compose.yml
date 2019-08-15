@@ -3,7 +3,7 @@ services:
     app:
         restart: always
         build: .
-        command: "gunicorn -b 0.0.0.0:5000 metadome.application:app --worker-tmp-dir /dev/shm --workers=2 --threads=4 --worker-class=gthread"
+        command: "gunicorn -b 0.0.0.0:5000 metadome.application:app"
         environment:
             - FLASK_APP=metadome/application.py
         ports:
