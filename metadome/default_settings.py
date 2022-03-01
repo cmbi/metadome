@@ -7,13 +7,13 @@ SECRET_KEY = SECRET_KEY_CRED
 from metadome.postgres_credentials import POSTGRES_USER, POSTGRES_PASSWORD
 SQLALCHEMY_RECORD_QUERIES = DEBUG # should be false when not debug
 SQLALCHEMY_TRACK_MODIFICATIONS = False
-SQLALCHEMY_DATABASE_URI = "postgresql://"+POSTGRES_USER+":"+POSTGRES_PASSWORD+"@metadome_db_1/"
+SQLALCHEMY_DATABASE_URI = "postgresql://"+POSTGRES_USER+":"+POSTGRES_PASSWORD+"@metadome-db-1/"
 SQLALCHEMY_ECHO = True
 SQLALCHEMY_POOL_TIMEOUT = 10
 
 # Flask-Celery settings
-CELERY_BROKER_URL='amqp://guest@metadome_rabbitmq_1'
-CELERY_RESULT_BACKEND='redis://metadome_redis_1/0'
+CELERY_BROKER_URL='amqp://guest@metadome-rabbitmq-1'
+CELERY_RESULT_BACKEND='redis://metadome-redis-1/0'
 CELERY_TRACK_STARTED = True
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_RESULT_SERIALIZER='pickle'

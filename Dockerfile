@@ -1,4 +1,4 @@
-FROM python:3.5
+FROM --platform=linux/x86_64 python:3.5
 
 RUN mkdir -p /usr/externals
 
