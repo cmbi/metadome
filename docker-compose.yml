@@ -6,6 +6,8 @@ services:
         command: "gunicorn -b 0.0.0.0:5000 metadome.application:app"
         environment:
             - FLASK_APP=metadome/application.py
+        env_file:
+           - metadome/database.env
         ports:
             - "5000:5000"
         depends_on:
@@ -30,6 +32,8 @@ services:
         command: celery -A metadome.application:celery worker --loglevel=info
         environment:
             - C_FORCE_ROOT=1
+        env_file:
+           - metadome/database.env
         depends_on:
             - db
             - redis
@@ -48,23 +52,32 @@ services:
     db:
         restart: always
         image: postgres:10
-        platform: linux/arm64 
-        environment:
-           - ./metadome/postgres_credentials.py
+        env_file:
+           - metadome/database.env
         ports:
-          - "5432:5432"
+            - "5432:5432"
         volumes:
             - metadome_postgres_db:/var/lib/postgresql/data
+        healthcheck:
+             test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+             interval: 30s
+             timeout: 30s
+             retries: 5
+             start_period: 10s
     redis:
         restart: always
         image: redis:4.0
-        platform: linux/arm64 
+        platform: linux/arm64
+        depends_on:
+            - db
         ports:
           - "6379:6379"
     rabbitmq:
         restart: always
         image: rabbitmq:3.7
         platform: linux/arm64
+        depends_on:
+            - db
         ports:
           - "15672:15672"
 volumes:
