@@ -1,6 +1,11 @@
-FROM --platform=linux/x86_64 python:3.5
+FROM --platform=linux/amd64 python:3.10-bullseye
 
+# Create directory to install required externals
 RUN mkdir -p /usr/externals
+
+# Install packages required for blast
+Run apt-get update
+RUN apt-get install libidn11
 
 # Install BLAST+
 RUN wget http://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.6.0/ncbi-blast-2.6.0+-x64-linux.tar.gz
@@ -23,5 +28,6 @@ WORKDIR /usr/src/app
 
 # Configure Python environment
 COPY requirements.txt /usr/src/app/
+RUN pip install --upgrade pip wheel setuptools==58
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . /usr/src/app
