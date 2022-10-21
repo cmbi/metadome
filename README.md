@@ -112,10 +112,10 @@ The PostgreSQL database needs to be initialized, therefore you should run the en
 When there are no further print-outs of following this command, the database should be readily initialized. You can shut down the webserver by `CTRL+C` keyboard command.
 
 TROUBLE SHOOTING: If there are still print outs even after a minute or so, you will have to follow these steps:
-	- Stop the web server and remove volume bindings : `docker-compose down -v`
-	- Make sure the empty folder to contain the MetaDome mapping PostgreSQL database at `metadome_postgres_db:` in the `volumes:` section in the docker-compose.yml is empty. If not, remove all files.
-	- Make sure no further metadome instances are running (check through `docker ps -a`)
-	- Restart the steps in first-time setup
+- Stop the web server and remove volume bindings : `docker-compose down -v`
+- Make sure the empty folder to contain the MetaDome mapping PostgreSQL database at `metadome_postgres_db:` in the `volumes:` section in the docker-compose.yml is empty. If not, remove all files.
+- Make sure no further metadome instances are running (check through `docker ps -a`)
+- Restart the steps in first time set-up
 
 If you get through this step correctly, you can run the following command to execute the install script that will generate the database:
 
