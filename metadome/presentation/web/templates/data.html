@@ -1,0 +1,96 @@
+{% extends "base.html" %} {% block content %}
+    <!-- Starting definition of site content -->
+    <section class="section">
+        <div class="box">
+            <section class="section">
+                <div class='content'>
+                    <h1 class="title" style="color: #00AFDC;">Data</h1>
+
+                    <p>
+                        MetaDome does not host data files itself. Everything below is deposited on Zenodo under
+                        CC BY 4.0, where each record carries checksums and a full description of its contents.
+                        The prebuild pipelines, the platform and the analysis scripts are in the MetaDome
+                        <a data-external-link-group="MetaDome"
+                           data-external-link-key="github"
+                           href="#"
+                           target="_blank">GitHub repository</a>.
+                    </p>
+
+                    <h1 class="title" style="color: #00AFDC;">Current release</h1>
+
+                    <p>
+                        MetaDome 2027, built from GENCODE v45 for GRCh38 and v19 for GRCh37,
+                        UniProtKB/Swiss-Prot 2025_01, Pfam 37.4, gnomAD v4.1 for GRCh38 and r2.0.2 for GRCh37,
+                        and ClinVar 2025-10-06. Both records below come from this build, and the code that
+                        produced them is tagged
+                        <a href="https://github.com/laurensvdwiel/metadome/releases/tag/2.1"
+                           target="_blank">2.1</a> in the repository.
+                    </p>
+
+                    <h3 class="title is-4" style="color: #00AFDC; margin-top: 2rem;">MetaDome 2027 data
+                        release</h3>
+
+                    <p>
+                        For GRCh38 and GRCh37, this record holds the mapping databases that link every coding
+                        genomic position to a transcript, a Swiss-Prot residue and a Pfam domain consensus
+                        position; the per-residue dataset that carries the tolerance scores and the variant
+                        counts; the prebuilt visualisations and meta-domains that the platform serves; and
+                        genome-browser tracks for Pfam domain coverage, the tolerance landscape and meta-domain
+                        ClinVar evidence.
+                    </p>
+                    <p style="border-left: 4px solid #00AFDC; padding-left: 1rem; margin-bottom: 1.5rem;">
+                        Wiel, L., &amp; Ferraro, F. (2026). <strong>MetaDome 2027: a comprehensively updated
+                        resource for aggregating missense variant evidence across homologous human protein
+                        domains</strong> (Version 2.0) [Dataset]. Zenodo.
+                        <a href="https://doi.org/10.5281/zenodo.19376150"
+                           target="_blank">https://doi.org/10.5281/zenodo.19376150</a>
+                    </p>
+
+                    <h3 class="title is-4" style="color: #00AFDC; margin-top: 2rem;">ClinVar variants of
+                        uncertain significance with homologous pathogenic evidence</h3>
+
+                    <p>
+                        The candidate sets behind the meta-domain evidence analysis in the MetaDome 2027 paper,
+                        published there as Supplementary Data S2 and S3, covering GRCh38.p14 and GRCh37.p13, and
+                        produced from the files in the record above. Each row is one ClinVar missense variant of
+                        uncertain significance at one Pfam domain placement where pathogenic variation is
+                        observed at the equivalent position in a homologous domain elsewhere in the genome,
+                        together with the supporting and contradicting ClinVar records at that position. More
+                        than 50,000 such variants carry that evidence without any pathogenic variant at their own
+                        codon, which is where a meta-domain contributes evidence that is otherwise unavailable.
+                    </p>
+                    <p style="border-left: 4px solid #00AFDC; padding-left: 1rem; margin-bottom: 1.5rem;">
+                        Wiel, L. (2026). <strong>MetaDome 2027: ClinVar variants of uncertain
+                        significance at homologous Pfam domain positions</strong> (Version 1.0) [Dataset].
+                        Zenodo.
+                        <a href="https://doi.org/10.5281/zenodo.23053554"
+                           target="_blank">https://doi.org/10.5281/zenodo.23053554</a>
+                    </p>
+
+                    <h1 class="title" style="color: #00AFDC;">Previous releases</h1>
+
+                    <h3 class="title is-4" style="color: #00AFDC; margin-top: 2rem;">MetaDome 2019 data
+                        release</h3>
+
+                    <p>
+                        Version 1.0.1, GRCh37 only, built from GENCODE v19 (GRCh37.p13), UniProtKB/Swiss-Prot
+                        2016_09, Pfam 30.0, gnomAD r2.0.2 and ClinVar 2018-05-03. The code is tagged
+                        <a href="https://github.com/laurensvdwiel/metadome/releases/tag/1.0.1"
+                           target="_blank">1.0.1</a> in the repository.
+                    </p>
+                    <p style="border-left: 4px solid #00AFDC; padding-left: 1rem; margin-bottom: 1.5rem;">
+                        Wiel, L., Baakman, C., Gilissen, D., Veltman, J. A., Vriend, G., &amp;
+                        Gilissen, C. (2019). <strong>MetaDome: Pathogenicity analysis of genetic variants
+                        through aggregation of homologous human protein domains</strong>.
+                        <a data-external-link-group="MetaDome.papers"
+                           data-external-link-key="humu2019"
+                           href="#"
+                           target="_blank">https://doi.org/10.1002/humu.23798</a>
+                    </p>
+
+                </div>
+            </section>
+        </div>
+    </section>
+
+{% endblock %} {% block js %} {% endblock %}

@@ -387,6 +387,10 @@ def about():
 def method():
     return render_template('method.html')
 
+@bp.route('/data', methods=['GET'])
+def data():
+    return render_template('data.html')
+
 @bp.route('/faq', methods=['GET'])
 def help_page():
     return render_template('faq.html')
