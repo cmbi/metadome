@@ -37,17 +37,26 @@ def read_summary(path):
     return summary
 
 
-def per_variant(table):
+def per_variant(table, mane_only=False):
     """Collapse placements to one row per ClinVar variant.
 
     A variant covered by several domain placements or isoforms appears once per
     placement. The placement carrying the strongest evidence is kept, so
     evidence shared between isoforms of one protein is not counted twice.
+
+    With mane_only, only placements on the accession that the gene's MANE
+    Select transcript maps to are read, so the same figure is produced for
+    MANE Select transcripts alone.
     """
-    frame = pd.read_csv(
-        table, sep="\t", dtype={"clinvar_id": str},
-        usecols=["clinvar_id", "homolog_missense_P_count", "homolog_missense_LP_count",
-                 "homolog_benign_count", "same_residue_PLP_count"])
+    columns = ["clinvar_id", "homolog_missense_P_count", "homolog_missense_LP_count",
+               "homolog_benign_count", "same_residue_PLP_count"]
+    types = {"clinvar_id": str}
+    if mane_only:
+        columns.append("mane_select")
+        types["mane_select"] = str
+    frame = pd.read_csv(table, sep="\t", dtype=types, usecols=columns)
+    if mane_only:
+        frame = frame[frame["mane_select"] == "True"]
     # Strongest placement per variant: same-residue evidence first, then
     # absence of conflicting benign evidence, then depth of pathogenic evidence.
     frame = frame.sort_values(
@@ -71,13 +80,15 @@ def pm5_class(row):
     return PM5_ORDER[1]
 
 
-def panel_a(axis, summary, grouped):
+def panel_a(axis, summary, grouped, mane_only=False):
     stages = ["All",
         "Within a\nPfam domain",
         "With homologous\npathogenic (P/LP)\nmissense"]
+    in_domain = ("distinct_vus_in_domain_mane" if mane_only
+                 else "distinct_vus_in_domain")
     values = [int(summary["vus_missense_snvs"]),
-        int(summary["distinct_vus_in_domain"]),
-        len(grouped)]
+              int(summary[in_domain]),
+              len(grouped)]
 
     axis.bar(stages, [v / 1e6 for v in values],
         color=["#b0b0b0", "#7f7f7f", "#4d4d4d"], width=0.6)
@@ -131,23 +142,26 @@ def main():
     parser.add_argument("--out-dir", default=".")
     parser.add_argument("--counts", action="store_true",
                         help="also write the panel B counts as TSV")
+    parser.add_argument("--mane-only", action="store_true",
+                        help="restrict to placements on MANE Select accessions")
+    parser.add_argument("--out-stem",
+                        help="base name for the figures "
+                             "(default: vus_metadomain_<genome-build>)")
     args = parser.parse_args()
 
     sns.set_theme(style="ticks", context="paper")
 
     summary = read_summary(args.summary)
-    grouped = per_variant(args.table)
+    grouped = per_variant(args.table, args.mane_only)
 
     figure, axes = plt.subplots(1, 2, figsize=(11, 4.2),
                                 gridspec_kw={"width_ratios": [1, 1.6]})
-    panel_a(axes[0], summary, grouped)
+    panel_a(axes[0], summary, grouped, args.mane_only)
     counts = panel_b(axes[1], grouped)
-    figure.suptitle("Meta-domain PM5 evidence for ClinVar missense variants of uncertain "
-                    "significance ({})".format(args.genome_build), y=1.02)
     figure.tight_layout()
 
-    stem = os.path.join(args.out_dir, "vus_metadomain_{}".format(args.genome_build))
-    for extension in ("pdf", "png"):
+    stem = os.path.join(args.out_dir, args.out_stem or "vus_metadomain_{}".format(args.genome_build))
+    for extension in ("pdf", "png", "svg"):
         figure.savefig("{}.{}".format(stem, extension), dpi=300, bbox_inches="tight")
         print("wrote {}.{}".format(stem, extension))
 
