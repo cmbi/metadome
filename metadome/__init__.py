@@ -1,7 +1,7 @@
 import logging
 from flask_debugtoolbar import DebugToolbarExtension
 
-_VERSION = '2.0'
+_VERSION = '2.0.1'
 
 # for using the Flask debug toolbar throughout the application
 toolbar = DebugToolbarExtension()
